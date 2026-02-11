@@ -1,6 +1,5 @@
 // import { useState } from 'react'
 
-import { Outlet } from "react-router-dom"
 
 import { Route } from "react-router-dom"
 import { Routes } from "react-router-dom"
