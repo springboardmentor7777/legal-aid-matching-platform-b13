@@ -2,17 +2,17 @@
 
 import { Outlet } from "react-router-dom"
 
-
+import { Route } from "react-router-dom"
+import { Routes } from "react-router-dom"
+import Signup from "./pages/Signup"
 
 function App() {
   // const [count, setCount] = useState(0)
 
   return (
-    <>
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <Outlet />
-      </main>
-    </>
+      <Routes>
+      <Route path="/signup" element={<Signup />} />
+    </Routes>
   )
 }
 
