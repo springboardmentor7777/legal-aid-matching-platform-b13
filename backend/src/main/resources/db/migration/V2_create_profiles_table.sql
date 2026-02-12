@@ -10,7 +10,7 @@ CREATE TABLE lawyer_profiles (
 );
 
 CREATE TABLE ngo_profiles (
-    id SERIAL PRIMARY KEY,
+    id serial PRIMARY KEY,
     user_id INT UNIQUE NOT NULL,
     organization_name VARCHAR(200),
     focus_area TEXT,
