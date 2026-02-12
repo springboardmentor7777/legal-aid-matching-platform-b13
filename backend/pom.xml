@@ -77,6 +77,11 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Flyway for DB migrations -->
+		<dependency>
+		<groupId>org.flywaydb</groupId>
+		<artifactId>flyway-core</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
