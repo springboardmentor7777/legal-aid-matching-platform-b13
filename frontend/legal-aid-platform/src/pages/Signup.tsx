@@ -4,7 +4,7 @@ import { signup } from "../api/auth.api";
 import { type Role } from "../types/auth.type";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const roles: Role[] = ["CITIZEN", "LAWYER", "NGO", "ADMIN"];
+const roles: Role[] = ["CITIZEN", "LAWYER", "NGO"];
 
 export default function Signup() {
   const navigate = useNavigate();

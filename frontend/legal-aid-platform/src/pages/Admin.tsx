@@ -1,0 +1,161 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { adminsignin } from "../api/admin.api";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+
+export default function Admin() {
+
+
+    const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate();
+    const [form, setForm] = useState({
+        username:"",
+        password:""
+    });
+
+    const [error, setError] = useState<string | null>(null);
+
+    const [loading, setLoading] = useState(false);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>{
+        setForm({...form,[e.target.name]:e.target.value});
+    };
+
+    const validate = () =>{
+        if(!form.username) return "invalid username";
+        if(!form.password) return "invalid password";
+    };
+    
+    const handleSubmit = async (e:React.FormEvent) => {
+        e.preventDefault();
+        const validator = validate();
+        if(validator){
+            setError(validator);
+            return;
+        }
+        try{
+            setLoading(true);
+            await adminsignin(form);
+            navigate("/admin/dashboard");
+        }
+        catch(err: any){
+            setError(err.response?.data?.message || "Login failed");
+        }
+        finally{
+            setLoading(false);
+        }
+    };
+
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
+        <h2 className="text-2xl text-blue-950 font-sans font-bold text-center mb-6">
+          Admin Login
+        </h2>
+
+        {error && (
+          <div className="mb-4 text-red-500 text-sm text-center font-mono">
+            {error}!
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* <input
+                    type="text"
+                    name="name"
+                    placeholder="Full Name"
+                    className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    value={form.name}
+                    onChange={handleChange}
+                  /> */}
+
+          {/* <input
+                    type="email"
+                    name="email"
+                    placeholder="Email"
+                    className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    value={form.email}
+                    onChange={handleChange}
+                  /> */}
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Username
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                name="username"
+                placeholder="enter your email"
+                className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
+                value={form.username}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          {/* <input
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    value={form.password}
+                    onChange={handleChange}
+                  /> */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
+                placeholder="enter your password"
+                value={form.password}
+                onChange={handleChange}
+              />
+
+              {/* Eye Icon */}
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </span>
+            </div>
+
+            {/* {errors.password && (
+                            <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                          )} */}
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition"
+          >
+            {loading ? "Creating..." : "Sign Up"}
+          </button>
+        </form>
+
+        {/* <p className="text-sm text-center mt-4">
+          Already have an account?{" "}
+          <span
+            onClick={() => navigate("/signin")}
+            className="text-blue-500 cursor-pointer"
+          >
+            Sign in
+          </span>
+        </p> */}
+      </div>
+    </div>
+  );
+}

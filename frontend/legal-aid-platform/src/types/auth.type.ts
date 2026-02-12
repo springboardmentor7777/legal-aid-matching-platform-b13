@@ -1,4 +1,4 @@
-export type Role = 'ADMIN' | 'CITIZEN' | 'NGO' | 'LAWYER';
+export type Role = 'CITIZEN' | 'NGO' | 'LAWYER';
 
 export interface SignupPayload{
     // name: string;
@@ -7,4 +7,9 @@ export interface SignupPayload{
     role:Role;
 }
 
+export interface SigninPayload{
+    userId: number;
+    role: Role;
+    exp: number;
+}
 
