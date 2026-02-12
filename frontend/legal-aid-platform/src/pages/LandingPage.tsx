@@ -12,7 +12,7 @@ import casemanagement from "../assets/images/casemanagement.jpg";
 import legalresources from "../assets/images/legalresource.avif";
 import community from "../assets/images/community.jpg";
 import service from "../assets/images/ngoservice.jpg";
-
+import { TypeAnimation } from "react-type-animation";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -83,12 +83,12 @@ export default function LandingPage() {
       <section className="relative bg-black text-white overflow-hidden">
         <div className="container mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center justify-between gap-10">
           <div className="max-w-2xl z-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
+            {/* <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
               Bridging the Gap to <span className="text-blue-300">Legal Justice</span>
-            </h2>
+            </h2> */}
+            <TypeAnimation sequence={["We connect you with the justice...",1000,"Supported By NGOs",1000]} className="font-mono text-4xl md:text-5xl font-extrabold mb-6 leading-tight" wrapper="span" speed={30} repeat={Infinity}/>
             <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed">
-              A unified platform connecting individuals with verified lawyers and NGOs.
-              We ensure equal access to legal representation for everyone.
+              Legal aid matching platform, Trusted by verified lawyers, NGOs and many more organizations
             </p>
             <div className="flex flex-wrap gap-4">
               <button
@@ -347,7 +347,7 @@ export default function LandingPage() {
                 <li><a href="#" className="hover:text-white transition-colors">Home</a></li>
                 <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
                 <li><a href="#about" className="hover:text-white transition-colors">About Us</a></li>
-                <li><a href="/signin" className="hover:text-white transition-colors">Login / Register</a></li>
+                <li><a href="/signup" className="hover:text-white transition-colors">Login / Register</a></li>
               </ul>
             </div>
 

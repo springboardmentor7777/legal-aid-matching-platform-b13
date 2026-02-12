@@ -2,14 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signup } from "../api/auth.api";
 import { type Role } from "../types/auth.type";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const roles: Role[] = ["CITIZEN", "LAWYER", "NGO", "ADMIN"];
 
 export default function Signup() {
   const navigate = useNavigate();
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const [form, setForm] = useState({
-    name: "",
+    // name: "",
     email: "",
     password: "",
     role: "CITIZEN" as Role,
@@ -19,13 +22,13 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const validate = () => {
-    if (!form.name) return "Name is required";
+    // if (!form.name) return "Name is required";
     if (!form.email.includes("@")) return "Invalid email";
     if (form.password.length < 6)
       return "Password must be at least 6 characters";
@@ -52,51 +55,103 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
-        <h2 className="text-2xl text-blue-700 font-sans font-bold text-center mb-6">
+        <h2 className="text-2xl text-blue-950 font-sans font-bold text-center mb-6">
           Legal Aid Matching Platform
         </h2>
 
         {error && (
-          <div className="mb-4 text-red-500 text-sm text-center font-mono">{error}!</div>
+          <div className="mb-4 text-red-500 text-sm text-center font-mono">
+            {error}!
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
-          <input
+          {/* <input
             type="text"
             name="name"
             placeholder="Full Name"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={form.name}
             onChange={handleChange}
-          />
+          /> */}
 
-          <input
+          {/* <input
             type="email"
             name="email"
             placeholder="Email"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={form.email}
             onChange={handleChange}
-          />
-
-          <input
+          /> */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email
+            </label>
+            <div className="relative">
+              <input
+                type="email"
+                name="email"
+                placeholder="enter your email"
+                className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
+                value={form.email}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+          {/* <input
             type="password"
             name="password"
             placeholder="Password"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={form.password}
             onChange={handleChange}
-          />
+          /> */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
+                placeholder="enter your password"
+                value={form.password}
+                onChange={handleChange}
+              />
+
+              {/* Eye Icon */}
+              <span
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </span>
+            </div>
+
+            {/* {errors.password && (
+                    <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                  )} */}
+          </div>
 
           <select
             name="role"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            // className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
             value={form.role}
             onChange={handleChange}
+            defaultValue={"name"}
           >
+            {/* <option value="" selected>Select a category</option> */}
             {roles.map((role) => (
               <option key={role} value={role}>
                 {role}
