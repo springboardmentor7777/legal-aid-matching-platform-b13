@@ -1,3 +1,1 @@
-# Backend
-
 Fresh backend setup.
