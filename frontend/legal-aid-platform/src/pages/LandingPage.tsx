@@ -70,7 +70,7 @@ export default function LandingPage() {
           </nav>
 
           <button
-            onClick={() => navigate("/signin")}
+            onClick={() => navigate("/login")}
             className="px-5 py-2 bg-black text-white rounded-full hover:bg-blue-950
                 flex items-center gap-2 font-semibold transition-all shadow-sm hover:shadow-md"
           >
@@ -92,7 +92,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <button
-                onClick={() => navigate("/signup")}
+                onClick={() => navigate("/describe")}
                 className="px-8 py-3 bg-white text-blue-950 font-bold rounded-lg shadow-lg hover:bg-blue-50 transition-all transform hover:-translate-y-1"
               >
                 Get Started
