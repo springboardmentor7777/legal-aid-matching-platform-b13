@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import InputField from "../components/inputfield";
 import Button from "../components/button";
 import { Mail, Lock, Chrome, Github } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   const handleLogin = () => {
     console.log("Email:", email);
     console.log("Password:", password);
@@ -85,8 +86,11 @@ const Login = () => {
         {/* Register hint */}
         <p className="text-center text-sm text-gray-500">
           Don’t have an account?{" "}
-          <span className="text-blue-700 font-semibold cursor-pointer">
-            Register
+          <span
+          onClick={() => navigate("/register")}
+          className="text-blue-700 font-semibold cursor-pointer"
+          >
+          Register
           </span>
         </p>
       </div>
