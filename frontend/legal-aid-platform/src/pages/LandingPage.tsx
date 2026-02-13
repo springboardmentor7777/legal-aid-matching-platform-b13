@@ -92,7 +92,7 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-wrap gap-4">
               <button
-                onClick={() => navigate("/describe")}
+                onClick={() => navigate("/signup")}
                 className="px-8 py-3 bg-white text-blue-950 font-bold rounded-lg shadow-lg hover:bg-blue-50 transition-all transform hover:-translate-y-1"
               >
                 Get Started
