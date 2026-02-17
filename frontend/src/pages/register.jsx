@@ -61,12 +61,20 @@ const Register = () => {
       <div className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md space-y-5">
 
         {/* Brand */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-blue-800">LegalMatch</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Create your account to continue
-          </p>
-        </div>
+<div className="text-center">
+  <h1
+    className="text-3xl font-bold"
+    style={{ fontFamily: "'Playfair Display', serif" }}
+  >
+    <span style={{ color: "#99272d" }}>⚖</span>{" "}
+    <span style={{ color: "#36454f" }}>Legal</span>
+    <span style={{ color: "#99272d" }}>Match</span>
+  </h1>
+
+  <p className="text-sm text-gray-500 mt-2">
+    Create your account to continue
+  </p>
+</div>
 
         {/* Role Selection */}
         <div>
@@ -80,13 +88,18 @@ const Register = () => {
                 key={item}
                 type="button"
                 onClick={() => setRole(item)}
-                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition 
-                  ${
-                    role === item
-                      ? "bg-blue-700 text-white border-blue-700"
-                      : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
-                  }`}
-              >
+                 className={`flex-1 py-2 rounded-lg border text-sm font-medium transition 
+    ${
+      role === item
+        ? "text-white"
+        : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+    }`}
+  style={
+    role === item
+      ? { backgroundColor: "#36454f", borderColor: "#36454f" }
+      : {}
+  }
+>
                 {item}
               </button>
             ))}
@@ -183,14 +196,16 @@ const Register = () => {
         )}
 
         {/* Register Button */}
-        <Button text="Sign Up" onClick={handleRegister} />
+        <Button text="Sign Up" className="w-full text-white py-2 rounded-lg"
+style={{ backgroundColor: "#36454f" }} onClick={handleRegister} />
 
         {/* Login Link */}
         <p className="text-center text-sm text-gray-500">
           Already have an account?{" "}
           <span
             onClick={() => navigate("/")}
-            className="text-blue-700 font-semibold cursor-pointer"
+            className="font-semibold cursor-pointer hover:opacity-80"
+  style={{ color: "#36454f" }}
           >
             Sign In
           </span>

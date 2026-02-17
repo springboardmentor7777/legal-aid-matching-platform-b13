@@ -18,12 +18,20 @@ const Login = () => {
       <div className="bg-white p-8 rounded-2xl shadow-md w-96 space-y-5">
 
         {/* Brand */}
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-blue-800">LegalMatch</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Access pro bono legal assistance
-          </p>
-        </div>
+<div className="text-center">
+  <h1
+    className="text-3xl font-bold"
+    style={{ fontFamily: "'Playfair Display', serif" }}
+  >
+    <span style={{ color: "#99272d" }}>⚖</span>{" "}
+    <span style={{ color: "#36454f" }}>Legal</span>
+    <span style={{ color: "#99272d" }}>Match</span>
+  </h1>
+
+  <p className="text-sm text-gray-500 mt-2">
+    Create your account to continue
+  </p>
+</div>
 
         {/* Email */}
         <div>
@@ -61,7 +69,8 @@ const Login = () => {
         </div>
 
         {/* Login button */}
-        <Button text="Sign In" onClick={handleLogin} />
+        <Button text="Sign In" className="w-full text-white py-2 rounded-lg"
+style={{ backgroundColor: "#36454f" }} onClick={handleLogin} />
 
         {/* Divider */}
         <div className="flex items-center gap-3">
@@ -88,7 +97,8 @@ const Login = () => {
           Don’t have an account?{" "}
           <span
           onClick={() => navigate("/register")}
-          className="text-blue-700 font-semibold cursor-pointer"
+          className="font-semibold cursor-pointer hover:underline"
+  style={{ color: "#36454f" }}
           >
           Register
           </span>
