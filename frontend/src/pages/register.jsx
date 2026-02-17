@@ -1,3 +1,5 @@
+// NOTE: Admin registration is disabled by design
+// Admin users will be created manually in DB
 import React, { useState } from "react";
 import InputField from "../components/inputfield";
 import Button from "../components/button";
@@ -6,22 +8,51 @@ import { useNavigate } from "react-router-dom";
 const Register = () => {
   const navigate = useNavigate();
 
+  const [role, setRole] = useState("CITIZEN");
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Optional fields
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
+
   const handleRegister = () => {
+    if (!name || !email || !password || !confirmPassword) {
+      alert("Please fill all required fields");
+      return;
+    }
+
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
 
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
+    if (role === "LAWYER" && !licenseNumber) {
+      alert("Please enter license number");
+      return;
+    }
 
-    // after success → go to login
+    if (role === "NGO" && !organizationName) {
+      alert("Please enter organization name");
+      return;
+    }
+
+    const registerData = {
+      name,
+      email,
+      password,
+      role,
+      licenseNumber: role === "LAWYER" ? licenseNumber : null,
+      organizationName: role === "NGO" ? organizationName : null,
+    };
+
+    console.log("Register Data:", registerData);
+
+    // TODO: Replace with real API call when backend is ready
+
     navigate("/");
   };
 
@@ -37,7 +68,32 @@ const Register = () => {
           </p>
         </div>
 
-        {/* Name */}
+        {/* Role Selection */}
+        <div>
+          <label className="text-sm font-semibold text-gray-700">
+            Register As
+          </label>
+
+          <div className="mt-2 flex justify-between gap-2">
+            {["CITIZEN", "LAWYER", "NGO"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setRole(item)}
+                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition 
+                  ${
+                    role === item
+                      ? "bg-blue-700 text-white border-blue-700"
+                      : "bg-white text-gray-600 border-gray-300 hover:bg-gray-100"
+                  }`}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Full Name */}
         <div>
           <label className="text-sm font-semibold text-gray-700">
             Full Name
@@ -54,7 +110,7 @@ const Register = () => {
         {/* Email */}
         <div>
           <label className="text-sm font-semibold text-gray-700">
-            Email or Username
+            Email
           </label>
           <div className="mt-1">
             <InputField
@@ -95,10 +151,41 @@ const Register = () => {
           </div>
         </div>
 
-        {/* Register button */}
+        {/* Conditional Fields */}
+        {role === "LAWYER" && (
+          <div>
+            <label className="text-sm font-semibold text-gray-700">
+              License Number
+            </label>
+            <div className="mt-1">
+              <InputField
+                placeholder="Enter license number"
+                value={licenseNumber}
+                onChange={(e) => setLicenseNumber(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
+        {role === "NGO" && (
+          <div>
+            <label className="text-sm font-semibold text-gray-700">
+              Organization Name
+            </label>
+            <div className="mt-1">
+              <InputField
+                placeholder="Enter organization name"
+                value={organizationName}
+                onChange={(e) => setOrganizationName(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Register Button */}
         <Button text="Sign Up" onClick={handleRegister} />
 
-        {/* Login hint */}
+        {/* Login Link */}
         <p className="text-center text-sm text-gray-500">
           Already have an account?{" "}
           <span
@@ -111,8 +198,7 @@ const Register = () => {
 
         {/* Terms */}
         <p className="text-xs text-center text-gray-400">
-          By continuing, you agree to LegalMatch's Terms of Service and
-          Privacy Policy.
+          By continuing, you agree to LegalMatch's Terms of Service and Privacy Policy.
         </p>
 
       </div>
