@@ -70,7 +70,25 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest request) {
-        return null; // temporary
+        User user = userRepository.findByEmail(request.getEmail())
+        .orElseThrow(() -> new RuntimeException("User not found"));
+
+    // Verify password
+    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        throw new RuntimeException("Invalid password");
+    }
+
+    // Generate tokens
+    String accessToken = jwtUtil.generateToken(user.getEmail());
+    String refreshToken = jwtUtil.generateRefreshToken(user);
+
+    // Return response with both tokens
+    return new AuthResponse(
+        accessToken,
+        "Login successful",
+        accessToken,
+        refreshToken
+    );
     }
 
     // keep your existing register() and login() implementations here
