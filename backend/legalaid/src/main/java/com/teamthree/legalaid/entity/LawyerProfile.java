@@ -1,60 +1,31 @@
 package com.teamthree.legalaid.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "lawyer_profiles")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class LawyerProfile {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column(name = "user_id")
-	private Long userId;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;  
 
-	private String specialization;
+    @Column(name = "specialization")
+    private String specialization;
 
-	@Column(name = "experience_years")
-	private Integer experienceYears;
+    @Column(name = "experience_years")
+    private Integer experienceYears;
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public Long getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
-	public String getSpecialization() {
-		return specialization;
-	}
-
-	public void setSpecialization(String specialization) {
-		this.specialization = specialization;
-	}
-
-	public Integer getExperienceYears() {
-		return experienceYears;
-	}
-
-	public void setExperienceYears(Integer experienceYears) {
-		this.experienceYears = experienceYears;
-	}
-	
-	
-
+    @Column(name = "is_available")
+    private Boolean isAvailable = true;
 }
