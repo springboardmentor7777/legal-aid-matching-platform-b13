@@ -27,8 +27,9 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>17</java.version>
-	</properties>
+        <java.version>17</java.version>
+        <start-class>com.milestone.backend.BackendApplication</start-class>
+    </properties>
 	<dependencies>
 
     <!-- Web (REST APIs) -->
@@ -129,7 +130,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
-</project>
 
 </project>
