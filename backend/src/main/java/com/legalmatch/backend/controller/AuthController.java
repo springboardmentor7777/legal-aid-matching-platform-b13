@@ -26,4 +26,9 @@ public class AuthController {
          authService.login(request);
          return "Login Successfully";
     }
+
+    @PostMapping("/refresh-token")
+    public AuthResponse refreshToken(@RequestBody RefreshTokenRequest request) {
+        return authService.refreshToken(request.getRefreshToken());
+    }
 }

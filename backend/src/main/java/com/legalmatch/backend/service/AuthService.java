@@ -34,9 +34,11 @@ public class AuthService {
 
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user);
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthResponse(token);
+        return new AuthResponse(accessToken, refreshToken);
+
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -48,11 +50,39 @@ public class AuthService {
                 )
         );
 
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow();
 
-        String token = jwtService.generateToken(user);
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthResponse(token);
+        return new AuthResponse(accessToken, refreshToken);
     }
+    public AuthResponse refreshToken(String refreshToken) {
+
+        String userEmail = jwtService.extractUsername(refreshToken);
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow();
+
+        UserDetails userDetails =
+                org.springframework.security.core.userdetails.User
+                        .builder()
+                        .username(user.getEmail())
+                        .password(user.getPassword())
+                        .roles(user.getRole().name())
+                        .build();
+
+        if (!jwtService.isTokenValid(refreshToken, userDetails)) {
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        String newAccessToken = jwtService.generateToken(userDetails);
+        String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+
+        return new AuthResponse(newAccessToken, newRefreshToken);
+    }
+
+
+
 }
