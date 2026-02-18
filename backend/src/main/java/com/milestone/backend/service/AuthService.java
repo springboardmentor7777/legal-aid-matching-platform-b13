@@ -4,10 +4,11 @@ import com.milestone.backend.dto.AuthResponse;
 import com.milestone.backend.dto.LoginRequest;
 import com.milestone.backend.dto.RefreshTokenRequest;
 import com.milestone.backend.dto.RegisterRequest;
+import com.milestone.backend.dto.RegistrationResponse;
 
 public interface AuthService {
 
-    AuthResponse register(RegisterRequest request);
+    RegistrationResponse register(RegisterRequest request);
 
     AuthResponse login(LoginRequest request);
 
