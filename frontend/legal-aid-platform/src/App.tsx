@@ -11,6 +11,7 @@ import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import Dashboard ,  { type User }from "./pages/Dashboard"; 
 import type { JSX } from "react";
+import Profile from "./pages/Profile";
 
 
 function App() {
@@ -43,6 +44,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
           </ProtectedRoute>
         }
       />
+      <Route path="/profile" element={<Profile/>}/>
     </Routes>
   );
 }

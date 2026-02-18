@@ -8,11 +8,10 @@ import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
   name: string;
-  role: Role;
   toggleSidebar: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ name, role, toggleSidebar }) => {
+const Navbar: React.FC<NavbarProps> = ({ name, toggleSidebar }) => {
   const navigate = useNavigate();
   return (
     <header className="bg-white border-b border-blue-100 shadow-md flex items-center p-4 sticky top-0 z-50">

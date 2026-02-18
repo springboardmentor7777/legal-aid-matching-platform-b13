@@ -74,7 +74,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <Navbar name={user.name} role={user.role} toggleSidebar={toggleSidebar} />
+        <Navbar name={user.name} toggleSidebar={toggleSidebar} />
 
         {/* Header */}
         <div className="bg-white p-6 m-6 rounded-2xl shadow-md border border-blue-100">
