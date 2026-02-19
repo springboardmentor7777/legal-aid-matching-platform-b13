@@ -1,44 +1,59 @@
-import { X, LayoutDashboard, User } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-export default function Sidebar({ open, setOpen }) {
-  const { logout } = useAuth();
+export default function Sidebar({ isOpen }) {
+  const { user } = useAuth();
+
+  const menus = {
+    ADMIN: [
+      { name: "Admin Panel", path: "/dashboard/admin" },
+      { name: "Profile", path: "/profile" }
+    ],
+    LAWYER: [
+      { name: "Matches", path: "/dashboard/lawyer" },
+      { name: "Profile", path: "/profile" }
+    ],
+    NGO: [
+      { name: "Impact", path: "/dashboard/ngo" },
+      { name: "Profile", path: "/profile" }
+    ],
+    CITIZEN: [
+      { name: "Case Submission", path: "/dashboard/citizen" },
+      { name: "Profile", path: "/profile" }
+    ]
+  };
 
   return (
-    <>
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden ${
-          open ? "block" : "hidden"
-        }`}
-        onClick={() => setOpen(false)}
-      ></div>
+    <aside className={`
+      ${isOpen ? "block" : "hidden"}
+      md:block
+      w-64 bg-white border-r border-gray-200 min-h-screen p-6
+    `}>
 
-      <aside
-        className={`fixed md:static z-50 w-64 bg-white shadow h-full transform ${
-          open ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 transition-transform duration-300`}
-      >
-        <div className="p-4 flex justify-between md:hidden">
-          <h2 className="font-bold">Menu</h2>
-          <button onClick={() => setOpen(false)}>
-            <X />
-          </button>
-        </div>
+      <div className="flex items-center gap-2 mb-8">
+        <div className="w-8 h-8 bg-blue-900 rounded-md"></div>
+        <span className="font-bold text-blue-900">
+          LegalMatch Pro
+        </span>
+      </div>
 
-        <nav className="p-4 space-y-4">
-          <Link to="/profile" className="flex items-center gap-2 hover:text-blue-600">
-            <User size={18} /> Profile
-          </Link>
-
-          <button
-            onClick={logout}
-            className="text-red-500 mt-6"
+      <nav className="space-y-2">
+        {menus[user.role].map((item, i) => (
+          <NavLink
+            key={i}
+            to={item.path}
+            className={({ isActive }) =>
+              `block px-3 py-2 rounded-md ${
+                isActive
+                  ? "bg-gray-100"
+                  : "hover:bg-gray-50"
+              }`
+            }
           >
-            Logout
-          </button>
-        </nav>
-      </aside>
-    </>
+            {item.name}
+          </NavLink>
+        ))}
+      </nav>
+    </aside>
   );
 }

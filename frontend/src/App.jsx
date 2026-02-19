@@ -1,49 +1,52 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
-import CitizenDashboard from "./pages/CitizenDashboard";
 import LawyerDashboard from "./pages/LawyerDashboard";
 import NgoDashboard from "./pages/NgoDashboard";
+import CitizenDashboard from "./pages/CitizenDashboard";
 import Profile from "./pages/Profile";
-import PrivateRoute from "./PrivateRoute";
+import PrivateRoute from "./routes/PrivateRoute";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route path="/register" element={<Register />} />
 
       <Route
         path="/dashboard/admin"
         element={
-          <PrivateRoute>
+          <PrivateRoute role="ADMIN">
             <AdminDashboard />
           </PrivateRoute>
         }
       />
-      <Route
-        path="/dashboard/citizen"
-        element={
-          <PrivateRoute>
-            <CitizenDashboard />
-          </PrivateRoute>
-        }
-      />
+
       <Route
         path="/dashboard/lawyer"
         element={
-          <PrivateRoute>
+          <PrivateRoute role="LAWYER">
             <LawyerDashboard />
           </PrivateRoute>
         }
       />
+
       <Route
         path="/dashboard/ngo"
         element={
-          <PrivateRoute>
+          <PrivateRoute role="NGO">
             <NgoDashboard />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/dashboard/citizen"
+        element={
+          <PrivateRoute role="CITIZEN">
+            <CitizenDashboard />
           </PrivateRoute>
         }
       />
