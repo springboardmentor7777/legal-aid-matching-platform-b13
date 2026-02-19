@@ -57,9 +57,10 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
-        <h2 className="text-2xl text-blue-950 font-sans font-bold text-center mb-6">
-          Legal Aid Matching Platform
+        <h2 className="text-2xl text-blue-900 font-sans font-bold text-center mb-6">
+          Welcome to Legal Aid Matching platform!
         </h2>
+        <p className="text-center mb-6 text-mono text-m text-gray-700">We serve what you deserve</p>
 
         {error && (
           <div className="mb-4 text-red-500 text-sm text-center font-mono">
@@ -171,10 +172,10 @@ export default function Signup() {
         <p className="text-sm text-center mt-4">
           Already have an account?{" "}
           <span
-            onClick={() => navigate("/signin")}
+            onClick={() => navigate("/login")}
             className="text-blue-500 cursor-pointer"
           >
-            Sign in
+            Login
           </span>
         </p>
       </div>
