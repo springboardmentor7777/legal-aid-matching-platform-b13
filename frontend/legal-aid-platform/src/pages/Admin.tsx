@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { adminsignin } from "../api/admin.api";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { signin } from "../api/auth.api";
 
 
 export default function Admin() {
@@ -10,7 +11,7 @@ export default function Admin() {
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const [form, setForm] = useState({
-        username:"",
+        email:"",
         password:""
     });
 
@@ -23,7 +24,7 @@ export default function Admin() {
     };
 
     const validate = () =>{
-        if(!form.username) return "invalid username";
+        if(!form.email) return "invalid username";
         if(!form.password) return "invalid password";
     };
     
@@ -36,8 +37,13 @@ export default function Admin() {
         }
         try{
             setLoading(true);
-            await adminsignin(form);
-            navigate("/admin/dashboard");
+            const response = await signin(form);
+            if(response.role !== "ADMIN"){
+                setError("Unauthorized");
+                return;
+            }
+            else
+            navigate("/dashboard");
         }
         catch(err: any){
             setError(err.response?.data?.message || "Login failed");
@@ -88,11 +94,11 @@ export default function Admin() {
             </label>
             <div className="relative">
               <input
-                type="text"
-                name="username"
+                type="email"
+                name="email"
                 placeholder="enter your email"
                 className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
-                value={form.username}
+                value={form.email}
                 onChange={handleChange}
               />
             </div>
