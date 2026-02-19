@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import type { LoginResponse } from "../types/auth.type";
 
 type User = {
-  id: string;
+  username: string;
   email: string;
   role: string;
 };
@@ -9,7 +10,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   accessToken: string | null;
-  login: (data: any) => void;
+  login: (data: LoginResponse, email: string) => void;
   logout: () => void;
 };
 
@@ -30,13 +31,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  const login = (data: any) => {
-    setUser(data.user);
-    setAccessToken(data.access_token);
+  const login = (data: LoginResponse, email: string) => {
+    const mappedUser: User = {
+      email,
+      username: data.username,
+      role: data.role,
+    };
 
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("accessToken", data.access_token);
-    localStorage.setItem("refreshToken", data.refresh_token);
+    setUser(mappedUser);
+    setAccessToken(data.accessToken);
+
+    // setUser(data.user);
+    // setAccessToken(data.access_token);
+    localStorage.setItem('user', JSON.stringify(mappedUser));
+    localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+
+    // localStorage.setItem("user", JSON.stringify(data.user));
+    // localStorage.setItem("accessToken", data.access_token);
+    // localStorage.setItem("refreshToken", data.refresh_token);
   };
 
   const logout = () => {

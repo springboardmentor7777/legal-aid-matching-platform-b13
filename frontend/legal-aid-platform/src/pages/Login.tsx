@@ -1,25 +1,43 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
+import { signin } from "../api/auth.api";
+import { useAuth } from "../auth/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     // simulate login
-    localStorage.setItem("token", "12345");
-    navigate("/dashboard");
+    // localStorage.setItem("token", "12345");
+    // navigate("/dashboard");
+    try{
+      const data = await signin({email: form.email, password: form.password});
+      login(data, form.email);
+      navigate("/dashboard");
+
+    }catch(err:any){
+      setError(err.response?.data?.message || "Login failed, please check your credentials");
+    }finally{
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,9 +50,14 @@ export default function Login() {
             Login
           </h1>
           <p className="text-sm text-gray-500 mt-2">
-            Sign in to continue to LegalMatch Pro
+            Sign in to continue to Legal Aid Matching Platoform
           </p>
         </div>
+        {error && (
+          <div className="mb-4 text-red-500 text-sm text-center font-mono">
+            {error}!
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
