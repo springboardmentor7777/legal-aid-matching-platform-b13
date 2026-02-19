@@ -9,7 +9,12 @@ export const signup = async (payload: SignupPayload) => {
 };
 
 //login end point
-export const signin = async(payload: SigninPayload) => {
-  const {data} = await api.post("/auth/login",payload);
+// export const signin = async(payload: SigninPayload) => {
+//   const {data} = await api.post("/auth/login", payload);
+//   return data;
+// };
+
+export const signin = async (payload: SigninPayload): Promise<any> => {
+  const { data } = await api.post('/auth/login', payload);
   return data;
 };

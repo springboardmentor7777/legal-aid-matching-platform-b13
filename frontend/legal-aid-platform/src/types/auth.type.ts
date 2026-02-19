@@ -8,8 +8,15 @@ export interface SignupPayload{
 }
 
 export interface SigninPayload{
-    userId: number;
-    role: Role;
-    exp: number;
+    email: string;
+    password: string;
 }
 
+export interface LoginResponse {
+  token: string;
+  message: string;
+  accessToken: string;
+  refreshToken: string;
+  role: Role;
+  username: string;
+}
