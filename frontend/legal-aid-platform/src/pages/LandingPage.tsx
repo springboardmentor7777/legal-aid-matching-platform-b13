@@ -13,8 +13,10 @@ import legalresources from "../assets/images/legalresource.avif";
 import community from "../assets/images/community.jpg";
 import service from "../assets/images/ngoservice.jpg";
 import { TypeAnimation } from "react-type-animation";
+import { useAuth } from "../auth/AuthContext";
 
 export default function LandingPage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -70,7 +72,13 @@ export default function LandingPage() {
           </nav>
 
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => {
+              if (!user) {
+                navigate("/login");
+              } else {
+                navigate("/dashboard");
+              }
+            }}
             className="px-5 py-2 bg-black text-white rounded-full hover:bg-blue-950
                 flex items-center gap-2 font-semibold transition-all shadow-sm hover:shadow-md"
           >
