@@ -11,7 +11,7 @@ export default function Profile() {
           <div className="text-blue-900 font-bold text-2xl">Profile</div>
           <div className="flex gap-5">
             <a href="/dashboard" className="bg-blue-900 p-2 text-white rounded-lg shadow-xl hover:bg-blue-500">Dashboard</a>
-            <a href="/logout" className="bg-red-500 p-2 text-white rounded-lg">Logout</a>
+            <a href="/" className="bg-red-500 p-2 text-white rounded-lg" onClick={()=>{localStorage.clear}}>Logout</a>
           </div>
         </nav>
       </div>

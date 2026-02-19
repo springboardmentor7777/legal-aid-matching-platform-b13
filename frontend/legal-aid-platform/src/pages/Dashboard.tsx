@@ -1,21 +1,24 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
+import { useAuth } from "../auth/AuthContext";
 
 // Types
 export type Role = "CITIZEN" | "LAWYER" | "NGO" | "ADMIN";
 
-export interface User {
-  name: string;
-  role: Role;
-  token: string;
-}
+// export interface User {
+//   name: string;
+//   role: Role;
+//   token: string;
+// }
 
-interface DashboardProps {
-  user: User;
-}
+// interface DashboardProps {
+//   user: User;
+// }
 
-const Dashboard: React.FC<DashboardProps> = ({ user }) => {
+const Dashboard: React.FC = () => {
+
+   const { user } = useAuth(); 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -58,13 +61,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     <div className="flex min-h-screen bg-blue-50">
       {/* Sidebar for desktop */}
       <div className="hidden lg:block w-64">
-        <Sidebar role={user.role} isOpen={true} toggleSidebar={() => {}} />
+        <Sidebar role={user?.role} isOpen={true} toggleSidebar={() => {}} />
       </div>
 
       {/* Mobile Sidebar overlay */}
       {sidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
-          <Sidebar role={user.role} isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+          <Sidebar role={user?.role} isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
           <div
             className="fixed inset-0 bg-black bg-opacity-40"
             onClick={toggleSidebar}
@@ -74,19 +77,19 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <Navbar name={user.name} toggleSidebar={toggleSidebar} />
+        <Navbar name={user?.username} toggleSidebar={toggleSidebar} />
 
         {/* Header */}
         <div className="bg-white p-6 m-6 rounded-2xl shadow-md border border-blue-100">
           <h1 className="text-2xl font-bold text-blue-900">
-            Welcome, {user.name}!
+            Welcome, {user?.username}!
           </h1>
           
         </div>
 
         {/* Dashboard Cards */}
         <main className="p-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-          {cardsByRole[user.role].map((title, idx) => (
+          {cardsByRole[user?.role as Role]?.map((title, idx) => (
             <div
               key={idx}
               className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 hover:shadow-xl transition-all duration-300"

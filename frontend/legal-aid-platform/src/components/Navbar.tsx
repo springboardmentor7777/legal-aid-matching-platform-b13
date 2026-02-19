@@ -51,7 +51,7 @@ const Navbar: React.FC<NavbarProps> = ({ name, toggleSidebar }) => {
         </button> */}
         <Dropdown items={[
           {label:<p className="flex items-center gap-[50px]">Profile <span className="">{<FaUserCircle></FaUserCircle>}</span> </p>, onClick:()=>{navigate("/profile")}},
-          {label:<p className="flex items-center gap-[50px]">Logout <span className="">{<FaSignOutAlt></FaSignOutAlt>}</span> </p>, onClick: ()=>{navigate("/logout")}}
+          {label:<p className="flex items-center gap-[50px]">Logout <span className="">{<FaSignOutAlt></FaSignOutAlt>}</span> </p>, onClick: ()=>{localStorage.clear(); navigate("/")}}
           ]}>
           <button className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-900 font-bold" onClick={()=>{}}>
           {name.charAt(0)}
