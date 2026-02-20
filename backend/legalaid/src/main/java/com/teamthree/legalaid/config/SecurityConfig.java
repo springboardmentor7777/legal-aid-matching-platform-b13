@@ -30,17 +30,34 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
+               
                 .requestMatchers("/auth/**").permitAll()
+                
+             
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
+                
+                // Lawyer endpoints
                 .requestMatchers("/lawyer/**").hasRole("LAWYER")
+                .requestMatchers("/lawyer/dashboard/**").hasRole("LAWYER")
+                
+                // NGO endpoints
                 .requestMatchers("/ngo/**").hasRole("NGO")
+                .requestMatchers("/ngo/dashboard/**").hasRole("NGO")
+                
+                // User endpoints
                 .requestMatchers("/user/**").hasRole("USER")
+                .requestMatchers("/user/dashboard/**").hasRole("USER")
+                
+                // Profile endpoints - authenticated users only
                 .requestMatchers("/profile/**").authenticated()
+                
+                // All other requests require authentication
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> 
@@ -52,7 +69,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -65,12 +82,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 }

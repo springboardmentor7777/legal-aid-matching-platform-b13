@@ -1,5 +1,6 @@
 package com.teamthree.legalaid.service;
 
+import com.teamthree.legalaid.dto.AuthResponse;
 import com.teamthree.legalaid.dto.LoginRequest;
 import com.teamthree.legalaid.dto.RegisterRequest;
 import com.teamthree.legalaid.entity.User;
@@ -7,8 +8,6 @@ import com.teamthree.legalaid.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.Map;
-import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -18,13 +17,13 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public Map<String, String> register(RegisterRequest request) {
-        Map<String, String> response = new HashMap<>();
+    public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            response.put("status", "error");
-            response.put("message", "Email already exists");
-            return response;
+            return AuthResponse.builder()
+                    .status("error")
+                    .message("Email already exists")
+                    .build();
         }
 
         User user = new User();
@@ -36,13 +35,13 @@ public class AuthService {
 
         userRepository.save(user);
 
-        response.put("status", "success");
-        response.put("message", "User registered successfully");
-        return response;
+        return AuthResponse.builder()
+                .status("success")
+                .message("User registered successfully")
+                .build();
     }
 
-    public Map<String, String> login(LoginRequest request) {
-        Map<String, String> response = new HashMap<>();
+    public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -54,39 +53,12 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
 
-        response.put("status", "success");
-        response.put("accessToken", accessToken);
-        response.put("refreshToken", refreshToken);
-        response.put("role", user.getRole().name());
-        response.put("userId", String.valueOf(user.getId()));
-        
-        return response;
-    }
-
-    public Map<String, String> refreshToken(String refreshToken) {
-        Map<String, String> response = new HashMap<>();
-        
-        try {
-            String username = jwtService.extractUsername(refreshToken);
-            
-            if (jwtService.validateToken(refreshToken)) {
-                User user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-                
-                String newAccessToken = jwtService.generateToken(user.getEmail());
-                
-                response.put("status", "success");
-                response.put("accessToken", newAccessToken);
-                response.put("refreshToken", refreshToken); 
-            } else {
-                response.put("status", "error");
-                response.put("message", "Invalid refresh token");
-            }
-        } catch (Exception e) {
-            response.put("status", "error");
-            response.put("message", "Token refresh failed");
-        }
-        
-        return response;
+        return AuthResponse.builder()
+                .status("success")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .role(user.getRole().name())
+                .userId(String.valueOf(user.getId()))
+                .build();
     }
 }

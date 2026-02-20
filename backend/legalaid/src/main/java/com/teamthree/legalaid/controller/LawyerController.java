@@ -10,7 +10,7 @@ public class LawyerController {
 	
 	@GetMapping("/dashboard")
     public String lawyerDashboard() {
-        return "Welcome Lawyer 👨‍⚖️";
+        return "Welcome Lawyer";
     }
 	
 	@GetMapping("/cases")

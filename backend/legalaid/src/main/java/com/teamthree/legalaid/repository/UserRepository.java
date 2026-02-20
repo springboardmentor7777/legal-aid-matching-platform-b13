@@ -1,24 +1,23 @@
 package com.teamthree.legalaid.repository;
 
-import java.util.List;
-
-
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.teamthree.legalaid.entity.Role;
 import com.teamthree.legalaid.entity.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
+import java.util.Optional;
+
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-<<<<<<< HEAD
-	
-	Optional<User> findByEmail(String email);
-    boolean existsByEmail(String email);
-    List<User> findByRole(Role role);
-	
-=======
 
-		
->>>>>>> branch 'team-three' of https://github.com/springboardmentor7777/legal-aid-matching-platform-b13.git
+    Optional<User> findByEmail(String email);
+    
+    boolean existsByEmail(String email);
+    
+    List<User> findByRole(Role role);
+    
+    Long countByRole(Role role);
+    
+    List<User> findTop10ByOrderByCreatedAtDesc();
 }

@@ -9,7 +9,7 @@ public class UserController {
     @GetMapping("/dashboard")
 
     public String userDashboard() {
-        return "Welcome User 👤";
+        return "Welcome User";
     }
 
     @PostMapping("/create-case")

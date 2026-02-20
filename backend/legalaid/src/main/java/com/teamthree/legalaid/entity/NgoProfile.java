@@ -18,7 +18,7 @@ public class NgoProfile {
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;  
+    private User user;
 
     @Column(name = "organization_name")
     private String organizationName;
