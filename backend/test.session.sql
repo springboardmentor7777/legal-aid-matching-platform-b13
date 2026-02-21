@@ -1,1 +1,1 @@
-select * from users;
+UPDATE users set role = 'ADMIN' where email = 'sandeepkarem.online@gmail.com';
