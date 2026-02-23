@@ -3,6 +3,7 @@ package com.teamthree.legalaid.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -35,26 +36,17 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-               
+                // Public endpoints - MOST SPECIFIC FIRST
+                .requestMatchers(HttpMethod.GET, "/auth/test").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 
-             
+                // Role-based endpoints
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
-                
-                // Lawyer endpoints
                 .requestMatchers("/lawyer/**").hasRole("LAWYER")
-                .requestMatchers("/lawyer/dashboard/**").hasRole("LAWYER")
-                
-                // NGO endpoints
                 .requestMatchers("/ngo/**").hasRole("NGO")
-                .requestMatchers("/ngo/dashboard/**").hasRole("NGO")
-                
-                // User endpoints
                 .requestMatchers("/user/**").hasRole("USER")
-                .requestMatchers("/user/dashboard/**").hasRole("USER")
-                
-                // Profile endpoints - authenticated users only
                 .requestMatchers("/profile/**").authenticated()
                 
                 // All other requests require authentication
