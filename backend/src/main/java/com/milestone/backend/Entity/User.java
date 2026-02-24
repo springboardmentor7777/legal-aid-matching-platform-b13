@@ -18,6 +18,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -41,6 +42,10 @@ public class User implements UserDetails {
     private Long id;
 
     private String name;
+
+    @Lob
+    @Column(columnDefinition = "BYTEA")
+    private byte[] profilePicture;
 
     private String email;
 
