@@ -25,6 +25,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder.Default;
 
 @Data
 @NoArgsConstructor
@@ -55,6 +56,9 @@ public class User implements UserDetails {
     private Role role;
 
     private LocalDateTime time_stamp;
+
+    
+    private boolean isVerified = false;
 
     // ===== UserDetails Methods =====
 
