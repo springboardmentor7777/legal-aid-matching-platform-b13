@@ -104,6 +104,7 @@ public class AuthServiceImpl implements AuthService {
             .message("Login successful")
             .role(user.getRole())
             .username(user.getUsername())
+            .isVerified(user.getIsVerified())
             .build();
     }
 

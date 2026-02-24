@@ -44,10 +44,6 @@ public class User implements UserDetails {
 
     private String name;
 
-    @Lob
-    @Column(columnDefinition = "BYTEA")
-    private byte[] profilePicture;
-
     private String email;
 
     private String password;
@@ -58,7 +54,7 @@ public class User implements UserDetails {
     private LocalDateTime time_stamp;
 
     
-    private boolean isVerified = false;
+    private Boolean isVerified;
 
     // ===== UserDetails Methods =====
 
@@ -88,6 +84,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+
+
 
     // getters & setters
 
