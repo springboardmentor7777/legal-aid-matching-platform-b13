@@ -34,6 +34,7 @@ public class ProfileController {
         safeProfile.put("name", user.getName());
         safeProfile.put("email", user.getEmail());
         safeProfile.put("role", user.getRole());
+        safeProfile.put("is_verified", user.isVerified());
 
         return ResponseEntity.ok(safeProfile);
     }
