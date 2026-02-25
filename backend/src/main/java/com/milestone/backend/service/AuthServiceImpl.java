@@ -23,7 +23,6 @@ import com.milestone.backend.security.JwtUtil;
 public class AuthServiceImpl implements AuthService {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     // private final LocalDateTime time;
@@ -33,19 +32,22 @@ public class AuthServiceImpl implements AuthService {
 
         String email = jwtUtil.extractUsername(request.getRefreshToken());
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!jwtUtil.validateToken(request.getRefreshToken())) {
             throw new RuntimeException("Invalid refresh token");
         }
 
-        String newAccessToken = jwtUtil.generateToken(userDetails.getUsername());
+        String newAccessToken = jwtUtil.generateToken(user.getEmail());
 
         return new AuthResponse(
                 newAccessToken,
+                "Token refreshed successfully",
+                newAccessToken,
                 request.getRefreshToken(),
-                userDetails.getUsername(),
-                userDetails.getAuthorities().toString());
+                user.getRole(),
+                user.getEmail());
     }
 
     @Override
@@ -71,26 +73,25 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // Verify password
-    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-        throw new RuntimeException("Invalid password");
-    }
+        // Verify password
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
 
-    // Generate tokens
-    String accessToken = jwtUtil.generateToken(user.getEmail());
-    String refreshToken = jwtUtil.generateRefreshToken(user);
+        // Generate tokens
+        String accessToken = jwtUtil.generateToken(user.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
-    // Return response with both tokens
-    return new AuthResponse(
-        accessToken,
-        "Login successful",
-        accessToken,
-        refreshToken,
-        user.getRole(),
-        user.getUsername()
-    );
+        // Return response with both tokens
+        return new AuthResponse(
+                accessToken,
+                "Login successful",
+                accessToken,
+                refreshToken,
+                user.getRole(),
+                user.getEmail());
     }
 
     // keep your existing register() and login() implementations here
