@@ -18,12 +18,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder.Default;
 
 @Data
 @NoArgsConstructor
@@ -50,6 +52,9 @@ public class User implements UserDetails {
     private Role role;
 
     private LocalDateTime time_stamp;
+
+    
+    private Boolean isVerified;
 
     // ===== UserDetails Methods =====
 
@@ -79,6 +84,8 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() { return true; }
+
+
 
     // getters & setters
 

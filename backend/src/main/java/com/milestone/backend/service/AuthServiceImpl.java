@@ -41,6 +41,7 @@ public class AuthServiceImpl implements AuthService {
 
         String newAccessToken = jwtUtil.generateToken(user.getEmail());
 
+<<<<<<< HEAD
         return new AuthResponse(
                 newAccessToken,
                 "Token refreshed successfully",
@@ -48,6 +49,20 @@ public class AuthServiceImpl implements AuthService {
                 request.getRefreshToken(),
                 user.getRole(),
                 user.getEmail());
+=======
+        // return new AuthResponse(
+        //         newAccessToken,
+        //         request.getRefreshToken(),
+        //         userDetails.getUsername(),
+        //         userDetails.getAuthorities().toString());
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(request.getRefreshToken())
+                .username(userDetails.getUsername())
+                .role(userRepository.findByEmail(email).orElseThrow().getRole())
+                .message("Token refreshed successfully")
+                .build();
+>>>>>>> 808f4f6fe460a5fc7efd01e9034e485a52adade7
     }
 
     @Override
@@ -84,14 +99,22 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtUtil.generateToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        // Return response with both tokens
-        return new AuthResponse(
-                accessToken,
-                "Login successful",
-                accessToken,
-                refreshToken,
-                user.getRole(),
-                user.getEmail());
+    // Return response with both tokens
+    // return new AuthResponse(
+    //     accessToken,
+    //     "Login successful",
+    //     accessToken,
+    //     refreshToken,
+    //     user.getRole(),
+    //     user.getUsername()
+    // );
+    return AuthResponse.builder()
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .message("Login successful")
+            .role(user.getRole())
+            .username(user.getUsername())
+            .build();
     }
 
     // keep your existing register() and login() implementations here
