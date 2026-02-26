@@ -99,7 +99,9 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .message("Login successful")
                 .role(user.getRole())
-                .username(user.getUsername())
+                .username(user.getName())
+                .email(user.getEmail()) // <-- Explicitly added the email
+                .isVerified(user.getIsVerified())
                 .build();
     }
 
