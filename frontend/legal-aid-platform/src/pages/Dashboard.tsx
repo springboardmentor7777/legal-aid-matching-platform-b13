@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <Navbar name={user?.username} toggleSidebar={toggleSidebar} />
+        <Navbar title="Dashboard" name={user?.username || "Guest"} toggleSidebar={toggleSidebar} />
 
         {/* Header */}
         <div className="bg-white p-6 m-6 rounded-2xl shadow-md border border-blue-100">
@@ -97,7 +97,8 @@ const Dashboard: React.FC = () => {
               <h3 className="text-blue-900 text-sm font-semibold tracking-wide">
                 {title}
               </h3>
-              <p className="text-3xl font-bold text-blue-700 mt-3">0</p>
+              {title === "Profile Status" ? (<p className="text-3xl font-bold text-blue-700 mt-3">{user?.status ? "Verified" : "Not Verified"}</p>):(<p className="text-3xl font-bold text-blue-700 mt-3">0</p>)}
+              {/* <p className="text-3xl font-bold text-blue-700 mt-3">0</p> */}
             </div>
           ))}
         </main>
