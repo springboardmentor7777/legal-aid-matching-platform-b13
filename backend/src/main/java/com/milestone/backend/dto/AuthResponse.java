@@ -25,6 +25,7 @@ public class AuthResponse {
     private String message;
     private Role role;
     private String username;
+    private String email;
     private Boolean isVerified;
 
 }
