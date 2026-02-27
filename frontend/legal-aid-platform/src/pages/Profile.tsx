@@ -31,7 +31,7 @@ export default function Profile() {
             Profile | <span>Legal Aid Matching Platform</span>
           </div>
           <div className="flex gap-5">
-            <a href="/dashboard" className="p-2 text-blue-900 rounded-lg">
+            <a href="/dashboard" className="p-2 text-blue-900 rounded-lg border border-blue-900 hover:bg-blue-900 hover:text-white transition">
               Dashboard
             </a>
             <a
@@ -72,91 +72,14 @@ export default function Profile() {
                   </p>
                 </div>
                 <div>
-                  <h1 className="text-2xl text-blue-900 pt-10">Social Information</h1>
+                  { data?.role !== "CITIZEN" && <h1 className="text-2xl text-blue-900 pt-10">Professional Information</h1>}
+                  {/* <h1 className="text-2xl text-blue-900 pt-10">Social Information</h1> */}
                   <div>
                     {data?.role === "LAWYER" && <div className="text-blue-900">Lawyer</div>}
-
-                    {data?.role === "CITIZEN" && 
-                      <div className="text-blue-900">
-                        Citizen
-                      </div>
-                    }
 
                     {data?.role === "NGO" && <div className="text-blue-900">NGO</div>}
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="ml-[5rem]">
-              <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">
-                  Services
-                </h2>
-                <div className="flex flex-row justify-start items-center gap-10">
-                  <a
-                    className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                    href="#fileacase"
-                  >
-                    file a case
-                  </a>
-                  <a
-                    className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                    href="#cases"
-                  >
-                    view cases
-                  </a>
-                  <a
-                    className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                    href="#lawyers"
-                  >
-                    find lawyers
-                  </a>
-                  <a
-                    className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                    href="#ngos"
-                  >
-                    find NGOs
-                  </a>
-                  <a
-                    className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                    href="#directory"
-                  >
-                    Directory
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="ml-[5rem]" id="fileacase">
-              <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">
-                  File a Case
-                </h2>
-              </div>
-            </div>
-            <div className="ml-[5rem]" id="cases">
-              <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">
-                  View Cases
-                </h2>
-              </div>
-            </div>
-            <div className="ml-[5rem]" id="lawyers">
-              <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">
-                  Lawyers
-                </h2>
-              </div>
-            </div>
-            <div className="ml-[5rem]" id="ngos">
-              <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">NGOs</h2>
-              </div>
-            </div>
-            <div className="ml-[5rem]" id="directory">
-              <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-                <h2 className="text-2xl font-bold text-blue-900 mb-4">
-                  Directory
-                </h2>
               </div>
             </div>
           </section>
