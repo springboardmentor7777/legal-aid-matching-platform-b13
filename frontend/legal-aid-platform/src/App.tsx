@@ -7,7 +7,9 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import Directories from './pages/Directories';
+import LawyerDirectory from './pages/LawyerDirectories';
+import NgoDirectory from './pages/NgoDirectories';
+
 
 function App() {
   return (
@@ -38,10 +40,18 @@ function App() {
 
 
       <Route
-        path="/directories"
+        path="/directories/lawyers"
         element={
           <ProtectedRoute>
-            <Directories />
+            <LawyerDirectory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/directories/ngos"
+        element={
+          <ProtectedRoute>
+            <NgoDirectory />
           </ProtectedRoute>
         }
       />
