@@ -57,7 +57,7 @@ export default function Profile() {
                 </h1>
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="text-xl font-semibold text-blue-900 mb-2">
-                    Profile Information
+                    Personal Information
                   </h3>
                   <p className="text-gray-700">
                     Name: {data?.name} (<span>{user?.role?.toLowerCase()}</span>
@@ -75,7 +75,10 @@ export default function Profile() {
                   { data?.role !== "CITIZEN" && <h1 className="text-2xl text-blue-900 pt-10">Professional Information</h1>}
                   {/* <h1 className="text-2xl text-blue-900 pt-10">Social Information</h1> */}
                   <div>
-                    {data?.role === "LAWYER" && <div className="text-blue-900">Lawyer</div>}
+                    {data?.role === "LAWYER" && <div className="text-blue-900">
+                      Lawyer
+                      {data?.location ? ` - ${data?.location}` : ""}
+                      </div>}
 
                     {data?.role === "NGO" && <div className="text-blue-900">NGO</div>}
                   </div>
