@@ -19,4 +19,5 @@ export interface LoginResponse {
   refreshToken: string;
   role: Role;
   username: string;
+  isVerified: boolean;
 }

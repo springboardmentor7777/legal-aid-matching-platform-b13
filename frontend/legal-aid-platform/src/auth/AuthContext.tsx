@@ -5,6 +5,7 @@ type User = {
   username: string;
   email: string;
   role: string;
+  status: boolean;
 };
 
 type AuthContextType = {
@@ -58,6 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       username: data.username,
       role: data.role,
+      status: data.isVerified,
     };
 
     setUser(mappedUser);

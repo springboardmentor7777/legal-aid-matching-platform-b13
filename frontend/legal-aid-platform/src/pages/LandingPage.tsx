@@ -341,7 +341,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <img src={""} alt="Legal Aid Logo" className="h-10 w-10 brightness-0 invert" />
+                <img src={"null"} alt="Legal Aid Logo" className="h-10 w-10 brightness-0 invert" />
                 <h2 className="text-xl font-bold">LEGAL-AID MATCHING PLATFORM</h2>
               </div>
               <p className="text-blue-200 mb-6 max-w-md">

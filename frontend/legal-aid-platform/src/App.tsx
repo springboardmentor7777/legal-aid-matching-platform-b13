@@ -8,6 +8,9 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import CaseSubmissionForm from './pages/CaseSubmissionForm';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import LawyerDirectory from './pages/LawyerDirectories';
+import NgoDirectory from './pages/NgoDirectories';
+
 
 function App() {
   return (
@@ -32,6 +35,24 @@ function App() {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route
+        path="/directories/lawyers"
+        element={
+          <ProtectedRoute>
+            <LawyerDirectory />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/directories/ngos"
+        element={
+          <ProtectedRoute>
+            <NgoDirectory />
           </ProtectedRoute>
         }
       />

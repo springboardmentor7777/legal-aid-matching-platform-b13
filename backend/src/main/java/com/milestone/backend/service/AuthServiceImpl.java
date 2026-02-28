@@ -23,7 +23,6 @@ import com.milestone.backend.security.JwtUtil;
 public class AuthServiceImpl implements AuthService {
 
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     // private final LocalDateTime time;
@@ -33,24 +32,21 @@ public class AuthServiceImpl implements AuthService {
 
         String email = jwtUtil.extractUsername(request.getRefreshToken());
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!jwtUtil.validateToken(request.getRefreshToken())) {
             throw new RuntimeException("Invalid refresh token");
         }
 
-        String newAccessToken = jwtUtil.generateToken(userDetails.getUsername());
+        String newAccessToken = jwtUtil.generateToken(user.getEmail());
 
-        // return new AuthResponse(
-        //         newAccessToken,
-        //         request.getRefreshToken(),
-        //         userDetails.getUsername(),
-        //         userDetails.getAuthorities().toString());
+        // Fix: We use the Builder and ensure the role is converted correctly if needed
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
                 .refreshToken(request.getRefreshToken())
-                .username(userDetails.getUsername())
-                .role(userRepository.findByEmail(email).orElseThrow().getRole())
+                .username(user.getEmail()) // Changed from userDetails to user.getEmail()
+                .role(user.getRole()) // Passing the Role object directly
                 .message("Token refreshed successfully")
                 .build();
     }
@@ -78,33 +74,35 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    // Verify password
-    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-        throw new RuntimeException("Invalid password");
-    }
+        // Verify password
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
 
-    // Generate tokens
-    String accessToken = jwtUtil.generateToken(user.getEmail());
-    String refreshToken = jwtUtil.generateRefreshToken(user);
+        // Generate tokens
+        String accessToken = jwtUtil.generateToken(user.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user);
 
-    // Return response with both tokens
-    // return new AuthResponse(
-    //     accessToken,
-    //     "Login successful",
-    //     accessToken,
-    //     refreshToken,
-    //     user.getRole(),
-    //     user.getUsername()
-    // );
-    return AuthResponse.builder()
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .message("Login successful")
-            .role(user.getRole())
-            .username(user.getUsername())
-            .build();
+        // Return response with both tokens
+        // return new AuthResponse(
+        // accessToken,
+        // "Login successful",
+        // accessToken,
+        // refreshToken,
+        // user.getRole(),
+        // user.getUsername()
+        // );
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .message("Login successful")
+                .role(user.getRole())
+                .username(user.getName())
+                .email(user.getEmail()) // <-- Explicitly added the email
+                .isVerified(user.getIsVerified())
+                .build();
     }
 
     // keep your existing register() and login() implementations here
