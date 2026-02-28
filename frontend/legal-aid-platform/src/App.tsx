@@ -1,17 +1,16 @@
 // // src/App.tsx
-import { Routes, Route, Navigate } from 'react-router-dom';
-import Signup from './pages/Signup';
-import LandingPage from './pages/LandingPage';
-import Admin from './pages/Admin';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Profile from './pages/Profile';
-import CaseSubmissionForm from './pages/CaseSubmissionForm';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import LawyerDirectory from './pages/LawyerDirectories';
-import NgoDirectory from './pages/NgoDirectories';
-import EditProfile from './pages/Editprofile';
-
+import { Routes, Route, Navigate } from "react-router-dom";
+import Signup from "./pages/Signup";
+import LandingPage from "./pages/LandingPage";
+import Admin from "./pages/Admin";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import CaseSubmissionForm from "./pages/CaseSubmissionForm";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import LawyerDirectory from "./pages/LawyerDirectories";
+import NgoDirectory from "./pages/NgoDirectories";
+import EditProfile from "./pages/Editprofile";
 
 function App() {
   return (
@@ -40,7 +39,6 @@ function App() {
         }
       />
 
-
       <Route
         path="/directories/lawyers"
         element={
@@ -68,26 +66,19 @@ function App() {
       />
 
       {/* Optional: admin-only route */}
+      <Route path="/admin" element={<Admin />} />
+      
       <Route
-        path="/admin"
+        path="/submitcase"
         element={
-            <Admin />
+          <ProtectedRoute>
+            <CaseSubmissionForm />
+          </ProtectedRoute>
         }
       />
-       <Route
-  path="/submit-case"
-  element={
-    <ProtectedRoute>
-    
-      <CaseSubmissionForm />
-    </ProtectedRoute>
-  }
-/>
-
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
-    
     </Routes>
   );
 }

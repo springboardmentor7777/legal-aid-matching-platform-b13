@@ -49,7 +49,7 @@ const CaseSubmissionForm: React.FC = () => {
 
   // 🔹 Redirect if user is not logged in or not a citizen
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== "citizen") return <Navigate to="/dashboard" replace />;
+  if (user.role !== "CITIZEN") return <Navigate to="/dashboard" replace />;
 
   const validate = () => {
     const newErrors: Partial<CaseFormData> = {};
