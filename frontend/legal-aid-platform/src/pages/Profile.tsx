@@ -1,4 +1,4 @@
-import { useFetcher } from "react-router-dom";
+import { useFetcher, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
@@ -23,6 +23,7 @@ export default function Profile() {
       });
   }, []);
   console.log(data);
+  const navigate = useNavigate();
   return (
     <div>
       <div>
@@ -38,7 +39,9 @@ export default function Profile() {
               href="/"
               className="bg-red-500 p-2 text-white rounded-lg"
               onClick={() => {
-                localStorage.clear;
+                // localStorage.clear;
+                localStorage.clear(); 
+                navigate("/");
               }}
             >
               Logout
@@ -79,7 +82,6 @@ export default function Profile() {
                       Lawyer
                       {data?.location ? ` - ${data?.location}` : ""}
                       </div>}
-
                     {data?.role === "NGO" && <div className="text-blue-900">NGO</div>}
                   </div>
                 </div>
