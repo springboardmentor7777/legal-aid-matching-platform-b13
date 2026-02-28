@@ -103,5 +103,8 @@ public class SecurityConfig {
 
         return source;
     }
-
+@Bean
+    public RestTemplate restTemplate() {
+    return new RestTemplate();
+}
 }
