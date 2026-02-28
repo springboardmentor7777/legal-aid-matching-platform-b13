@@ -6,6 +6,7 @@ import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
+import CaseSubmissionForm from './pages/CaseSubmissionForm';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -43,9 +44,20 @@ function App() {
             <Admin />
         }
       />
+       <Route
+  path="/submit-case"
+  element={
+    <ProtectedRoute>
+    
+      <CaseSubmissionForm />
+    </ProtectedRoute>
+  }
+/>
+
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
+    
     </Routes>
   );
 }
