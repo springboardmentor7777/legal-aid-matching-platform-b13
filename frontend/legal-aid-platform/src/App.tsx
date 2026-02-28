@@ -10,6 +10,7 @@ import CaseSubmissionForm from './pages/CaseSubmissionForm';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import LawyerDirectory from './pages/LawyerDirectories';
 import NgoDirectory from './pages/NgoDirectories';
+import EditProfile from './pages/Editprofile';
 
 
 function App() {
@@ -57,11 +58,19 @@ function App() {
         }
       />
 
+      <Route
+        path="/profile/edit"
+        element={
+          <ProtectedRoute>
+            <EditProfile />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Optional: admin-only route */}
       <Route
         path="/admin"
         element={
-          
             <Admin />
         }
       />

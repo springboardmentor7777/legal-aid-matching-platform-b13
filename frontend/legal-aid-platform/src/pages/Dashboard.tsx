@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../auth/AuthContext";
+import { useNavigate } from "react-router";
 
 // Types
 export type Role = "CITIZEN" | "LAWYER" | "NGO" | "ADMIN";
@@ -56,6 +57,7 @@ const Dashboard: React.FC = () => {
     ],
   };
 
+  const navigate = useNavigate();
   return (
     <div className="flex min-h-screen bg-blue-50">
       {/* Sidebar for desktop */}
@@ -139,13 +141,13 @@ const Dashboard: React.FC = () => {
               </a>
               <a
                 className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                href="#lawyers"
+                onClick={() => navigate("/directories/lawyers")}
               >
                 find lawyers
               </a>
               <a
                 className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                href="#ngos"
+                onClick={() => navigate("/directories/ngos")}
               >
                 find NGOs
               </a>
