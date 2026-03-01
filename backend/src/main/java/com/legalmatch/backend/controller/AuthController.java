@@ -6,6 +6,7 @@ import com.legalmatch.backend.dto.RegisterRequest;
 import com.legalmatch.backend.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import com.legalmatch.backend.dto.RefreshTokenRequest;
 
 @RestController
 @RequestMapping("/auth")
