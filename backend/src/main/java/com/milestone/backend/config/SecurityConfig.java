@@ -46,17 +46,12 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cases")
-                        .hasAuthority("CITIZEN")
-                        .requestMatchers("/cases/**")
-                        .authenticated()
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
-                        .requestMatchers("/profile/**")
-                        .authenticated()
-                        .anyRequest()
-                        .authenticated())
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/profile/**").authenticated()
 
+                        .requestMatchers("/cases/**").authenticated()
+
+                        .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtFilter,
                         UsernamePasswordAuthenticationFilter.class);
@@ -103,8 +98,9 @@ public class SecurityConfig {
 
         return source;
     }
-@Bean
+
+    @Bean
     public RestTemplate restTemplate() {
-    return new RestTemplate();
-}
+        return new RestTemplate();
+    }
 }

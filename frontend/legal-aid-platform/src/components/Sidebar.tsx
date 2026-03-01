@@ -1,5 +1,6 @@
 import React from "react";
 import type { Role } from "../pages/Dashboard";
+import { useNavigate } from "react-router";
 
 interface SidebarProps {
   role: Role;
@@ -9,6 +10,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
   const menuItems: string[] = ["Home", "Notifications", "Reports", "Support"];
+  const navigate = useNavigate();
 
   return (
     // <aside
@@ -50,11 +52,12 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
       <ul className="p-4 space-y-3 lg:space-y-0 lg:flex lg:flex-col lg:space-x-0">
         {role === "CITIZEN" && (
           <>
-            <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
+            <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
+            onClick={()=> navigate("/submitcase")} >
               File a Case
             </li>
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
-              View Cases
+              View Filed Cases
             </li>
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/lawyers">Lawyers Directory</a>

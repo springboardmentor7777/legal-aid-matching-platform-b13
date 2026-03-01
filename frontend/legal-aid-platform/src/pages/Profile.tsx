@@ -32,7 +32,10 @@ export default function Profile() {
             Profile | <span>Legal Aid Matching Platform</span>
           </div>
           <div className="flex gap-5">
-            <a href="/dashboard" className="p-2 text-blue-900 rounded-lg border border-blue-900 hover:bg-blue-900 hover:text-white transition">
+            <a
+              href="/dashboard"
+              className="p-2 text-blue-900 rounded-lg border border-blue-900 hover:bg-blue-900 hover:text-white transition"
+            >
               Dashboard
             </a>
             <a
@@ -40,7 +43,7 @@ export default function Profile() {
               className="bg-red-500 p-2 text-white rounded-lg"
               onClick={() => {
                 // localStorage.clear;
-                localStorage.clear(); 
+                localStorage.clear();
                 navigate("/");
               }}
             >
@@ -75,20 +78,49 @@ export default function Profile() {
                   </p>
                 </div>
                 <div>
-                  { data?.role !== "CITIZEN" && <h1 className="text-2xl text-blue-900 pt-10">Professional Information</h1>}
+                  {data?.role === "LAWYER" && (
+                    <h1 className="text-2xl text-blue-900 pt-10">
+                      Professional Information
+                    </h1>
+                  )}
+                  {data?.role === "NGO" && (
+                    <h1 className="text-2xl text-blue-900 pt-10">
+                      NGO Information
+                    </h1>
+                  )}
                   {/* <h1 className="text-2xl text-blue-900 pt-10">Social Information</h1> */}
+                  <hr className="border-t border-blue-200 my-4" />
                   <div>
-                    {data?.role === "LAWYER" && <div className="text-blue-900">
-                      Lawyer
-                      {data?.location ? ` - ${data?.location}` : ""}
-                      </div>}
-                    {data?.role === "NGO" && <div className="text-blue-900">NGO</div>}
+                    {data?.role === "LAWYER" && (
+                      <div className="text-blue-900">
+                        profession: {data?.role}
+                        <br />
+                        specialization: {data?.specialization || "N/A"}
+                        <br />
+                        experience:{" "}
+                        {data?.experience ? `${data.experience} years` : "N/A"}
+                        <br />
+                        location: {data?.location || "N/A"}
+                      </div>
+                    )}
+                    {data?.role === "NGO" && (
+                      <div className="text-blue-900">
+                        role: {data?.role}
+                        <br />
+                        organization name: {data?.organizationName || "N/A"}
+                        <br />
+                        service area: {data?.serviceArea || "N/A"}
+                        <br />
+                        location: {data?.location || "N/A"}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </section>
 
+          {/* side panel for accessibilty */}
           <div className="ml-3">
             <aside className="bg-white w-64 p-5 mt-10 text-white rounded-lg shadow-lg mr-[7rem]">
               <h3 className="text-xl font-semibold text-blue-900 mb-4">
@@ -98,7 +130,7 @@ export default function Profile() {
               <ul className="space-y-3">
                 <li>
                   <a
-                    href="/edit-profile"
+                    href="/profile/edit"
                     className="block hover:bg-gray-200 text-blue-900 p-2 rounded-lg"
                   >
                     Edit Profile
