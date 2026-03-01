@@ -39,7 +39,7 @@ const CaseSubmissionForm: React.FC = () => {
 
   // 🔐 Login required
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== "citizen") return <Navigate to="/dashboard" replace />;
+  if (user.role !== "CITIZEN") return <Navigate to="/dashboard" replace />;
 
   const validate = () => {
     const newErrors: Partial<CaseFormData> = {};

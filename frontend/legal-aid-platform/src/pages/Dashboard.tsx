@@ -129,7 +129,7 @@ const Dashboard: React.FC = () => {
             <div className="flex flex-row justify-center items-center gap-10">
               <a
                 className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
-                href="#fileacase"
+                onClick={()=> navigate("/submitcase")}
               >
                 file a case
               </a>
