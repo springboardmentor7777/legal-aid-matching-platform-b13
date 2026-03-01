@@ -1,23 +1,12 @@
 package com.milestone.backend.entity;
 
-
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import com.milestone.backend.entity.User;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Getter
 @Setter
@@ -40,6 +29,18 @@ public class Case {
     @Column(nullable = false)
     private String category;
 
+    // --- New fields for the frontend form ---
+    private String location;
+    private String incidentDate;
+    private String incidentTime;
+    
+    @Column(columnDefinition = "TEXT")
+    private String additionalNotes;
+    
+    private String contactInfo;
+    private String attachment;
+    // ----------------------------------------
+
     @Enumerated(EnumType.STRING)
     private CaseStatus status;
 
@@ -47,5 +48,6 @@ public class Case {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
 }
