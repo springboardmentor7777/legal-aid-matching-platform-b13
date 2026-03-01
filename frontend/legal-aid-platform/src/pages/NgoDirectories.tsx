@@ -17,7 +17,7 @@ export default function NgoDirectory() {
 
   const [data, setData] = useState<any>(null);
   useEffect(() => {
-    fetch("http://localhost:8081/directory/lawyers", {
+    fetch("http://localhost:8081/directory/ngos", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

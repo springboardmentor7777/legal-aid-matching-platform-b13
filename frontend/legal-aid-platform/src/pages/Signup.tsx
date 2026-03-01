@@ -91,7 +91,7 @@ export default function Signup() {
               htmlFor="name"
               className="block text-sm font-medium text-gray-700"
             >
-              Email
+              Name
             </label>
             <div className="relative">
               <input
