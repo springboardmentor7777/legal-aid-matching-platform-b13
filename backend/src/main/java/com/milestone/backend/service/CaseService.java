@@ -33,6 +33,16 @@ public class CaseService {
         newCase.setTitle(request.getTitle());
         newCase.setDescription(request.getDescription());
         newCase.setCategory(request.getCategory());
+        
+        // --- Mapping Sandeep's New Fields ---
+        newCase.setLocation(request.getLocation());
+        newCase.setIncidentDate(request.getIncidentDate());
+        newCase.setIncidentTime(request.getIncidentTime());
+        newCase.setAdditionalNotes(request.getAdditionalNotes());
+        newCase.setContactInfo(request.getContactInfo());
+        newCase.setAttachment(request.getAttachment());
+        // ------------------------------------
+
         newCase.setStatus(CaseStatus.SUBMITTED);
         newCase.setUser(user);
 
@@ -40,7 +50,6 @@ public class CaseService {
 
         return mapToResponse(saved);
     }
-
     // Get My Cases
     public List<CaseResponse> getMyCases(User user) {
 
@@ -67,12 +76,21 @@ public class CaseService {
 
     // Mapper
     private CaseResponse mapToResponse(Case caseObj) {
-
         CaseResponse response = new CaseResponse();
         response.setId(caseObj.getId());
         response.setTitle(caseObj.getTitle());
         response.setDescription(caseObj.getDescription());
         response.setCategory(caseObj.getCategory());
+        
+        // --- Add these new lines! ---
+        response.setLocation(caseObj.getLocation());
+        response.setIncidentDate(caseObj.getIncidentDate());
+        response.setIncidentTime(caseObj.getIncidentTime());
+        response.setAdditionalNotes(caseObj.getAdditionalNotes());
+        response.setContactInfo(caseObj.getContactInfo());
+        response.setAttachment(caseObj.getAttachment());
+        // ----------------------------
+        
         response.setStatus(caseObj.getStatus().name());
         response.setUpdatedAt(caseObj.getUpdatedAt());
 

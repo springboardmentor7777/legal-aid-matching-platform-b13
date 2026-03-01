@@ -14,4 +14,12 @@ public class CaseRequest {
     private String title;
     private String description;
     private String category;
+    
+    // New fields to match frontend JSON exactly
+    private String location;
+    private String incidentDate;
+    private String incidentTime;
+    private String additionalNotes;
+    private String contactInfo;
+    private String attachment;
 }
