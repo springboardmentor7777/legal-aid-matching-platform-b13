@@ -42,13 +42,16 @@ public class ProfileController {
         if (user.getRole() == Role.NGO && user.getNgoProfile() != null) {
             safeProfile.put("organizationName", user.getNgoProfile().getOrganizationName());
             safeProfile.put("serviceArea", user.getNgoProfile().getServiceArea());
+            // CHANGE 1: Added location to the NGO GET response
+            safeProfile.put("location", user.getNgoProfile().getLocation()); 
         }
 
         return ResponseEntity.ok(safeProfile);
     }
 
+    // CHANGE 2: Changed return type from ResponseEntity<User> to ResponseEntity<Map<String, Object>>
     @PutMapping("/update")
-    public ResponseEntity<User> updateProfile(
+    public ResponseEntity<Map<String, Object>> updateProfile(
             @Valid @RequestBody ProfileUpdateRequest request,
             Authentication authentication) {
 
@@ -64,7 +67,6 @@ public class ProfileController {
 
         // 2. Update Lawyer specific details
         if (user.getRole() == Role.LAWYER) {
-            // If they don't have a profile yet, create an empty one
             if (user.getLawyerProfile() == null) {
                 LawyerProfile lawyerProfile = new LawyerProfile();
                 lawyerProfile.setUser(user);
@@ -77,7 +79,6 @@ public class ProfileController {
 
         // 3. Update NGO specific details
         if (user.getRole() == Role.NGO) {
-            // Create empty profile if none exists
             if (user.getNgoProfile() == null) {
                 NgoProfile ngoProfile = new NgoProfile();
                 ngoProfile.setUser(user);
@@ -85,9 +86,14 @@ public class ProfileController {
             }
             if (request.getOrganizationName() != null) user.getNgoProfile().setOrganizationName(request.getOrganizationName());
             if (request.getServiceArea() != null) user.getNgoProfile().setServiceArea(request.getServiceArea());
+            // CHANGE 3: Catch the location from the frontend and save it
+            if (request.getLocation() != null) user.getNgoProfile().setLocation(request.getLocation());
         }
 
-        // Save and return the updated user
-        return ResponseEntity.ok(userRepository.save(user));
+        // Save the user to the database
+        userRepository.save(user);
+
+        // CHANGE 4: Return the exact same safe Map as the GET request instead of the raw User
+        return getProfile(user); 
     }
 }

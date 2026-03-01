@@ -2,7 +2,6 @@ package com.milestone.backend.dto;
 
 import com.milestone.backend.entity.Role;
 import lombok.Data;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.*;
 
 @Data
@@ -20,4 +19,6 @@ public class RegisterRequest {
 
     @NotNull(message = "Role is required")
     private Role role;
+
+    private String location;
 }

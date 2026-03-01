@@ -56,6 +56,10 @@ public ProfileResponseDto getMyProfile() {
         dto.setServiceArea(
                 user.getNgoProfile().getServiceArea()
         );
+
+        dto.setLocation(
+                user.getNgoProfile().getLocation()
+        );
     }
 
     return dto;
@@ -68,12 +72,21 @@ public ProfileResponseDto getMyProfile() {
 
         User user = getAuthenticatedUser();
 
+        // Update the basic user info
         user.setName(dto.getName());
+        
+        // 🔹 ADD THIS: Check if they are an NGO and update their location
+        if (user.getRole() == Role.NGO && user.getNgoProfile() != null) {
+            if (dto.getLocation() != null) {
+                user.getNgoProfile().setLocation(dto.getLocation());
+            }
+        }
+
         userRepository.save(user);
 
         return getMyProfile();
     }
-
+    
     private User getAuthenticatedUser() {
 
         Authentication auth =

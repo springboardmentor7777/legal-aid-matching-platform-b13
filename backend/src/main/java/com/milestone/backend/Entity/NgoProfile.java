@@ -22,6 +22,7 @@ public class NgoProfile {
 
     private String organizationName;
     private String serviceArea;
+    private String location;
 
     @OneToOne
     @JoinColumn(name = "user_id")

@@ -6,4 +6,5 @@ import lombok.Data;
 public class ProfileUpdateDto {
 
     private String name;
+    private String location;
 }
