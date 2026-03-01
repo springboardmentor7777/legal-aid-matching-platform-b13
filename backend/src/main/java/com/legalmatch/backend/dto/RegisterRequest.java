@@ -12,11 +12,11 @@ public class RegisterRequest {
     private Role role;
 
     public String getName() {
-        return Name;
+        return name;
     }
 
     public void setName(String name) {
-        Name = name;
+        name = name;
     }
 
     public String getEmail() {
