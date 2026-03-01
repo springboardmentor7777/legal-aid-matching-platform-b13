@@ -1,7 +1,7 @@
 // src/pages/CaseSubmissionForm.tsx
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext"; // make sure this is correctly imported
+import { useAuth } from "../auth/AuthContext";
 
 interface CaseFormData {
   title: string;
@@ -15,18 +15,8 @@ interface CaseFormData {
   additionalNotes?: string;
 }
 
-// 🔹 Temporary mock API call
-const submitCase = async (data: any) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log("Mock submitted:", data);
-      resolve({ message: "Case submitted successfully!" });
-    }, 1500);
-  });
-};
-
 const CaseSubmissionForm: React.FC = () => {
-  const { user } = useAuth(); // get logged-in user
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState<CaseFormData>({
     title: "",
@@ -47,19 +37,20 @@ const CaseSubmissionForm: React.FC = () => {
 
   const categories = ["civil", "criminal", "family", "property"];
 
-  // 🔹 Redirect if user is not logged in or not a citizen
+  // 🔐 Login required
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== "citizen") return <Navigate to="/dashboard" replace />;
 
   const validate = () => {
     const newErrors: Partial<CaseFormData> = {};
-    if (!formData.title.trim()) newErrors.title = "Case title is required.";
+    if (!formData.title.trim()) newErrors.title = "Title is required.";
     if (!formData.description.trim())
-      newErrors.description = "Case description is required.";
-    else if (formData.description.trim().length < 10)
-      newErrors.description = "Description must be at least 10 characters.";
-    if (!formData.category) newErrors.category = "Please select a category.";
-    if (!formData.location.trim()) newErrors.location = "Location is required.";
+      newErrors.description = "Description is required.";
+    else if (formData.description.length < 10)
+      newErrors.description = "Minimum 10 characters required.";
+    if (!formData.category) newErrors.category = "Category is required.";
+    if (!formData.location.trim())
+      newErrors.location = "Location is required.";
     return newErrors;
   };
 
@@ -67,10 +58,17 @@ const CaseSubmissionForm: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
+
     if (name === "attachment") {
-      setFormData((prev) => ({ ...prev, attachment: files ? files[0] : null }));
+      setFormData((prev) => ({
+        ...prev,
+        attachment: files ? files[0] : null,
+      }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
@@ -89,16 +87,39 @@ const CaseSubmissionForm: React.FC = () => {
     setLoading(true);
 
     try {
-      const dataToSubmit = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          dataToSubmit.append(key, value as any);
-        }
+      // ✅ Prepare JSON data for backend
+      const jsonData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        location: formData.location,
+        incidentDate: formData.incidentDate,
+        incidentTime: formData.incidentTime,
+        attachment: formData.attachment
+          ? formData.attachment.name
+          : null,
+        contactInfo: formData.contactInfo,
+        additionalNotes: formData.additionalNotes,
+        submittedBy: user.email,
+      };
+
+      // 🔹 FOR NOW: just log it
+      console.log("Data that will go to backend (JSON):", jsonData);
+
+      /*
+      🔹 LATER WHEN CONNECTING BACKEND:
+      
+      await fetch("YOUR_BACKEND_URL", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(jsonData),
       });
+      */
 
-      await submitCase(dataToSubmit);
-
-      setSuccessMessage("Case submitted successfully!");
+      setSuccessMessage("Case submitted successfully.");
       setFormData({
         title: "",
         description: "",
@@ -110,6 +131,7 @@ const CaseSubmissionForm: React.FC = () => {
         contactInfo: "",
         additionalNotes: "",
       });
+
     } catch (error) {
       setServerError("Something went wrong.");
     } finally {
@@ -120,141 +142,128 @@ const CaseSubmissionForm: React.FC = () => {
   return (
     <div className="flex justify-center mt-10">
       <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-8 border-t-4 border-blue-900">
-        <h2 className="text-2xl font-bold mb-6 text-blue-900">Submit Your Case</h2>
+        <h2 className="text-2xl font-bold mb-6 text-blue-900">
+          Submit Your Case
+        </h2>
 
-        {successMessage && <p className="text-green-600 mb-4">{successMessage}</p>}
-        {serverError && <p className="text-red-600 mb-4">{serverError}</p>}
+        {successMessage && (
+          <p className="text-green-600 mb-4">{successMessage}</p>
+        )}
+        {serverError && (
+          <p className="text-red-600 mb-4">{serverError}</p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Case Title</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            />
-            {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
-          </div>
+          <input
+            type="text"
+            name="title"
+            placeholder="Case Title"
+            value={formData.title}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          />
 
           {/* Description */}
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Case Description</label>
-            <textarea
-              name="description"
-              rows={4}
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            />
-            {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
-          </div>
+          <textarea
+            name="description"
+            placeholder="Case Description"
+            rows={4}
+            value={formData.description}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          />
 
           {/* Category */}
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Category</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            >
-              <option value="">Select category</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat.toUpperCase()}</option>
-              ))}
-            </select>
-            {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category}</p>}
-          </div>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          >
+            <option value="">Select category</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat.toUpperCase()}
+              </option>
+            ))}
+          </select>
 
           {/* Location */}
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Location</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            />
-            {errors.location && <p className="text-red-600 text-sm mt-1">{errors.location}</p>}
-          </div>
+          <input
+            type="text"
+            name="location"
+            placeholder="Location"
+            value={formData.location}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          />
 
-          {/* Optional Fields */}
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Date of Incident</label>
-            <input
-              type="date"
-              name="incidentDate"
-              value={formData.incidentDate}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            />
-          </div>
+          {/* Date & Time */}
+          <input
+            type="date"
+            name="incidentDate"
+            value={formData.incidentDate}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          />
 
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Time of Incident</label>
-            <input
-              type="time"
-              name="incidentTime"
-              value={formData.incidentTime}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            />
-          </div>
+          <input
+            type="time"
+            name="incidentTime"
+            value={formData.incidentTime}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          />
 
-          {/* File input with dynamic button */}
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Attachment</label>
-            <div className="flex gap-2">
-              <div
-                className={`flex-1 border rounded px-3 py-2 ${
-                  formData.attachment ? "bg-gray-200" : "bg-white"
-                }`}
-              >
-                {formData.attachment ? formData.attachment.name : "No file chosen"}
-              </div>
-              <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800 transition">
-                {formData.attachment ? "Choose Another File" : "Choose File"}
-                <input
-                  type="file"
-                  name="attachment"
-                  onChange={handleChange}
-                  className="hidden"
-                />
-              </label>
+          {/* File Upload */}
+          <div className="flex gap-2">
+            <div
+              className={`flex-1 border rounded px-3 py-2 ${
+                formData.attachment ? "bg-gray-200" : "bg-white"
+              }`}
+            >
+              {formData.attachment
+                ? formData.attachment.name
+                : "No file chosen"}
             </div>
+            <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
+              {formData.attachment
+                ? "Choose Another File"
+                : "Choose File"}
+              <input
+                type="file"
+                name="attachment"
+                onChange={handleChange}
+                className="hidden"
+              />
+            </label>
           </div>
 
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Contact Info</label>
-            <input
-              type="text"
-              name="contactInfo"
-              value={formData.contactInfo}
-              onChange={handleChange}
-              placeholder="Email or phone"
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            />
-          </div>
+          {/* Contact */}
+          <input
+            type="text"
+            name="contactInfo"
+            placeholder="Contact Info"
+            value={formData.contactInfo}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          />
 
-          <div>
-            <label className="block text-blue-900 font-semibold mb-1">Additional Notes</label>
-            <textarea
-              name="additionalNotes"
-              rows={3}
-              value={formData.additionalNotes}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-900"
-            />
-          </div>
+          {/* Notes */}
+          <textarea
+            name="additionalNotes"
+            placeholder="Additional Notes"
+            rows={3}
+            value={formData.additionalNotes}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2"
+          />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-900 text-white font-semibold py-2 px-4 rounded hover:bg-blue-800 transition disabled:opacity-50"
+            className="w-full bg-blue-900 text-white py-2 rounded"
           >
             {loading ? "Submitting..." : "Submit Case"}
           </button>
