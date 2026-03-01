@@ -127,12 +127,14 @@ const Dashboard: React.FC = () => {
             </h2>
             <hr className="border-t border-blue-200 my-4" />
             <div className="flex flex-row justify-center items-center gap-10">
-              <a
+              {user?.role === "CITIZEN" && (
+                <a
                 className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
                 onClick={()=> navigate("/submitcase")}
               >
                 file a case
               </a>
+              )}
               <a
                 className="bg-blue-900 p-4 text-white rounded-md hover:bg-blue-600 cursor-pointer"
                 href="#cases"
@@ -154,13 +156,15 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="" id="fileacase">
+        {user?.role === "CITIZEN" && (
+          <div className="" id="fileacase">
           <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
             <h2 className="text-2xl font-bold text-blue-900 mb-4">
               File a Case
             </h2>
           </div>
         </div>
+        )}
         <div className="" id="cases">
           <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
             <h2 className="text-2xl font-bold text-blue-900 mb-4">

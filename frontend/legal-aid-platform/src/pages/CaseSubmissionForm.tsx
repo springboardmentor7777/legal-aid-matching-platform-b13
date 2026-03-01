@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import Navbar from "../components/Navbar";
 
 interface CaseFormData {
   title: string;
@@ -49,13 +50,14 @@ const CaseSubmissionForm: React.FC = () => {
     else if (formData.description.length < 10)
       newErrors.description = "Minimum 10 characters required.";
     if (!formData.category) newErrors.category = "Category is required.";
-    if (!formData.location.trim())
-      newErrors.location = "Location is required.";
+    if (!formData.location.trim()) newErrors.location = "Location is required.";
     return newErrors;
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
 
@@ -95,29 +97,28 @@ const CaseSubmissionForm: React.FC = () => {
         location: formData.location,
         incidentDate: formData.incidentDate,
         incidentTime: formData.incidentTime,
-        attachment: formData.attachment
-          ? formData.attachment.name
-          : null,
+        attachment: formData.attachment ? formData.attachment.name : null,
         contactInfo: formData.contactInfo,
         additionalNotes: formData.additionalNotes,
-        submittedBy: user.email,
       };
 
       // 🔹 FOR NOW: just log it
       console.log("Data that will go to backend (JSON):", jsonData);
-
-      /*
-      🔹 LATER WHEN CONNECTING BACKEND:
-      
-      await fetch("YOUR_BACKEND_URL", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(jsonData),
+      await fetch(
+        "http://localhost:8081/cases/submit",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify(jsonData),
+        }
+      ).finally(() => {
+        setLoading(false);
+        console.log("Case submission API call completed.");
       });
-      */
+
 
       setSuccessMessage("Case submitted successfully.");
       setFormData({
@@ -131,7 +132,6 @@ const CaseSubmissionForm: React.FC = () => {
         contactInfo: "",
         additionalNotes: "",
       });
-
     } catch (error) {
       setServerError("Something went wrong.");
     } finally {
@@ -140,134 +140,139 @@ const CaseSubmissionForm: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center mt-10">
-      <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-8 border-t-4 border-blue-900">
-        <h2 className="text-2xl font-bold mb-6 text-blue-900">
-          Submit Your Case
-        </h2>
+    <div>
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar
+          title="case submission"
+          name={user?.username || "Guest"}
+          toggleSidebar={() => {}}
+        />
+      </div>
+      <div className="flex justify-center mt-10 w-full">
+        <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-8 border-t-4 border-blue-900 pt-20">
+          <h2 className="text-2xl font-bold mb-6 text-blue-900">
+            Submit Your Case
+          </h2>
 
-        {successMessage && (
-          <p className="text-green-600 mb-4">{successMessage}</p>
-        )}
-        {serverError && (
-          <p className="text-red-600 mb-4">{serverError}</p>
-        )}
+          {successMessage && (
+            <p className="text-green-600 mb-4">{successMessage}</p>
+          )}
+          {serverError && <p className="text-red-600 mb-4">{serverError}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
-          <input
-            type="text"
-            name="title"
-            placeholder="Case Title"
-            value={formData.title}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Title */}
+            <input
+              type="text"
+              name="title"
+              placeholder="Case Title"
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
 
-          {/* Description */}
-          <textarea
-            name="description"
-            placeholder="Case Description"
-            rows={4}
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+            {/* Description */}
+            <textarea
+              name="description"
+              placeholder="Case Description"
+              rows={4}
+              value={formData.description}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
 
-          {/* Category */}
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          >
-            <option value="">Select category</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat.toUpperCase()}
-              </option>
-            ))}
-          </select>
-
-          {/* Location */}
-          <input
-            type="text"
-            name="location"
-            placeholder="Location"
-            value={formData.location}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-
-          {/* Date & Time */}
-          <input
-            type="date"
-            name="incidentDate"
-            value={formData.incidentDate}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-
-          <input
-            type="time"
-            name="incidentTime"
-            value={formData.incidentTime}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-
-          {/* File Upload */}
-          <div className="flex gap-2">
-            <div
-              className={`flex-1 border rounded px-3 py-2 ${
-                formData.attachment ? "bg-gray-200" : "bg-white"
-              }`}
+            {/* Category */}
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
             >
-              {formData.attachment
-                ? formData.attachment.name
-                : "No file chosen"}
+              <option value="">Select category</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat.toUpperCase()}
+                </option>
+              ))}
+            </select>
+
+            {/* Location */}
+            <input
+              type="text"
+              name="location"
+              placeholder="Location"
+              value={formData.location}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
+
+            {/* Date & Time */}
+            <input
+              type="date"
+              name="incidentDate"
+              value={formData.incidentDate}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
+
+            <input
+              type="time"
+              name="incidentTime"
+              value={formData.incidentTime}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
+
+            {/* File Upload */}
+            <div className="flex gap-2">
+              <div
+                className={`flex-1 border rounded px-3 py-2 ${
+                  formData.attachment ? "bg-gray-200" : "bg-white"
+                }`}
+              >
+                {formData.attachment
+                  ? formData.attachment.name
+                  : "No file chosen"}
+              </div>
+              <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
+                {formData.attachment ? "Choose Another File" : "Choose File"}
+                <input
+                  type="file"
+                  name="attachment"
+                  onChange={handleChange}
+                  className="hidden"
+                />
+              </label>
             </div>
-            <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
-              {formData.attachment
-                ? "Choose Another File"
-                : "Choose File"}
-              <input
-                type="file"
-                name="attachment"
-                onChange={handleChange}
-                className="hidden"
-              />
-            </label>
-          </div>
 
-          {/* Contact */}
-          <input
-            type="text"
-            name="contactInfo"
-            placeholder="Contact Info"
-            value={formData.contactInfo}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+            {/* Contact */}
+            <input
+              type="text"
+              name="contactInfo"
+              placeholder="Contact Info"
+              value={formData.contactInfo}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
 
-          {/* Notes */}
-          <textarea
-            name="additionalNotes"
-            placeholder="Additional Notes"
-            rows={3}
-            value={formData.additionalNotes}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+            {/* Notes */}
+            <textarea
+              name="additionalNotes"
+              placeholder="Additional Notes"
+              rows={3}
+              value={formData.additionalNotes}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-900 text-white py-2 rounded"
-          >
-            {loading ? "Submitting..." : "Submit Case"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-900 text-white py-2 rounded"
+            >
+              {loading ? "Submitting..." : "Submit Case"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
