@@ -9,18 +9,22 @@ import com.milestone.backend.repository.LawyerDirectoryRepository;
 import com.milestone.backend.repository.NgoDirectoryRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
-
+@Slf4j  // ✅ this enables log.info() properly
 public class DataInitializer implements CommandLineRunner {
 
     private final LawyerDirectoryRepository lawyerRepo;
     private final NgoDirectoryRepository ngoRepo;
-
+    private final ExternalNgoIntegrationService externalNgoService; // ✅ was missing
 
     @Override
     public void run(String... args) {
+
+        log.info("DataInitializer started.");
+        log.info("Current NGO count in DB: {}", String.valueOf(ngoRepo.count())); // ✅ cast to String
 
         if (lawyerRepo.count() == 0) {
 
@@ -44,7 +48,12 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         if (ngoRepo.count() == 0) {
+            log.info("NGO table is empty — starting import.");
 
+            // ✅ Load all 105 NGOs from Excel
+            externalNgoService.fetchAndSaveNgos();
+
+            // Manual seed entries
             ngoRepo.save(new NgoDirectory(
                     null,
                     "Justice For All",
@@ -62,6 +71,11 @@ public class DataInitializer implements CommandLineRunner {
                     false,
                     "Pending verification"
             ));
+
+            log.info("NGO import complete. Total records: {}", String.valueOf(ngoRepo.count())); // ✅ cast to String
+
+        } else {
+            log.info("NGO table already has {} records — skipping import.", String.valueOf(ngoRepo.count())); // ✅ cast to String
         }
     }
 }
