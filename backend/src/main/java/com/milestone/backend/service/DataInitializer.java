@@ -13,69 +13,48 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j  // ✅ this enables log.info() properly
+@Slf4j
 public class DataInitializer implements CommandLineRunner {
 
     private final LawyerDirectoryRepository lawyerRepo;
     private final NgoDirectoryRepository ngoRepo;
-    private final ExternalNgoIntegrationService externalNgoService; // ✅ was missing
+    private final DirectoryService directoryService; // FIX: replaced ExternalNgoIntegrationService
 
     @Override
     public void run(String... args) {
 
         log.info("DataInitializer started.");
-        log.info("Current NGO count in DB: {}", String.valueOf(ngoRepo.count())); // ✅ cast to String
+        log.info("Current NGO count in DB: {}", String.valueOf(ngoRepo.count()));
 
         if (lawyerRepo.count() == 0) {
 
             lawyerRepo.save(new LawyerDirectory(
-                    null,
-                    "Rahul Sharma",
-                    "Criminal Law",
-                    "Mumbai",
-                    true,
-                    "Bar Council Verified Lawyer"
+                    null, "Rahul Sharma", "Criminal Law", "MUMBAI", true, "Bar Council Verified Lawyer"
             ));
 
             lawyerRepo.save(new LawyerDirectory(
-                    null,
-                    "Priya Mehta",
-                    "Family Law",
-                    "Delhi",
-                    true,
-                    "10+ years experience"
+                    null, "Priya Mehta", "Family Law", "DELHI", true, "10+ years experience"
             ));
         }
 
         if (ngoRepo.count() == 0) {
             log.info("NGO table is empty — starting import.");
 
-            // ✅ Load all 105 NGOs from Excel
-            externalNgoService.fetchAndSaveNgos();
+            // FIX: was externalNgoService.fetchAndSaveNgos() — now merged into DirectoryService
+            directoryService.importNgosFromExcel();
 
-            // Manual seed entries
             ngoRepo.save(new NgoDirectory(
-                    null,
-                    "Justice For All",
-                    "Women Rights",
-                    "Pune",
-                    true,
-                    "NGO Darpan Registered"
+                    null, "Justice For All", "Women Rights", "PUNE", true, "NGO Darpan Registered"
             ));
 
             ngoRepo.save(new NgoDirectory(
-                    null,
-                    "Legal Aid Foundation",
-                    "Property Disputes",
-                    "Nagpur",
-                    false,
-                    "Pending verification"
+                    null, "Legal Aid Foundation", "Property Disputes", "NAGPUR", false, "Pending verification"
             ));
 
-            log.info("NGO import complete. Total records: {}", String.valueOf(ngoRepo.count())); // ✅ cast to String
+            log.info("NGO import complete. Total records: {}", String.valueOf(ngoRepo.count()));
 
         } else {
-            log.info("NGO table already has {} records — skipping import.", String.valueOf(ngoRepo.count())); // ✅ cast to String
+            log.info("NGO table already has {} records — skipping import.", String.valueOf(ngoRepo.count()));
         }
     }
 }
