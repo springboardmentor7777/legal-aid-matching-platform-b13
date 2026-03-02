@@ -72,4 +72,4 @@ public class DirectoryController {
         return ResponseEntity.ok(directoryService.searchNgos(location, isVerified, pageable));
     }
 }
-}
+
