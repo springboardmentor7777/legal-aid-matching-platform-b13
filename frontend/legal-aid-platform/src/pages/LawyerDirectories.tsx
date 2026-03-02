@@ -17,7 +17,7 @@ export default function LawyerDirectory() {
 
   const [data, setData] = useState<any>(null);
   useEffect(() => {
-    fetch("http://localhost:8081/directory/lawyers", {
+    fetch("http://localhost:8081/api/v1/directory/lawyers", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

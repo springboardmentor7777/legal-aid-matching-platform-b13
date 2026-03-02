@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../auth/AuthContext";
-import { getCitizenCases, type CitizenCase, type CaseStatus } from "../api/caseService";
+import { type CitizenCase, type CaseStatus } from "../api/caseService";
 
 export type Role = "CITIZEN" | "LAWYER" | "NGO" | "ADMIN";
 
@@ -60,9 +60,25 @@ const Dashboard: React.FC = () => {
   if (!user) return null;
 
   useEffect(() => {
+    
     const fetchCases = async () => {
+      setLoading(true);
       try {
-        const data = await getCitizenCases();
+        const response = await fetch(
+          "http://localhost:8081/cases/my",
+          {
+            method:"GET",
+            headers:{
+              "Content-Type":"application/json",
+              Authorization:`Bearer ${localStorage.getItem("accessToken")}`
+            },
+          }
+        );
+        if(!response.ok){
+          setError("failed to fetch");
+        }
+        const data = await response.json();
+
         setCases(data);
       } catch (err) {
         console.error(err);

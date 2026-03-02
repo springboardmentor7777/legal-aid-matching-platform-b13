@@ -6,10 +6,8 @@ interface Lawyer {
   id: number;
   email: string;
   name: string;
-  specialization: string;
-  experience: number;
-  location: string;
-  isVerified: boolean;
+  serviceArea: string;
+  organizationName: string;
 }
 
 export default function NgoDirectory() {
@@ -17,7 +15,7 @@ export default function NgoDirectory() {
 
   const [data, setData] = useState<any>(null);
   useEffect(() => {
-    fetch("http://localhost:8081/directory/ngos", {
+    fetch("http://localhost:8081/api/v1/directory/ngos", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -69,13 +67,13 @@ export default function NgoDirectory() {
               <p className="text-gray-700">Location: {lawyer.location}</p>
             </div>
           ))} */}
-          {data && data.map((lawyer: Lawyer) => (
-            <div key={lawyer.id} className="border border-gray-300 rounded-md p-4 my-4 bg-blue-50">
-              <h3 className="text-lg font-semibold">Name: {lawyer.name}</h3>
-              <p className="text-gray-700">Email: {lawyer.email}</p>
-              <p className="text-gray-700">Specialization: {lawyer.specialization || "N/A"}</p>
-              <p className="text-gray-700">Experience: {lawyer.experience ? `${lawyer.experience} years` : "N/A"}</p>
-              <p className="text-gray-700">Location: {lawyer.location || "N/A"}</p>
+          {data && data.map((ngo: Lawyer) => (
+            <div key={ngo.id} className="border border-gray-300 rounded-md p-4 my-4 bg-blue-50">
+              <h3 className="text-lg font-semibold">Name: {ngo.name}</h3>
+              <p className="text-gray-700">Email: {ngo.email}</p>
+              <p className="text-gray-700">Service area: {ngo.serviceArea || "N/A"}</p>
+              <p className="text-gray-700">Organization: {ngo.organizationName || "N/A"}</p>
+              <p className="text-gray-700">Location: {ngo.serviceArea || "N/A"}</p>
             </div>
           ))}
         </div>

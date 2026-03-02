@@ -15,7 +15,14 @@ export interface CitizenCase {
   };
 }
 
-export const getCitizenCases = async (): Promise<CitizenCase[]> => {
-  const response = await API.get<CitizenCase[]>("/cases/my");
-  return response.data;
-};
+// export const getCitizenCases = async (): Promise<CitizenCase[]> => {
+//   // // const response = await API.get<CitizenCase[]>("http://localhost:8081/cases/my");
+//   // const response = await fetch("http://localhost:8081/cases/my",{
+//   //   method:"GET",
+//   //   headers:{
+//   //     "Content-Type": "application/json",
+//   //     Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+//   //   },
+//   // });
+//   // return response;
+// };
