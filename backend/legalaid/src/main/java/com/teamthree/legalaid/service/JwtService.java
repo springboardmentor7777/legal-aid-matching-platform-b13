@@ -26,7 +26,6 @@ public class JwtService {
     public String generateToken(String username) {
         return generateToken(username, expiration);
     }
-
     public String generateRefreshToken(String username) {
         return generateToken(username, refreshExpiration);
     }

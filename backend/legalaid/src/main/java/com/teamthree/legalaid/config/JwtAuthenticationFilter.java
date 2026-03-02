@@ -29,39 +29,70 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // Get the request path
+        String path = request.getRequestURI();
+        
+        // Debug logging
+        System.out.println(" JwtFilter processing path: " + path);
+        
+        // CRITICAL: Skip filter for authentication endpoints
+        if (path.startsWith("/auth/")) {
+            System.out.println("Skipping JWT filter for auth endpoint: " + path);
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String jwt = authHeader.substring(7);
-        final String userEmail = jwtService.extractUsername(jwt);
+        // Get Authorization header
+        final String authHeader = request.getHeader("Authorization");
+        System.out.println("📋 Auth header: " + (authHeader != null ? "Present" : "Not present"));
 
-        if (userEmail != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-
-            if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
-
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource()
-                                .buildDetails(request)
-                );
-
-                SecurityContextHolder.getContext()
-                        .setAuthentication(authToken);
-            }
+        // If no Authorization header or not Bearer token, continue filter chain
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("⚠️ No Bearer token found, continuing filter chain");
+            filterChain.doFilter(request, response);
+            return;
         }
 
+        // Extract token (remove "Bearer " prefix)
+        final String jwt = authHeader.substring(7);
+        System.out.println("🔑 JWT token extracted, length: " + jwt.length());
+
+        try {
+            // Extract username from token
+            final String userEmail = jwtService.extractUsername(jwt);
+            System.out.println("👤 Extracted username: " + userEmail);
+
+            // If username exists and no authentication is set in context
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                
+                System.out.println("📚 Loading user details for: " + userEmail);
+                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+
+                // Validate token
+                if (jwtService.isTokenValid(jwt, userDetails.getUsername())) {
+                    System.out.println("✅ Token is valid, creating authentication");
+                    
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    // Set authentication in context
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("🔓 Authentication set in SecurityContext");
+                } else {
+                    System.out.println("❌ Token is invalid");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("💥 Error processing JWT: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Continue filter chain
         filterChain.doFilter(request, response);
     }
 }

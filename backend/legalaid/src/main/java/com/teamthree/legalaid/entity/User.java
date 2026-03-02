@@ -28,6 +28,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+//    @ManyToOne
+//    @JoinColumn(name = "role_id", nullable = false)
+//    private Role role;
 
     private String provider;
 
