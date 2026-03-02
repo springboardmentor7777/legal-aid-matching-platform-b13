@@ -111,7 +111,7 @@ export default function Profile() {
                         <br />
                         service area: {data?.serviceArea || "N/A"}
                         <br />
-                        location: {data?.location || "N/A"}
+                        location: {data?.serviceArea || "N/A"}
                       </div>
                     )}
                   </div>

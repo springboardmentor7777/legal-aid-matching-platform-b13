@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { LuArrowLeftToLine, LuSquareArrowLeft } from "react-icons/lu";
 
 export default function EditProfile() {
   const { user } = useAuth();
@@ -30,7 +32,7 @@ export default function EditProfile() {
   const [formData, setFormData] = useState<FormData>(() => {
     if (role === "LAWYER") {
       return {
-        name: user?.username ?? "",
+        name: user?.username,
         specialization: "",
         experience: 0,
         location: "",
@@ -38,13 +40,13 @@ export default function EditProfile() {
     }
     if (role === "NGO") {
       return {
-        name: user?.username ?? "",
+        name: user?.username,
         organizationName: "",
         serviceArea: "",
       } as NgoUpdate;
     }
     return {
-      name: user?.username ?? "",
+      name: user?.username,
     } as CitizenUpdate;
   });
 
@@ -62,7 +64,6 @@ export default function EditProfile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     let body: any;
 
     if (role === "CITIZEN") {
@@ -99,8 +100,13 @@ export default function EditProfile() {
       console.error("Error updating profile:", err);
       setError("Failed to update profile");
     });
+
+    // navigate("/profile");
+    setSuccessMessage("changes submitted");
   };
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  // const [success, setSuccess] = useState(false);
 
   return (
     <div>
@@ -113,15 +119,19 @@ export default function EditProfile() {
       </div>
       <div className="min-h-screen bg-blue-50 flex">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col m-auto">
+          {error && (
+            <div className="mb-4 text-red-500 text-sm text-center font-mono mt-5">
+              {error}!
+            </div>
+          )}
+
+          <a href="/profile" className="text-blue-900 mb-2">
+            {<LuSquareArrowLeft />}back to profile
+          </a>
           <div className="shadow-lg bg-gradient-to-r from-blue-500 to-blue-700 rounded-md p-3">
             <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
           </div>
           <div>
-            {error && (
-              <div className="mb-4 text-red-500 text-sm text-center font-mono">
-                {error}!
-              </div>
-            )}
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               {/* common field for all roles */}
               <div>
@@ -129,7 +139,7 @@ export default function EditProfile() {
                   className="block text-gray-700 font-bold mb-2"
                   htmlFor="name"
                 >
-                  Name
+                  New Name
                 </label>
                 <input
                   id="name"
@@ -242,6 +252,9 @@ export default function EditProfile() {
               >
                 Save
               </button>
+              {successMessage && (
+                <p className="text-green-600 mb-4">{successMessage}</p>
+              )}
             </form>
           </div>
         </div>
