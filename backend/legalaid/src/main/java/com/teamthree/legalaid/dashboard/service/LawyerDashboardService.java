@@ -1,6 +1,6 @@
-package com.teamthree.legalaid.service.lawyer;
+package com.teamthree.legalaid.dashboard.service;
 
-import com.teamthree.legalaid.dto.LawyerDashboardDTO;
+import com.teamthree.legalaid.dashboard.dto.LawyerDashboardDTO;
 import com.teamthree.legalaid.dto.CaseDTO;
 import com.teamthree.legalaid.dto.ScheduleDTO;
 import com.teamthree.legalaid.entity.LawyerProfile;

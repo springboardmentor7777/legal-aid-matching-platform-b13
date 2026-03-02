@@ -17,48 +17,37 @@ public class Case {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @Column(name = "case_title", nullable = false)
     private String caseTitle;
 
-    @Column(name = "case_description", length = 1000)
-    private String caseDescription;
+    @Column(name = "title", nullable = false)  // ADD THIS FIELD
+    private String title;                       // ADD THIS FIELD
 
-    @Column(name = "status")
-    private String status; // PENDING, ACTIVE, RESOLVED, COMPLETED, CLOSED
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    @Column(name = "case_type")
-    private String caseType;
+    @Column(nullable = false)
+    private String category;
 
-    @Column(name = "filed_date")
-    private LocalDateTime filedDate;
+    @Column(nullable = false)
+    private String status = "SUBMITTED";
 
-    @Column(name = "hearing_date")
-    private LocalDateTime hearingDate;
-
-    @Column(name = "court_name")
-    private String courtName;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "client_id")
-    private User client;  // The user who filed the case
-
-    @ManyToOne
-    @JoinColumn(name = "assigned_to_id")
-    private User assignedTo;  // The lawyer assigned to the case
-
-    @ManyToOne
-    @JoinColumn(name = "ngo_id")
-    private NgoProfile ngo;  // The NGO handling the case
-
     @PrePersist
     protected void onCreate() {
-        filedDate = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        if (status == null) {
-            status = "PENDING";
+        // Set title from caseTitle if not set
+        if (this.title == null && this.caseTitle != null) {
+            this.title = this.caseTitle;
         }
     }
 

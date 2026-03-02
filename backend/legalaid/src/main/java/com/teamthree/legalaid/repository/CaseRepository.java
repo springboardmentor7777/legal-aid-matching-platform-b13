@@ -1,72 +1,62 @@
 package com.teamthree.legalaid.repository;
 
 import com.teamthree.legalaid.entity.Case;
-import com.teamthree.legalaid.entity.User;
-import com.teamthree.legalaid.entity.NgoProfile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CaseRepository extends JpaRepository<Case, Long> {
     
-    // Count methods
+    // Find all cases by user ID
+    List<Case> findByUserIdOrderByCreatedAtDesc(Long userId);
+    
+    // Paginated version
+    Page<Case> findByUserId(Long userId, Pageable pageable);
+    
+    // Find cases by status
+    List<Case> findByStatus(String status);
+    
+    // Find cases by category
+    List<Case> findByCategory(String category);
+    
+    // Find cases by user ID and status
+    List<Case> findByUserIdAndStatus(Long userId, String status);
+    
+    // SEARCH CASES - FIXED: use caseTitle instead of title
+    @Query("SELECT c FROM Case c WHERE " +
+           "LOWER(c.caseTitle) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +  // CHANGED: title -> caseTitle
+           "LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<Case> searchCases(@Param("keyword") String keyword);
+    
+    // Filter cases with multiple criteria
+    @Query("SELECT c FROM Case c WHERE " +
+           "(:userId IS NULL OR c.userId = :userId) AND " +
+           "(:status IS NULL OR c.status = :status) AND " +
+           "(:category IS NULL OR c.category = :category)")
+    List<Case> filterCases(
+            @Param("userId") Long userId,
+            @Param("status") String status,
+            @Param("category") String category);
+    
+    // Count cases by user
+    Long countByUserId(Long userId);
+    
+    // Count cases by status
     Long countByStatus(String status);
     
-    Long countByClient(User client);
+    // Count cases by category
+    Long countByCategory(String category);
     
-    Long countByClientAndStatus(User client, String status);
+    // Get recent cases
+    @Query("SELECT c FROM Case c ORDER BY c.createdAt DESC")
+    List<Case> findRecentCases(Pageable pageable);
     
-    Long countByAssignedToAndStatus(User assignedTo, String status);
-    
-    Long countByNgo(NgoProfile ngo);
-    
-    Long countByNgoAndStatus(NgoProfile ngo, String status);
-    
-    @Query("SELECT COUNT(DISTINCT c.assignedTo) FROM Case c WHERE c.ngo = :ngo")
-    Long countDistinctLawyersByNgo(@Param("ngo") NgoProfile ngo);
-    
-    // Find methods - Top/Recent
-    List<Case> findTop10ByOrderByFiledDateDesc();
-    
-    List<Case> findTop5ByClientOrderByFiledDateDesc(User client);
-    
-    List<Case> findTop5ByAssignedToOrderByFiledDateDesc(User assignedTo);
-    
-    // Find by Client
-    List<Case> findByClientOrderByFiledDateDesc(User client);
-    
-    List<Case> findByClientAndStatusIn(User client, List<String> statuses);
-    
-    List<Case> findByClientAndStatus(User client, String status);
-    
-    Optional<Case> findFirstByClientOrderByFiledDateDesc(User client);
-    
-    // Find by Assigned To (Lawyer)
-    List<Case> findByAssignedToOrderByFiledDateDesc(User assignedTo);
-    
-    List<Case> findByAssignedToAndStatusOrderByFiledDateDesc(User assignedTo, String status);
-    
-    List<Case> findByAssignedToAndHearingDateBetween(User assignedTo, LocalDateTime start, LocalDateTime end);
-    
-    // Find by NGO
-    List<Case> findByNgoOrderByFiledDateDesc(NgoProfile ngo);
-    
-    List<Case> findByNgoAndStatus(NgoProfile ngo, String status);
-    
-    List<Case> findByNgoAndHearingDateAfterOrderByHearingDateAsc(NgoProfile ngo, LocalDateTime date);
-    
-    // Recent Activities Queries - Fixed to return Object[] with proper order
-    @Query("SELECT c.id, 'CASE_UPDATE', CONCAT('Case ', c.caseTitle, ' was updated'), c.updatedAt, c.client.fullname " +
-           "FROM Case c WHERE c.client = :user ORDER BY c.updatedAt DESC")
-    List<Object[]> findRecentActivitiesByUser(@Param("user") User user);
-    
-    @Query("SELECT c.id, 'CASE_UPDATE', CONCAT('Case ', c.caseTitle, ' was updated'), c.updatedAt, c.client.fullname " +
-           "FROM Case c ORDER BY c.updatedAt DESC")
-    List<Object[]> findRecentActivities();
+    // Check if case exists and belongs to user
+    boolean existsByIdAndUserId(Long id, Long userId);
 }

@@ -1,4 +1,4 @@
-package com.teamthree.legalaid.dto;
+package com.teamthree.legalaid.dashboard.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

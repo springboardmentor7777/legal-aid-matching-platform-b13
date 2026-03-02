@@ -1,9 +1,12 @@
-package com.teamthree.legalaid.dto;
+package com.teamthree.legalaid.dashboard.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
+
+import com.teamthree.legalaid.dto.ActivityDTO;
+import com.teamthree.legalaid.dto.RecentCaseDTO;
 
 @Data
 @NoArgsConstructor

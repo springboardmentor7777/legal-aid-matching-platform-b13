@@ -1,7 +1,8 @@
-package com.teamthree.legalaid.controller.admin;
+package com.teamthree.legalaid.dashboard.controller;
 
-import com.teamthree.legalaid.dto.DashboardStatsDTO;
-import com.teamthree.legalaid.service.admin.AdminDashboardService;
+import com.teamthree.legalaid.dashboard.dto.DashboardStatsDTO;
+import com.teamthree.legalaid.dashboard.service.AdminDashboardService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

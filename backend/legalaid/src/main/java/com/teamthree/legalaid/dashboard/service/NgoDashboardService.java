@@ -1,5 +1,6 @@
-package com.teamthree.legalaid.service.ngo;
+package com.teamthree.legalaid.dashboard.service;
 
+import com.teamthree.legalaid.dashboard.dto.NgoDashboardDTO;
 import com.teamthree.legalaid.dto.*;
 import com.teamthree.legalaid.entity.NgoProfile;
 import com.teamthree.legalaid.entity.User;

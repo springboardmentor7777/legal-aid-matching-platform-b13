@@ -1,10 +1,11 @@
-package com.teamthree.legalaid.controller.lawyer;
+package com.teamthree.legalaid.dashboard.controller;
 
-import com.teamthree.legalaid.dto.LawyerDashboardDTO;
+import com.teamthree.legalaid.dashboard.dto.LawyerDashboardDTO;
+import com.teamthree.legalaid.dashboard.service.LawyerDashboardService;
 import com.teamthree.legalaid.dto.CaseDTO;
 import com.teamthree.legalaid.dto.ScheduleDTO;
 import com.teamthree.legalaid.entity.User;
-import com.teamthree.legalaid.service.lawyer.LawyerDashboardService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

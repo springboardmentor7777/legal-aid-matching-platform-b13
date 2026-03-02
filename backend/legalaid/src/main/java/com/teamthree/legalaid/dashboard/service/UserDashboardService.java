@@ -1,5 +1,6 @@
-package com.teamthree.legalaid.service.user;
+package com.teamthree.legalaid.dashboard.service;
 
+import com.teamthree.legalaid.dashboard.dto.UserDashboardDTO;
 import com.teamthree.legalaid.dto.*;
 import com.teamthree.legalaid.entity.User;
 import com.teamthree.legalaid.entity.Case;

@@ -1,7 +1,7 @@
-package com.teamthree.legalaid.service.admin;
+package com.teamthree.legalaid.dashboard.service;
 
-import com.teamthree.legalaid.dto.DashboardStatsDTO;
 import com.teamthree.legalaid.dto.RecentUserDTO;
+import com.teamthree.legalaid.dashboard.dto.DashboardStatsDTO;
 import com.teamthree.legalaid.dto.RecentCaseDTO;
 import com.teamthree.legalaid.entity.Role;
 import com.teamthree.legalaid.repository.UserRepository;

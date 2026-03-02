@@ -9,13 +9,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CaseDTO {
-    private Long caseId;
-    private String caseTitle;
+    private Long id;
+    private Long userId;
+    private String title;
     private String description;
+    private String category;
     private String status;
-    private LocalDateTime filingDate;
-    private LocalDateTime hearingDate;
-    private String clientName;
-    private String lawyerName;
-    private String ngoName;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    
+    // Optional: Add user details for responses
+    private String userName;
+    private String userEmail;
 }

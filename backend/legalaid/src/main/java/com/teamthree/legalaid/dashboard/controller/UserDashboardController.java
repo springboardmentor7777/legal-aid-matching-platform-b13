@@ -1,8 +1,9 @@
-package com.teamthree.legalaid.controller.user;
+package com.teamthree.legalaid.dashboard.controller;
 
-import com.teamthree.legalaid.dto.UserDashboardDTO;
+import com.teamthree.legalaid.dashboard.dto.UserDashboardDTO;
+import com.teamthree.legalaid.dashboard.service.UserDashboardService;
 import com.teamthree.legalaid.entity.User;
-import com.teamthree.legalaid.service.user.UserDashboardService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
