@@ -30,9 +30,9 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("tokenType", "refresh")
-                .claim("random", java.util.UUID.randomUUID().toString()) 
+                .claim("random", java.util.UUID.randomUUID().toString()) // VERY IMPORTANT
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7)) 
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7)) // 7 days
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
