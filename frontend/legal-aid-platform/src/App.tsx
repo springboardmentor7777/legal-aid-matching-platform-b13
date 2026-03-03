@@ -11,6 +11,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import LawyerDirectory from "./pages/LawyerDirectories";
 import NgoDirectory from "./pages/NgoDirectories";
 import EditProfile from "./pages/Editprofile";
+import Mycase from "./pages/Mycase";
 
 function App() {
   return (
@@ -73,6 +74,15 @@ function App() {
         element={
           <ProtectedRoute>
             <CaseSubmissionForm />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/mycases"
+        element={
+          <ProtectedRoute>
+            <Mycase/>
           </ProtectedRoute>
         }
       />
