@@ -14,7 +14,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.legalmatch.backend.service.CustomerUserDetailsService;
-import com.legalmatch.backend.config.JwtAuthenticationFilter;
+import com.legalmatch.backend.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
