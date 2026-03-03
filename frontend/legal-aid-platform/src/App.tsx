@@ -12,6 +12,7 @@ import LawyerDirectory from "./pages/LawyerDirectories";
 import NgoDirectory from "./pages/NgoDirectories";
 import EditProfile from "./pages/Editprofile";
 import Mycase from "./pages/Mycase";
+import AdminPanel from "./pages/AdminPanel";
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-
+       <Route path="/admin" element={<AdminPanel />} />
       {/* Protected routes (must be logged in) */}
       <Route
         path="/dashboard"
