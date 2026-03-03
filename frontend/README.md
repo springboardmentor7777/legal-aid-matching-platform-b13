@@ -1,53 +1,16 @@
-# Frontend
+# React + Vite
 
-This folder contains the React + Tailwind frontend for the Legal Aid Matching Platform.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Overview
-- Provides UI for registration, case submission, search/matching results, secure chat, scheduling, notifications, and the impact dashboard.
+Currently, two official plugins are available:
 
-For collaborators (who to contact / responsibilities)
-- Frontend developers: build React components, implement forms, manage state, and connect to backend APIs.
-- UX engineers: polish the plain-language case submission flow, map interactions, and accessibility.
-- QA: test flows across devices, validate authentication flows, and verify WebSocket messaging UX.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-Quick start (development)
-- Node 16+ recommended. From `frontend/`:
+## React Compiler
 
-	npm install
-	npm run dev
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-- Check `package.json` scripts for the exact dev/build/test commands.
+## Expanding the ESLint configuration
 
-Environment variables
-- Typical `.env` keys used by the frontend (prefix with `REACT_APP_` or configure via framework):
-	- `REACT_APP_API_URL` (backend base URL)
-	- `REACT_APP_GOOGLE_MAPS_KEY`
-	- `REACT_APP_WS_URL` (WebSocket server URL)
-
-Auth & tokens
-- The frontend should obtain JWT access and refresh tokens from the backend and store them securely (refresh token in httpOnly cookie or secure storage pattern defined by the team).
-- Support OAuth redirects for Google/GitHub; handle token exchange via backend endpoints.
-
-Key UI areas to implement
-- Registration & verification flows for `CITIZEN`, `LAWYER`, `NGO` accounts.
-- Case submission UI that accepts plain-language input and optional attachments.
-- Search/Matching results UI with filters for expertise, distance, and availability.
-- Secure chat component using WebSocket or a real-time messaging library (show unread counts and typing indicators).
-- Appointment scheduling UI integrated with notifications and calendar invites.
-- Notifications center and an impact dashboard summarizing resolved cases and network metrics.
-
-Testing & quality
-- Run unit tests: `npm test`.
-- Use `eslint` and `prettier` for linting/formatting. Ensure components are accessible (axe/lighthouse checks).
-
-Build & deploy
-- Production build: `npm run build`.
-- The build output should be served by a static host or integrated with the backend as needed.
-
-Development conventions
-- Use feature branches, small PRs, and include screenshots or animated GIFs for UI changes.
-- Keep components reusable; centralize API calls in a `services/api` module.
-
-Where to find more info
-- See the `frontend/package.json` for scripts and dependencies.
-- UI spec and components may be in `frontend/src/components` and storybook if configured.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
