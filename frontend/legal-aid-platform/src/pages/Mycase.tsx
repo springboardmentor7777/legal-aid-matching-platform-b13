@@ -43,6 +43,7 @@ export default function Mycase() {
       <Navbar
         title="my cases"
         name={user?.username || ""}
+        role={user?.role || "guest"}
         toggleSidebar={() => {}}
       />
       <div className="min-h-screen bg-blue-50 flex pt-5 pb-5 justify-center">

@@ -21,7 +21,14 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-       <Route path="/admin" element={<AdminPanel />} />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <AdminPanel />
+          </ProtectedRoute>
+        }
+      />
       {/* Protected routes (must be logged in) */}
       <Route
         path="/dashboard"
@@ -69,7 +76,7 @@ function App() {
 
       {/* Optional: admin-only route */}
       <Route path="/admin" element={<Admin />} />
-      
+
       <Route
         path="/submitcase"
         element={
@@ -83,7 +90,7 @@ function App() {
         path="/mycases"
         element={
           <ProtectedRoute>
-            <Mycase/>
+            <Mycase />
           </ProtectedRoute>
         }
       />

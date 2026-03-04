@@ -33,7 +33,9 @@ export default function Profile() {
           </div>
           <div className="flex gap-5">
             <a
-              href="/dashboard"
+              href={
+                (user?.role !=="ADMIN")?"/dashboard":"/admin"
+              }
               className="p-2 text-blue-900 rounded-lg border border-blue-900 hover:bg-blue-900 hover:text-white transition"
             >
               Dashboard
@@ -111,7 +113,7 @@ export default function Profile() {
                         <br />
                         service area: {data?.serviceArea || "N/A"}
                         <br />
-                        location: {data?.serviceArea || "N/A"}
+                        location: {data?.location || "N/A"}
                       </div>
                     )}
                   </div>

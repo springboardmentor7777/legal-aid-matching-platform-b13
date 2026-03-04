@@ -40,7 +40,7 @@ export default function AdminPanel() {
   const usersPerPage = 5;
 
   const API = axios.create({
-    baseURL: "http://localhost:8081/api",
+    baseURL: "http://localhost:8081/",
   });
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function AdminPanel() {
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get("/admin/users");
+      const res = await API.get("");
       setUsers(res.data);
     } catch (err) {
       console.error("Fetch users error:", err);
@@ -59,7 +59,7 @@ export default function AdminPanel() {
 
   const fetchLogs = async () => {
     try {
-      const res = await API.get("/admin/logs");
+      const res = await API.get("");
       setLogs(res.data);
     } catch (err) {
       console.error("Fetch logs error:", err);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { LuArrowLeftToLine, LuSquareArrowLeft } from "react-icons/lu";
 
 export default function EditProfile() {
@@ -23,13 +23,17 @@ export default function EditProfile() {
   interface NgoUpdate extends CitizenUpdate {
     organizationName: string;
     serviceArea: string;
+    location:string;
   }
 
   type FormData = CitizenUpdate | LawyerUpdate | NgoUpdate;
 
   const role = (user?.role ?? "CITIZEN") as Role;
 
+
   const [formData, setFormData] = useState<FormData>(() => {
+
+
     if (role === "LAWYER") {
       return {
         name: user?.username,
@@ -40,9 +44,10 @@ export default function EditProfile() {
     }
     if (role === "NGO") {
       return {
-        name: user?.username,
-        organizationName: "",
+        name: "",
+        organizationName:"",
         serviceArea: "",
+        location:""
       } as NgoUpdate;
     }
     return {
@@ -84,6 +89,7 @@ export default function EditProfile() {
         name: d.name,
         organizationName: d.organizationName,
         serviceArea: d.serviceArea,
+        location:d.location,
       };
     }
 
@@ -103,6 +109,8 @@ export default function EditProfile() {
 
     // navigate("/profile");
     setSuccessMessage("changes submitted");
+    const navigate = useNavigate();
+    navigate("/profile");
   };
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState("");
@@ -114,6 +122,7 @@ export default function EditProfile() {
         <Navbar
           title="edit profile"
           name={user?.username || "guest"}
+          role={user?.role || ""}
           toggleSidebar={() => {}}
         />
       </div>
@@ -239,6 +248,22 @@ export default function EditProfile() {
                       type="text"
                       name="serviceArea"
                       value={(formData as NgoUpdate).serviceArea}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="block text-gray-700 font-bold mb-2"
+                      htmlFor="location"
+                    >
+                      Location
+                    </label>
+                    <input
+                      id="location"
+                      type="text"
+                      name="location"
+                      value={(formData as NgoUpdate).location}
                       onChange={handleChange}
                       className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />

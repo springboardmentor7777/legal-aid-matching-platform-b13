@@ -141,6 +141,7 @@ const CaseSubmissionForm: React.FC = () => {
       <Navbar
         title="Submit Case"
         name={user.username}
+        role={user.role}
         toggleSidebar={() => {}}
       />
       <div className="flex justify-center mt-10">

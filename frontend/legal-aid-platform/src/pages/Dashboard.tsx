@@ -171,6 +171,7 @@ const Dashboard: React.FC = () => {
         <Navbar
           title="Dashboard"
           name={user.username}
+          role={user.role}
           toggleSidebar={toggleSidebar}
         />
 

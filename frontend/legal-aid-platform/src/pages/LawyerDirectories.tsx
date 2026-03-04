@@ -65,7 +65,7 @@ export default function LawyerDirectories() {
   }, []);
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar title="lawyer directory" name={user?.username || ""} toggleSidebar={()=>{}} />
+      <Navbar title="lawyer directory" name={user?.username || ""} role={user?.role || "guest"} toggleSidebar={()=>{}} />
       <div className="min-h-screen bg-blue-50 flex pt-20 justify-center">
         {/* search bar */}
         {/* filters */}
@@ -110,6 +110,9 @@ export default function LawyerDirectories() {
               <p className="text-gray-700">Specialization: {lawyer.specialization}</p>
               <p className="text-gray-700">Experience: {lawyer.experience} years</p>
               <p clas */}
+          {!paginatedCases && (<p className="text-gray-400 text-md justify-center items-center">
+            No data found
+          </p>)}
           {paginatedCases &&
             paginatedCases.map((lawyer: Lawyer) => (
               <div
