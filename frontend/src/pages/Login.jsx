@@ -1,116 +1,161 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Scale, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
+  const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const [form, setForm] = useState({
+    emailOrUsername: "",
+    password: "",
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(email);
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const user = await login(form);
+
+      if (user.role === "ADMIN") navigate("/dashboard/admin");
+      else if (user.role === "LAWYER") navigate("/dashboard/lawyer");
+      else if (user.role === "NGO") navigate("/dashboard/ngo");
+      else navigate("/dashboard/citizen");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Invalid credentials. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="flex w-full h-screen">
+      <div className="hidden md:flex w-1/2 bg-slate-800"></div>
 
-      {/* Left Image Section */}
-      <div className="hidden md:flex w-1/2 bg-slate-800 items-center justify-center">
-        <div className="text-white text-3xl font-bold">
-          LegalMatch Pro
-        </div>
-      </div>
-
-      {/* Right Form Section */}
-      <div className="flex w-full md:w-1/2 items-center justify-center p-8">
-
-        <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-
-          {/* Logo */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center text-white text-xl">
-              ⚖
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-white px-6">
+        <div className="w-full max-w-md">
+          <div className="flex flex-col items-center mb-8">
+            <div className="bg-blue-900 p-4 rounded-xl mb-4">
+              <Scale className="text-white w-8 h-8" />
             </div>
-            <h2 className="mt-4 text-2xl font-bold text-blue-900">
-              Login
-            </h2>
+            <h1 className="text-xl font-bold text-gray-900 text-center">
+              Welcome to LegalMatch Pro
+            </h1>
+            <p className="text-sm text-gray-500 text-center mt-1">
+              Connect, collaborate, and access pro bono legal assistance.
+            </p>
           </div>
 
-          {/* Toggle */}
           <div className="flex bg-gray-100 rounded-full p-1 mb-6">
-            <button className="flex-1 bg-white rounded-full py-2 text-sm shadow-sm">
+            <Link
+              to="/login"
+              className="w-1/2 text-center py-2 rounded-full bg-white shadow text-sm font-medium"
+            >
               Login
-            </button>
+            </Link>
             <Link
               to="/register"
-              className="flex-1 text-center py-2 text-sm text-gray-500"
+              className="w-1/2 text-center py-2 rounded-full text-sm font-medium text-gray-500"
             >
               Register
             </Link>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
-            {/* Email */}
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">
-                ✉
-              </span>
+              <Mail className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
               <input
-                type="email"
+                type="text"
+                name="emailOrUsername"
+                placeholder="Email or Username"
                 required
-                placeholder="Email"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-900"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={form.emailOrUsername}
+                onChange={handleChange}
+                className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
               />
             </div>
 
-            {/* Password */}
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">
-                🔒
-              </span>
+              <Lock className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
               <input
-                type="password"
-                required
+                type={showPassword ? "text" : "password"}
+                name="password"
                 placeholder="Password"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-900"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                required
+                value={form.password}
+                onChange={handleChange}
+                className="w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
               />
+              <div
+                className="absolute right-3 top-3.5 cursor-pointer text-gray-400"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </div>
             </div>
 
-            {/* Submit */}
+            <div className="text-right">
+              <span className="text-sm text-blue-900 cursor-pointer hover:underline">
+                Forgot Password?
+              </span>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+
             <button
               type="submit"
-              className="w-full bg-blue-900 text-white py-2 rounded-md hover:bg-blue-800 transition"
+              disabled={isLoading}
+              className="w-full bg-blue-900 text-white py-2 rounded-lg font-medium hover:bg-blue-800 transition"
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
             </button>
-
           </form>
 
-          {/* Divider */}
           <div className="flex items-center my-6">
-            <div className="flex-1 h-px bg-gray-200"></div>
+            <div className="flex-grow border-t"></div>
             <span className="px-3 text-gray-400 text-sm">OR</span>
-            <div className="flex-1 h-px bg-gray-200"></div>
+            <div className="flex-grow border-t"></div>
           </div>
 
-          {/* OAuth Buttons */}
-          <button className="w-full border border-gray-300 py-2 rounded-md mb-3 bg-white">
-            Continue with Google
-          </button>
+          <div className="flex gap-4">
+            <button className="w-1/2 border rounded-lg py-2 flex justify-center items-center gap-2 hover:bg-gray-50">
+              <img
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+                className="w-5 h-5"
+              />
+              Google
+            </button>
 
-          <button className="w-full border border-gray-300 py-2 rounded-md bg-white">
-            Continue with Microsoft
-          </button>
-
+            <button className="w-1/2 border rounded-lg py-2 flex justify-center items-center gap-2 hover:bg-gray-50">
+              <img
+                src="https://www.svgrepo.com/show/303128/apple-logo.svg"
+                alt="Apple"
+                className="w-5 h-5"
+              />
+              Apple
+            </button>
+          </div>
         </div>
       </div>
-
     </div>
   );
 }

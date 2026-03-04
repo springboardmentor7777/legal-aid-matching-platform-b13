@@ -1,155 +1,125 @@
-import DashboardLayout from "../components/DashboardLayout";
-
-const users = [
-  {
-    name: "John Lawyer",
-    role: "LAWYER",
-    email: "lawyer@test.com",
-    date: "Jan 10, 2026",
-    status: "Pending"
-  },
-  {
-    name: "Sarah NGO",
-    role: "NGO",
-    email: "ngo@test.com",
-    date: "Jan 8, 2026",
-    status: "Approved"
-  },
-  {
-    name: "Mark Citizen",
-    role: "CITIZEN",
-    email: "citizen@test.com",
-    date: "Jan 5, 2026",
-    status: "Rejected"
-  }
-];
+import { useEffect, useState } from "react";
+import api from "../api/axios";
+import { Check, X } from "lucide-react";
 
 export default function AdminDashboard() {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchPendingUsers();
+  }, []);
+
+  const fetchPendingUsers = async () => {
+    const res = await api.get("/admin/users/pending");
+    setUsers(res.data);
+  };
+
+  const updateStatus = async (id, status) => {
+    await api.put(`/admin/users/${id}/status`, { status });
+    fetchPendingUsers();
+  };
+
   return (
-    <DashboardLayout>
-
-      {/* Tabs */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6 flex gap-4">
-        <button className="bg-white shadow-sm px-4 py-2 rounded-md">
-          User Verification
-        </button>
-        <button>Directory Ingestion</button>
-        <button>System Logs</button>
-        <button>App Settings</button>
-      </div>
-
-      {/* Table Card */}
-      <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
-
-        <div className="flex justify-between mb-6">
-          <h2 className="text-lg font-semibold">
-            User Verification Queue
-          </h2>
-
+    <div>
+      <div className="hidden md:block bg-white shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b flex justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-900">
+              User Verification Queue
+            </h2>
+            <p className="text-sm text-gray-500">
+              Review and approve new registrations.
+            </p>
+          </div>
           <input
             placeholder="Search users..."
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+            className="border rounded-lg px-3 py-1 text-sm"
           />
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden md:block">
-          <table className="w-full text-sm">
-            <thead className="border-b">
-              <tr className="text-left text-gray-500">
-                <th className="py-3">Name</th>
-                <th>Role</th>
-                <th>Email</th>
-                <th>Submitted Date</th>
-                <th>Status</th>
-                <th>Actions</th>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-600">
+            <tr>
+              <th className="text-left px-6 py-3">Name</th>
+              <th className="text-left px-6 py-3">Role</th>
+              <th className="text-left px-6 py-3">Email</th>
+              <th className="text-left px-6 py-3">Date</th>
+              <th className="text-left px-6 py-3">Status</th>
+              <th className="text-left px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id} className="border-t">
+                <td className="px-6 py-4">{user.fullName}</td>
+                <td className="px-6 py-4">{user.role}</td>
+                <td className="px-6 py-4">{user.email}</td>
+                <td className="px-6 py-4">{user.createdAt}</td>
+                <td className="px-6 py-4">
+                  {user.status === "PENDING" && (
+                    <span className="px-3 py-1 text-xs rounded-full bg-orange-100 text-orange-600">
+                      Pending
+                    </span>
+                  )}
+                  {user.status === "APPROVED" && (
+                    <span className="px-3 py-1 text-xs rounded-full bg-white border text-gray-600">
+                      Approved
+                    </span>
+                  )}
+                  {user.status === "REJECTED" && (
+                    <span className="px-3 py-1 text-xs rounded-full bg-red-100 text-red-600">
+                      Rejected
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-4 flex gap-2">
+                  {user.status === "PENDING" && (
+                    <>
+                      <button
+                        onClick={() => updateStatus(user.id, "APPROVED")}
+                        className="bg-blue-900 text-white px-3 py-1 rounded flex items-center gap-1 text-xs"
+                      >
+                        <Check size={14} /> Approve
+                      </button>
+                      <button
+                        onClick={() => updateStatus(user.id, "REJECTED")}
+                        className="bg-red-500 text-white px-3 py-1 rounded flex items-center gap-1 text-xs"
+                      >
+                        <X size={14} /> Reject
+                      </button>
+                    </>
+                  )}
+                </td>
               </tr>
-            </thead>
-
-            <tbody>
-              {users.map((user, i) => (
-                <tr key={i} className="border-b">
-                  <td className="py-4">{user.name}</td>
-                  <td>{user.role}</td>
-                  <td>{user.email}</td>
-                  <td>{user.date}</td>
-
-                  <td>
-                    {user.status === "Pending" && (
-                      <span className="px-3 py-1 rounded-full text-xs bg-orange-100 text-orange-600">
-                        Pending
-                      </span>
-                    )}
-                    {user.status === "Approved" && (
-                      <span className="px-3 py-1 rounded-full text-xs border border-gray-300 text-gray-600">
-                        Approved
-                      </span>
-                    )}
-                    {user.status === "Rejected" && (
-                      <span className="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">
-                        Rejected
-                      </span>
-                    )}
-                  </td>
-
-                  <td>
-                    {user.status === "Pending" ? (
-                      <div className="flex gap-2">
-                        <button className="bg-blue-900 text-white px-3 py-1 rounded text-xs">
-                          Approve
-                        </button>
-                        <button className="bg-red-400 text-white px-3 py-1 rounded text-xs">
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-gray-500 text-xs cursor-pointer">
-                        View Details
-                      </span>
-                    )}
-                  </td>
-
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="block md:hidden space-y-4">
-          {users.map((user, i) => (
-            <div key={i} className="border rounded-lg p-4 space-y-2">
-              <div className="flex justify-between">
-                <h3 className="font-semibold">{user.name}</h3>
-                <span className="text-xs">
-                  {user.status}
-                </span>
-              </div>
-
-              <p className="text-sm text-gray-500">
-                {user.email}
-              </p>
-
-              <p className="text-sm text-gray-400">
-                {user.date}
-              </p>
-
-              {user.status === "Pending" && (
-                <div className="flex flex-col gap-2 pt-2">
-                  <button className="bg-blue-900 text-white py-2 rounded">
-                    Approve
-                  </button>
-                  <button className="bg-red-400 text-white py-2 rounded">
-                    Reject
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
+            ))}
+          </tbody>
+        </table>
       </div>
 
-    </DashboardLayout>
+      {/* MOBILE VIEW */}
+      <div className="block md:hidden space-y-4">
+        {[
+          "Manage User Verifications",
+          "Control Directory Listings",
+          "Access System Logs & Metrics",
+          "Configure Application Settings",
+        ].map((item, index) => (
+          <div
+            key={index}
+            className="bg-white shadow rounded-lg p-5"
+          >
+            <h3 className="font-semibold text-gray-900 mb-2">
+              {item}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Access and manage this section from here.
+            </p>
+            <button className="w-full border border-blue-900 text-blue-900 py-2 rounded-lg text-sm">
+              View Details
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

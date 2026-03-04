@@ -1,43 +1,91 @@
-import { useAuth } from "../context/AuthContext";
-import DashboardLayout from "../components/DashboardLayout";
+import { useEffect, useState } from "react";
+import api from "../api/axios";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/users/me");
+        setFormData({
+          fullName: res.data.fullName,
+          email: res.data.email,
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage("");
+
+    try {
+      await api.put("/users/update", formData);
+      setMessage("Profile updated successfully.");
+    } catch (err) {
+      setMessage("Update failed.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div>Loading profile...</div>;
 
   return (
-    <DashboardLayout>
-      <div className="max-w-2xl bg-white border border-gray-200 shadow-sm rounded-lg p-6">
+    <div className="max-w-lg bg-white p-6 rounded shadow">
+      <h2 className="text-lg font-semibold mb-4">Edit Profile</h2>
 
-        <h2 className="text-2xl font-bold text-blue-900 mb-4">
-          Profile
-        </h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          name="fullName"
+          value={formData.fullName}
+          onChange={handleChange}
+          className="w-full border rounded px-3 py-2"
+        />
 
-        <div className="space-y-4">
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full border rounded px-3 py-2"
+        />
 
-          <div>
-            <label className="text-sm text-gray-500">Name</label>
-            <div className="mt-1 border border-gray-300 rounded-md px-3 py-2">
-              {user?.name}
-            </div>
-          </div>
+        <button
+          type="submit"
+          disabled={saving}
+          className="bg-blue-900 text-white px-4 py-2 rounded"
+        >
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
 
-          <div>
-            <label className="text-sm text-gray-500">Email</label>
-            <div className="mt-1 border border-gray-300 rounded-md px-3 py-2">
-              {user?.email}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-500">Role</label>
-            <div className="mt-1 border border-gray-300 rounded-md px-3 py-2">
-              {user?.role}
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </DashboardLayout>
+        {message && (
+          <p className="text-sm text-green-600">{message}</p>
+        )}
+      </form>
+    </div>
   );
 }
