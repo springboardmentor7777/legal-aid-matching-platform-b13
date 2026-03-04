@@ -40,7 +40,7 @@ export default function App() {
             <NgoDashboard />
           </PrivateRoute>
         }
-      />
+      /> 
 
       <Route
         path="/dashboard/citizen"
