@@ -15,11 +15,20 @@ public class DirectoryService {
 
     private final DirectoryProfileRepository repository;
 
-    public Page<DirectoryProfileResponse> getLawyers(int page, int size) {
+    public Page<DirectoryProfileResponse> getLawyers(
+            String expertise,
+            String location,
+            boolean verified,
+            int page,
+            int size
+    ) {
 
         Page<DirectoryProfile> profiles =
-                repository.findByUserRoleAndVerifiedTrue(
+                repository.findByUser_RoleAndExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCaseAndVerified(
                         Role.LAWYER,
+                        expertise,
+                        location,
+                        verified,
                         PageRequest.of(page, size)
                 );
 
@@ -32,10 +41,11 @@ public class DirectoryService {
                 .verified(p.isVerified())
                 .build());
     }
+
     public Page<DirectoryProfileResponse> getNgos(int page, int size) {
 
         Page<DirectoryProfile> profiles =
-                repository.findByUserRoleAndVerifiedTrue(
+                repository.findByUser_RoleAndVerifiedTrue(
                         Role.NGO,
                         PageRequest.of(page, size)
                 );
@@ -49,5 +59,4 @@ public class DirectoryService {
                 .verified(p.isVerified())
                 .build());
     }
-
 }
