@@ -10,13 +10,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileResponse {
-    
-	private Long id;
+
+    private Long id;
     private String fullName;
     private String email;
-    private Integer roleId;
+    private String role;       // fixed: was Integer roleId returning ordinal (0,1,2,3) — now returns "USER", "LAWYER" etc.
     private String provider;
     private LocalDateTime createdAt;
-    
- 
 }

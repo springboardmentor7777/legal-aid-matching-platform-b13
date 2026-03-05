@@ -1,21 +1,25 @@
 package com.teamthree.legalaid.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.teamthree.legalaid.dashboard.dto.LawyerDashboardDTO;
+import com.teamthree.legalaid.dashboard.service.LawyerDashboardService;
+import com.teamthree.legalaid.entity.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/lawyer")
+@RequiredArgsConstructor
+@PreAuthorize("hasRole('LAWYER')")
 public class LawyerController {
-	
-	@GetMapping("/dashboard")
-    public String lawyerDashboard() {
-        return "Welcome Lawyer";
+
+    private final LawyerDashboardService lawyerDashboardService;
+
+    // Convenience redirect — same as /lawyer/dashboard/overview
+    @GetMapping("/dashboard")
+    public ResponseEntity<LawyerDashboardDTO> lawyerDashboard(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(lawyerDashboardService.getDashboardOverview(user));
     }
-	
-	@GetMapping("/cases")
-    public String viewAssignedCases() {
-        return "List of assigned cases";
-    }
-	
 }

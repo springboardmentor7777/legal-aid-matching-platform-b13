@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,69 +25,67 @@ public class CaseService {
     public CaseDTO createCase(User user, CreateCaseRequest request) {
         Case newCase = new Case();
         newCase.setUserId(user.getId());
-        
-        // Set both title fields with the same value
-        newCase.setCaseTitle(request.getCaseTitle());  // For case_title column
-        newCase.setTitle(request.getCaseTitle());      // For title column
-        
+        newCase.setCaseTitle(request.getCaseTitle());
+        newCase.setTitle(request.getCaseTitle());
+        newCase.setCaseDescription(request.getDescription());
         newCase.setDescription(request.getDescription());
         newCase.setCategory(request.getCategory());
+        newCase.setLocation(request.getLocation());
         newCase.setStatus("SUBMITTED");
-        
-        Case savedCase = caseRepository.save(newCase);
-        return mapToDTO(savedCase, user);
+        newCase.setFiledDate(LocalDateTime.now());
+        newCase.setClient(user);
+
+        return mapToDTO(caseRepository.save(newCase));
     }
 
     public List<CaseDTO> getUserCases(User user) {
-        return caseRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
-                .stream()
-                .map(c -> mapToDTO(c, user))
-                .collect(Collectors.toList());
+        return caseRepository.findByClientOrderByFiledDateDesc(user)
+            .stream()
+            .map(this::mapToDTO)
+            .collect(Collectors.toList());
     }
 
     public CaseDTO getCaseById(Long id) {
         Case case_ = caseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Case not found with id: " + id));
-        
-        User user = userRepository.findById(case_.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        return mapToDTO(case_, user);
+            .orElseThrow(() -> new RuntimeException("Case not found with id: " + id));
+        return mapToDTO(case_);
     }
 
-    public List<CaseDTO> filterCases(Long userId, String status, String category) {
-        return caseRepository.filterCases(userId, status, category)
-                .stream()
-                .map(c -> {
-                    User user = userRepository.findById(c.getUserId()).orElse(null);
-                    return mapToDTO(c, user);
-                })
-                .collect(Collectors.toList());
-    }
-
-    public boolean isCaseOwner(User user, Long caseId) {
-        return caseRepository.existsByIdAndUserId(caseId, user.getId());
-    }
-
-    private CaseDTO mapToDTO(Case case_, User user) {
+    private CaseDTO mapToDTO(Case case_) {
         CaseDTO dto = new CaseDTO();
+
+        // Core fields
         dto.setId(case_.getId());
-        dto.setUserId(case_.getUserId());
-        
-        // Use caseTitle for the DTO title field
-        dto.setTitle(case_.getCaseTitle());  // Changed from getTitle() to getCaseTitle()
-        
-        dto.setDescription(case_.getDescription());
+        dto.setCaseId(case_.getId());
+        dto.setUserId(case_.getUserId() != null ? case_.getUserId()
+            : (case_.getClient() != null ? case_.getClient().getId() : null));
+        dto.setTitle(case_.getCaseTitle() != null ? case_.getCaseTitle() : case_.getTitle());
+        dto.setCaseTitle(case_.getCaseTitle() != null ? case_.getCaseTitle() : case_.getTitle());
+        dto.setDescription(case_.getCaseDescription() != null
+            ? case_.getCaseDescription() : case_.getDescription());
         dto.setCategory(case_.getCategory());
+        dto.setLocation(case_.getLocation());
         dto.setStatus(case_.getStatus());
         dto.setCreatedAt(case_.getCreatedAt());
         dto.setUpdatedAt(case_.getUpdatedAt());
-        
-        if (user != null) {
-            dto.setUserName(user.getFullname());
-            dto.setUserEmail(user.getEmail());
+        dto.setFilingDate(case_.getFiledDate());
+        dto.setHearingDate(case_.getHearingDate());
+
+        // People fields
+        User client = case_.getClient() != null ? case_.getClient()
+            : (case_.getUserId() != null ? userRepository.findById(case_.getUserId()).orElse(null) : null);
+        if (client != null) {
+            dto.setUserName(client.getFullname());
+            dto.setUserEmail(client.getEmail());
+            dto.setClientName(client.getFullname());
         }
-        
+        if (case_.getAssignedTo() != null) {
+            dto.setLawyerName(case_.getAssignedTo().getFullname());
+        }
+        if (case_.getNgo() != null) {
+            dto.setNgoName(case_.getNgo().getOrganizationName());
+        }
+
         return dto;
     }
 }

@@ -20,8 +20,13 @@ public class ProfileController {
 
     
     @GetMapping("/me")
-    public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal User user) {
-        UserProfileResponse profile = profileService.getProfile(user);
+    public ResponseEntity<UserProfileResponse> getMyProfile(
+            @AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails) {
+
+        String email = userDetails.getUsername();
+
+        UserProfileResponse profile = profileService.getProfileByEmail(email);
+
         return ResponseEntity.ok(profile);
     }
 

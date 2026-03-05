@@ -1,9 +1,13 @@
 package com.teamthree.legalaid.entity;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,48 +15,62 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Case {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
-
-    @Column(name = "case_title", nullable = false)
+    
+    @Column(name = "user_id")
+    private Long userId;  // Add this field for the create case functionality
+    
+    @Column(name = "case_title")
     private String caseTitle;
-
-    @Column(name = "title", nullable = false)  // ADD THIS FIELD
-    private String title;                       // ADD THIS FIELD
-
-    @Column(columnDefinition = "TEXT")
+    
+    @Column(name = "title")  // Add this if you have a title column
+    private String title;
+    
+    @Column(name = "case_description")
+    private String caseDescription;
+    
+    @Column(name = "description")  // Add this if you have a description column
     private String description;
-
-    @Column(nullable = false)
+    
+    @Column(name = "category")
     private String category;
 
-    @Column(nullable = false)
-    private String status = "SUBMITTED";
+    @Column(name = "location")
+    private String location;
 
-    @Column(name = "created_at")
+    private String status;
+    
+    @Column(name = "filed_date")
+    private LocalDateTime filedDate;
+    
+    @Column(name = "hearing_date")
+    private LocalDateTime hearingDate;
+    
+    @Column(name = "court_name")
+    private String courtName;
+    
+    @ManyToOne
+    @JoinColumn(name = "client_id")
+    private User client;
+    
+    @ManyToOne
+    @JoinColumn(name = "assigned_to_id")
+    private User assignedTo;
+    
+    @ManyToOne
+    @JoinColumn(name = "ngo_id")
+    private NgoProfile ngo;
+    
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
+    
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        // Set title from caseTitle if not set
-        if (this.title == null && this.caseTitle != null) {
-            this.title = this.caseTitle;
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

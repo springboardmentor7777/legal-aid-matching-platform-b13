@@ -1,13 +1,16 @@
 package com.teamthree.legalaid.dashboard.service;
 
 import com.teamthree.legalaid.dashboard.dto.UserDashboardDTO;
-import com.teamthree.legalaid.dto.*;
-import com.teamthree.legalaid.entity.User;
+import com.teamthree.legalaid.dto.ActivityDTO;
+import com.teamthree.legalaid.dto.CaseDTO;
+import com.teamthree.legalaid.dto.RecentCaseDTO;
 import com.teamthree.legalaid.entity.Case;
+import com.teamthree.legalaid.entity.User;
 import com.teamthree.legalaid.repository.CaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,26 +19,22 @@ import java.util.stream.Collectors;
 public class UserDashboardService {
 
     private final CaseRepository caseRepository;
- 
+
     public UserDashboardDTO getDashboardOverview(User user) {
         UserDashboardDTO dashboard = new UserDashboardDTO();
-        
+
         dashboard.setUserId(user.getId());
         dashboard.setFullName(user.getFullname());
         dashboard.setEmail(user.getEmail());
-        
-        // Case statistics
+
         dashboard.setTotalCases(caseRepository.countByClient(user));
         dashboard.setActiveCases(caseRepository.countByClientAndStatus(user, "ACTIVE"));
         dashboard.setResolvedCases(caseRepository.countByClientAndStatus(user, "RESOLVED"));
-        
-        // Assigned lawyer
+
         dashboard.setAssignedLawyerName(getAssignedLawyerName(user));
-        
-        // Recent cases and activities
         dashboard.setRecentCases(getRecentCases(user));
         dashboard.setRecentActivities(getRecentActivities(user));
-        
+
         return dashboard;
     }
 
@@ -47,7 +46,7 @@ public class UserDashboardService {
     }
 
     public List<CaseDTO> getActiveCases(User user) {
-        return caseRepository.findByClientAndStatusIn(user, List.of("ACTIVE", "PENDING"))
+        return caseRepository.findByClientAndStatusIn(user, List.of("ACTIVE", "PENDING", "SUBMITTED"))
             .stream()
             .map(this::mapToCaseDTO)
             .collect(Collectors.toList());
@@ -62,19 +61,20 @@ public class UserDashboardService {
 
     public String getAssignedLawyerName(User user) {
         return caseRepository.findFirstByClientOrderByFiledDateDesc(user)
-            .map(case_ -> case_.getAssignedTo() != null ? 
-                case_.getAssignedTo().getFullname() : "Not assigned")
+            .map(case_ -> case_.getAssignedTo() != null
+                ? case_.getAssignedTo().getFullname()
+                : "Not assigned")
             .orElse("Not assigned");
     }
 
     public List<ActivityDTO> getRecentActivities(User user) {
-        return caseRepository.findRecentActivitiesByUser(user)
+        return caseRepository.findRecentActivitiesByUser(user.getId())
             .stream()
             .map(activity -> new ActivityDTO(
-                (Long) activity[0],
+                ((Number) activity[0]).longValue(),
                 (String) activity[1],
                 (String) activity[2],
-                (java.time.LocalDateTime) activity[3]
+                (LocalDateTime) activity[3]
             ))
             .collect(Collectors.toList());
     }
@@ -94,15 +94,25 @@ public class UserDashboardService {
 
     private CaseDTO mapToCaseDTO(Case case_) {
         CaseDTO dto = new CaseDTO();
+        dto.setId(case_.getId());
         dto.setCaseId(case_.getId());
+        dto.setTitle(case_.getCaseTitle());
         dto.setCaseTitle(case_.getCaseTitle());
-        dto.setDescription(case_.getCaseDescription());
+        dto.setDescription(case_.getCaseDescription() != null
+            ? case_.getCaseDescription() : case_.getDescription());
+        dto.setCategory(case_.getCategory());
+        dto.setLocation(case_.getLocation());
         dto.setStatus(case_.getStatus());
+        dto.setCreatedAt(case_.getCreatedAt());
+        dto.setUpdatedAt(case_.getUpdatedAt());
         dto.setFilingDate(case_.getFiledDate());
-        dto.setHearingDate(case_.getHearingDate());
-        dto.setClientName(case_.getClient() != null ? case_.getClient().getFullname() : null);
-        dto.setLawyerName(case_.getAssignedTo() != null ? case_.getAssignedTo().getFullname() : null);
-        dto.setNgoName(case_.getNgo() != null ? case_.getNgo().getOrganizationName() : null);
+        dto.setHearingDate(case_.getHearingDate());                          // fixed: was overwriting filingDate
+        dto.setClientName(case_.getClient() != null
+            ? case_.getClient().getFullname() : null);                       // fixed: was using setUserName
+        dto.setLawyerName(case_.getAssignedTo() != null
+            ? case_.getAssignedTo().getFullname() : null);                   // fixed: was overwriting clientName
+        dto.setNgoName(case_.getNgo() != null
+            ? case_.getNgo().getOrganizationName() : null);                  // fixed: was overwriting lawyerName
         return dto;
     }
 }

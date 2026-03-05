@@ -26,35 +26,36 @@ public class ProfileService {
         return mapToProfileResponse(user);
     }
 
+    public UserProfileResponse getProfileByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        return mapToProfileResponse(user);
+    }
+
     @Transactional
     public UserProfileResponse updateProfile(User user, UpdateProfileRequest request) {
-        
         if (request.getFullName() != null && !request.getFullName().isEmpty()) {
             user.setFullname(request.getFullName());
         }
-        
+
         if (request.getEmail() != null && !request.getEmail().isEmpty()) {
-           
-        	userRepository.findByEmail(request.getEmail())
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getId().equals(user.getId())) {
+            userRepository.findByEmail(request.getEmail())
+                .ifPresent(existing -> {
+                    if (!existing.getId().equals(user.getId())) {
                         throw new RuntimeException("Email already in use");
                     }
                 });
             user.setEmail(request.getEmail());
         }
-        
-        User updatedUser = userRepository.save(user);
-        return mapToProfileResponse(updatedUser);
+
+        return mapToProfileResponse(userRepository.save(user));
     }
 
     @Transactional
     public void changePassword(User user, String oldPassword, String newPassword) {
-        // Verify old password
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new RuntimeException("Old password is incorrect");
         }
-        
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
@@ -69,7 +70,7 @@ public class ProfileService {
             user.getId(),
             user.getFullname(),
             user.getEmail(),
-            user.getRole().ordinal(), 
+            user.getRole().name(),   // fixed: was role.ordinal() returning 0/1/2/3
             user.getProvider(),
             user.getCreatedAt()
         );

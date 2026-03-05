@@ -10,7 +10,8 @@ import java.util.List;
 
 public class CustomUserDetails implements UserDetails {
     
-    private final User user;
+    private static final long serialVersionUID = 1L;
+	private final User user;
     private final Collection<? extends GrantedAuthority> authorities;
     
     public CustomUserDetails(User user) {

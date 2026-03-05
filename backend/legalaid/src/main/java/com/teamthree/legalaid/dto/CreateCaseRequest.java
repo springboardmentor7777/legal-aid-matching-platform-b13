@@ -14,4 +14,7 @@ public class CreateCaseRequest {
     
     @NotBlank(message = "Category is required")
     private String category;
+
+    @NotBlank(message = "Location is required")
+    private String location;
 }

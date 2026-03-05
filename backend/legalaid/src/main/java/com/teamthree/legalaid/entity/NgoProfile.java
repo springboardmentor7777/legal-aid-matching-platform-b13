@@ -26,6 +26,18 @@ public class NgoProfile {
     @Column(name = "registration_number")
     private String registrationNumber;
 
+    @Column(name = "expertise")
+    private String expertise;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "verified")
+    private Boolean verified = false;
+
+    @Column(name = "contact_info")
+    private String contactInfo;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 }

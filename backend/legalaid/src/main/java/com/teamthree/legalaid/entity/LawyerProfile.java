@@ -23,6 +23,18 @@ public class LawyerProfile {
     @Column(name = "specialization")
     private String specialization;
 
+    @Column(name = "expertise")
+    private String expertise;
+
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "verified")
+    private Boolean verified = false;
+
+    @Column(name = "contact_info")
+    private String contactInfo;
+
     @Column(name = "experience_years")
     private Integer experienceYears;
 
