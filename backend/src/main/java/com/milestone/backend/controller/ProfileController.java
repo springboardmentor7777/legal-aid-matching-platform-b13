@@ -6,7 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.milestone.backend.dto.ProfileUpdateRequest; 
+import com.milestone.backend.dto.ProfileResponseDto;
+import com.milestone.backend.dto.ProfileUpdateRequest;
 import com.milestone.backend.entity.User;
 import com.milestone.backend.entity.Role;
 import com.milestone.backend.entity.LawyerProfile;
@@ -16,6 +17,9 @@ import com.milestone.backend.repository.UserRepository;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import com.milestone.backend.dto.VerificationRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/profile")
@@ -23,6 +27,7 @@ import java.util.Map;
 public class ProfileController {
 
     private final UserRepository userRepository;
+    private final com.milestone.backend.service.ProfileService profileService;
 
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getProfile(@AuthenticationPrincipal User user) {
@@ -43,13 +48,14 @@ public class ProfileController {
             safeProfile.put("organizationName", user.getNgoProfile().getOrganizationName());
             safeProfile.put("serviceArea", user.getNgoProfile().getServiceArea());
             // CHANGE 1: Added location to the NGO GET response
-            safeProfile.put("location", user.getNgoProfile().getLocation()); 
+            safeProfile.put("location", user.getNgoProfile().getLocation());
         }
 
         return ResponseEntity.ok(safeProfile);
     }
 
-    // CHANGE 2: Changed return type from ResponseEntity<User> to ResponseEntity<Map<String, Object>>
+    // CHANGE 2: Changed return type from ResponseEntity<User> to
+    // ResponseEntity<Map<String, Object>>
     @PutMapping("/update")
     public ResponseEntity<Map<String, Object>> updateProfile(
             @Valid @RequestBody ProfileUpdateRequest request,
@@ -72,9 +78,12 @@ public class ProfileController {
                 lawyerProfile.setUser(user);
                 user.setLawyerProfile(lawyerProfile);
             }
-            if (request.getSpecialization() != null) user.getLawyerProfile().setSpecialization(request.getSpecialization());
-            if (request.getExperience() != null) user.getLawyerProfile().setExperience(request.getExperience());
-            if (request.getLocation() != null) user.getLawyerProfile().setLocation(request.getLocation());
+            if (request.getSpecialization() != null)
+                user.getLawyerProfile().setSpecialization(request.getSpecialization());
+            if (request.getExperience() != null)
+                user.getLawyerProfile().setExperience(request.getExperience());
+            if (request.getLocation() != null)
+                user.getLawyerProfile().setLocation(request.getLocation());
         }
 
         // 3. Update NGO specific details
@@ -84,16 +93,40 @@ public class ProfileController {
                 ngoProfile.setUser(user);
                 user.setNgoProfile(ngoProfile);
             }
-            if (request.getOrganizationName() != null) user.getNgoProfile().setOrganizationName(request.getOrganizationName());
-            if (request.getServiceArea() != null) user.getNgoProfile().setServiceArea(request.getServiceArea());
+            if (request.getOrganizationName() != null)
+                user.getNgoProfile().setOrganizationName(request.getOrganizationName());
+            if (request.getServiceArea() != null)
+                user.getNgoProfile().setServiceArea(request.getServiceArea());
             // CHANGE 3: Catch the location from the frontend and save it
-            if (request.getLocation() != null) user.getNgoProfile().setLocation(request.getLocation());
+            if (request.getLocation() != null)
+                user.getNgoProfile().setLocation(request.getLocation());
         }
 
         // Save the user to the database
         userRepository.save(user);
 
-        // CHANGE 4: Return the exact same safe Map as the GET request instead of the raw User
-        return getProfile(user); 
+        // CHANGE 4: Return the exact same safe Map as the GET request instead of the
+        // raw User
+        return getProfile(user);
+    }
+
+    @GetMapping("/profiles/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ProfileResponseDto>> getAllProfiles() {
+
+        List<ProfileResponseDto> allProfiles = profileService.getAllProfiles();
+        return ResponseEntity.ok(allProfiles);
+    }
+
+    @PutMapping("/profile/verify")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> verifyUser(@RequestBody VerificationRequest request) {
+        
+        Map<String, Object> response = profileService.updateUserVerification(
+                request.getEmail(), 
+                request.isVerified()
+        );
+        
+        return ResponseEntity.ok(response);
     }
 }

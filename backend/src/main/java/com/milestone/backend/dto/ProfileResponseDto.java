@@ -21,4 +21,6 @@ public class ProfileResponseDto {
     // NGO fields
     private String organizationName;
     private String serviceArea;
+
+    private boolean isVerified;
 }

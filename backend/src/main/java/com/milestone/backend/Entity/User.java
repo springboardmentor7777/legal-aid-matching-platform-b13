@@ -54,8 +54,7 @@ public class User implements UserDetails {
     private LocalDateTime time_stamp;
 
     
-    private Boolean isVerified;
-
+    private Boolean isVerified = false;
     // ===== UserDetails Methods =====
 
     @Override
