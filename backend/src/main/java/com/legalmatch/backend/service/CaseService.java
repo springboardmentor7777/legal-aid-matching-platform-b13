@@ -7,10 +7,13 @@ import com.legalmatch.backend.entity.User;
 import com.legalmatch.backend.repository.CaseRepository;
 import com.legalmatch.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -49,24 +52,24 @@ public class CaseService {
                 .updatedAt(saved.getUpdatedAt())
                 .build();
     }
-    public List<CaseResponse> getMyCases(String username) {
+    public Page<CaseResponse> getMyCases(String username, int page, int size) {
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Case> cases = caseRepository.findByUser(user);
+        Pageable pageable = PageRequest.of(page, size);
 
-        return cases.stream()
-                .map(c -> CaseResponse.builder()
-                        .id(c.getId())
-                        .title(c.getTitle())
-                        .description(c.getDescription())
-                        .category(c.getCategory())
-                        .status(c.getStatus().name())
-                        .createdAt(c.getCreatedAt())
-                        .updatedAt(c.getUpdatedAt())
-                        .build())
-                .toList();
+        Page<Case> casePage = caseRepository.findByUser(user, pageable);
+
+        return casePage.map(c -> CaseResponse.builder()
+                .id(c.getId())
+                .title(c.getTitle())
+                .description(c.getDescription())
+                .category(c.getCategory())
+                .status(c.getStatus().name())
+                .createdAt(c.getCreatedAt())
+                .updatedAt(c.getUpdatedAt())
+                .build());
     }
     public CaseResponse getCaseById(Long id) {
 

@@ -25,9 +25,13 @@ public class CaseController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<?> getMyCases(Authentication authentication) {
+    public ResponseEntity<?> getMyCases(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
         return ResponseEntity.ok(
-                caseService.getMyCases(authentication.getName())
+                caseService.getMyCases(authentication.getName(), page, size)
         );
     }
 
