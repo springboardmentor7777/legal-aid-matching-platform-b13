@@ -9,5 +9,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface DirectoryProfileRepository extends JpaRepository<DirectoryProfile, Long> {
 
     Page<DirectoryProfile> findByUserRoleAndVerifiedTrue(Role role, Pageable pageable);
+    Page<DirectoryProfile> findByUser_RoleAndExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCaseAndVerified(
+            Role role,
+            String expertise,
+            String location,
+            boolean verified,
+            Pageable pageable
+    );
 
 }

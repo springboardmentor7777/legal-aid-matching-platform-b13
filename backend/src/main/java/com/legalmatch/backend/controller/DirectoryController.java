@@ -14,12 +14,17 @@ public class DirectoryController {
 
     @GetMapping("/lawyers")
     public ResponseEntity<?> getLawyers(
+            @RequestParam(defaultValue = "") String expertise,
+            @RequestParam(defaultValue = "") String location,
+            @RequestParam(defaultValue = "true") boolean verified,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size
+    ) {
 
-        return ResponseEntity.ok(service.getLawyers(page, size));
+        return ResponseEntity.ok(
+                service.getLawyers(expertise, location, verified, page, size)
+        );
     }
-
     @GetMapping("/ngos")
     public ResponseEntity<?> getNgos(
             @RequestParam(defaultValue = "0") int page,

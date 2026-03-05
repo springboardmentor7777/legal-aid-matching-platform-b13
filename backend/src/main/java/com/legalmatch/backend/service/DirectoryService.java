@@ -15,11 +15,20 @@ public class DirectoryService {
 
     private final DirectoryProfileRepository repository;
 
-    public Page<DirectoryProfileResponse> getLawyers(int page, int size) {
+    public Page<DirectoryProfileResponse> getLawyers(
+            String expertise,
+            String location,
+            boolean verified,
+            int page,
+            int size
+    ) {
 
         Page<DirectoryProfile> profiles =
-                repository.findByUser_RoleAndVerifiedTrue(
+                repository.findByUser_RoleAndExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCaseAndVerified(
                         Role.LAWYER,
+                        expertise,
+                        location,
+                        verified,
                         PageRequest.of(page, size)
                 );
 
