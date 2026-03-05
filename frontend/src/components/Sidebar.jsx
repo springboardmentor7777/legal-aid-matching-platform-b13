@@ -1,59 +1,42 @@
-import { NavLink } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link, useLocation } from "react-router-dom";
+import { Scale, User, Folder, Search, Handshake, BarChart2, Settings } from "lucide-react";
 
-export default function Sidebar({ isOpen }) {
-  const { user } = useAuth();
+export default function Sidebar() {
+  const location = useLocation();
 
-  const menus = {
-    ADMIN: [
-      { name: "Admin Panel", path: "/dashboard/admin" },
-      { name: "Profile", path: "/profile" }
-    ],
-    LAWYER: [
-      { name: "Matches", path: "/dashboard/lawyer" },
-      { name: "Profile", path: "/profile" }
-    ],
-    NGO: [
-      { name: "Impact", path: "/dashboard/ngo" },
-      { name: "Profile", path: "/profile" }
-    ],
-    CITIZEN: [
-      { name: "Case Submission", path: "/dashboard/citizen" },
-      { name: "Profile", path: "/profile" }
-    ]
-  };
+  const navItem = (to, label, Icon) => (
+    <Link
+      to={to}
+      className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm ${
+        location.pathname === to
+          ? "bg-gray-100 font-medium"
+          : "text-gray-600 hover:bg-gray-50"
+      }`}
+    >
+      <Icon size={18} />
+      {label}
+    </Link>
+  );
 
   return (
-    <aside className={`
-      ${isOpen ? "block" : "hidden"}
-      md:block
-      w-64 bg-white border-r border-gray-200 min-h-screen p-6
-    `}>
-
-      <div className="flex items-center gap-2 mb-8">
-        <div className="w-8 h-8 bg-blue-900 rounded-md"></div>
-        <span className="font-bold text-blue-900">
+    <div className="hidden md:flex flex-col w-64 bg-white border-r min-h-screen p-4">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="bg-blue-900 p-2 rounded-lg">
+          <Scale className="text-white w-5 h-5" />
+        </div>
+        <span className="font-semibold text-gray-900">
           LegalMatch Pro
         </span>
       </div>
 
-      <nav className="space-y-2">
-        {menus[user.role].map((item, i) => (
-          <NavLink
-            key={i}
-            to={item.path}
-            className={({ isActive }) =>
-              `block px-3 py-2 rounded-md ${
-                isActive
-                  ? "bg-gray-100"
-                  : "hover:bg-gray-50"
-              }`
-            }
-          >
-            {item.name}
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+      <div className="space-y-2">
+        {navItem("/dashboard/admin", "Profile Management", User)}
+        {navItem("/case-submission", "Case Submission", Folder)}
+        {navItem("#", "Directory", Search)}
+        {navItem("#", "Matches", Handshake)}
+        {navItem("#", "Impact Dashboard", BarChart2)}
+        {navItem("/dashboard/admin", "Admin Panel", Settings)}
+      </div>
+    </div>
   );
 }

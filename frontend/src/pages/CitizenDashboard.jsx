@@ -1,40 +1,57 @@
-import DashboardLayout from "../components/DashboardLayout";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+
+const API_URL = "http://localhost:8080/api";
 
 export default function CitizenDashboard() {
+  const [cases, setCases] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchCases();
+  }, []);
+
+  const fetchCases = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/cases/my`);
+      setCases(res.data);
+    } catch (err) {
+      setError("Failed to load cases.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) return <p>Loading cases...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-
-        <div>
-          <h2 className="text-2xl font-bold text-blue-900">
-            Citizen Dashboard
-          </h2>
-          <p className="text-gray-600">
-            Submit and track your legal aid requests.
-          </p>
-        </div>
-
-        <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">
-            My Requests
-          </h3>
-
-          <div className="space-y-4">
-            <div className="border rounded-md p-4">
-              Housing Dispute – <span className="text-yellow-600">Pending</span>
-            </div>
-
-            <div className="border rounded-md p-4">
-              Workplace Harassment – <span className="text-green-600">Approved</span>
-            </div>
-
-            <div className="border rounded-md p-4">
-              Child Support Case – <span className="text-red-600">Rejected</span>
-            </div>
-          </div>
-        </div>
-
+    <div>
+      <div className="flex justify-between mb-6">
+        <h2 className="text-xl font-semibold">My Cases</h2>
+        <Link
+          to="/case-submission"
+          className="bg-blue-900 text-white px-4 py-2 rounded-lg"
+        >
+          Submit New Case
+        </Link>
       </div>
-    </DashboardLayout>
+
+      <div className="grid gap-4">
+        {cases.map((c) => (
+          <div
+            key={c.id}
+            className="bg-white p-4 rounded-lg shadow"
+          >
+            <h3 className="font-semibold">{c.summary}</h3>
+            <p className="text-sm text-gray-500">
+              Status: {c.status}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

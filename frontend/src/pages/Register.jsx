@@ -1,97 +1,145 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, User, Scale } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
-  const { login } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    role: "CITIZEN",
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(email);
+    setIsLoading(true);
+    setError("");
+
+    try {
+      await register(formData);
+      navigate("/login");
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="flex min-h-screen">
+      {/* LEFT IMAGE */}
+      <div
+        className="hidden md:flex w-1/2 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1555374018-13a8994ab246?auto=format&fit=crop&w=1600&q=80')",
+        }}
+      ></div>
 
-      {/* Left */}
-      <div className="hidden md:flex w-1/2 bg-slate-800 items-center justify-center">
-        <div className="text-white text-3xl font-bold">
-          LegalMatch Pro
-        </div>
-      </div>
-
-      {/* Right */}
-      <div className="flex w-full md:w-1/2 items-center justify-center p-8">
-
-        <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-
-          {/* Logo */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-12 h-12 bg-blue-900 rounded-md flex items-center justify-center text-white text-xl">
-              ⚖
+      {/* RIGHT FORM */}
+      <div className="w-full md:w-1/2 flex items-center justify-center bg-white px-6">
+        <div className="w-full max-w-md">
+          <div className="flex flex-col items-center mb-8">
+            <div className="bg-blue-900 p-4 rounded-xl mb-4">
+              <Scale className="text-white w-8 h-8" />
             </div>
-            <h2 className="mt-4 text-2xl font-bold text-blue-900">
-              Register
-            </h2>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Create Account
+            </h1>
+            <p className="text-gray-500 text-sm mt-2 text-center">
+              Join LegalMatch Pro to connect with verified legal professionals.
+            </p>
           </div>
 
-          {/* Toggle */}
-          <div className="flex bg-gray-100 rounded-full p-1 mb-6">
-            <Link
-              to="/login"
-              className="flex-1 text-center py-2 text-sm text-gray-500"
-            >
-              Login
-            </Link>
-            <button className="flex-1 bg-white rounded-full py-2 text-sm shadow-sm">
-              Register
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="relative">
+              <User className="absolute left-3 top-3 text-gray-400" size={18} />
+              <input
+                type="text"
+                name="fullName"
+                required
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder="Full Name"
+                className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
+              />
+            </div>
 
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">
-                ✉
-              </span>
+              <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
               <input
                 type="email"
+                name="email"
                 required
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Email"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-900"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
               />
             </div>
 
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">
-                🔒
-              </span>
+              <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
               <input
                 type="password"
+                name="password"
                 required
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Password"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-900"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
               />
             </div>
+
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="w-full border rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-900 focus:outline-none"
+            >
+              <option value="CITIZEN">Citizen</option>
+              <option value="LAWYER">Lawyer</option>
+              <option value="NGO">NGO</option>
+            </select>
+
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
 
             <button
               type="submit"
-              className="w-full bg-blue-900 text-white py-2 rounded-md hover:bg-blue-800 transition"
+              disabled={isLoading}
+              className="w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-800 transition"
             >
-              Create Account
+              {isLoading ? "Creating Account..." : "Register"}
             </button>
-
           </form>
 
+          <p className="text-sm text-center mt-6 text-gray-600">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-900 font-medium">
+              Login
+            </Link>
+          </p>
         </div>
       </div>
-
     </div>
   );
 }

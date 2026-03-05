@@ -1,155 +1,132 @@
-import DashboardLayout from "../components/DashboardLayout";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Check, X } from "lucide-react";
 
-const users = [
-  {
-    name: "John Lawyer",
-    role: "LAWYER",
-    email: "lawyer@test.com",
-    date: "Jan 10, 2026",
-    status: "Pending"
-  },
-  {
-    name: "Sarah NGO",
-    role: "NGO",
-    email: "ngo@test.com",
-    date: "Jan 8, 2026",
-    status: "Approved"
-  },
-  {
-    name: "Mark Citizen",
-    role: "CITIZEN",
-    email: "citizen@test.com",
-    date: "Jan 5, 2026",
-    status: "Rejected"
-  }
-];
+const API_URL = "http://localhost:8080/api";
 
 export default function AdminDashboard() {
+  const [users, setUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/admin/users`);
+      setUsers(res.data);
+    } catch (err) {
+      setError("Failed to load users.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateStatus = async (id, status) => {
+    try {
+      await axios.put(`${API_URL}/admin/users/${id}/status`, { status });
+      fetchUsers();
+    } catch (err) {
+      alert("Failed to update status");
+    }
+  };
+
+  if (isLoading) return <p>Loading users...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
   return (
-    <DashboardLayout>
-
-      {/* Tabs */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6 flex gap-4">
-        <button className="bg-white shadow-sm px-4 py-2 rounded-md">
-          User Verification
-        </button>
-        <button>Directory Ingestion</button>
-        <button>System Logs</button>
-        <button>App Settings</button>
-      </div>
-
-      {/* Table Card */}
-      <div className="bg-white border border-gray-200 shadow-sm rounded-lg p-6">
-
-        <div className="flex justify-between mb-6">
-          <h2 className="text-lg font-semibold">
-            User Verification Queue
-          </h2>
-
-          <input
-            placeholder="Search users..."
-            className="border border-gray-300 rounded-md px-3 py-2 text-sm"
-          />
+    <div>
+      {/* Desktop Table */}
+      <div className="hidden md:table w-full bg-white rounded-lg shadow overflow-hidden">
+        <div className="table-header-group bg-gray-50 text-gray-600 text-sm">
+          <div className="table-row">
+            <div className="table-cell px-6 py-3">Name</div>
+            <div className="table-cell px-6 py-3">Role</div>
+            <div className="table-cell px-6 py-3">Email</div>
+            <div className="table-cell px-6 py-3">Status</div>
+            <div className="table-cell px-6 py-3">Actions</div>
+          </div>
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden md:block">
-          <table className="w-full text-sm">
-            <thead className="border-b">
-              <tr className="text-left text-gray-500">
-                <th className="py-3">Name</th>
-                <th>Role</th>
-                <th>Email</th>
-                <th>Submitted Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {users.map((user, i) => (
-                <tr key={i} className="border-b">
-                  <td className="py-4">{user.name}</td>
-                  <td>{user.role}</td>
-                  <td>{user.email}</td>
-                  <td>{user.date}</td>
-
-                  <td>
-                    {user.status === "Pending" && (
-                      <span className="px-3 py-1 rounded-full text-xs bg-orange-100 text-orange-600">
-                        Pending
-                      </span>
-                    )}
-                    {user.status === "Approved" && (
-                      <span className="px-3 py-1 rounded-full text-xs border border-gray-300 text-gray-600">
-                        Approved
-                      </span>
-                    )}
-                    {user.status === "Rejected" && (
-                      <span className="px-3 py-1 rounded-full text-xs bg-red-100 text-red-600">
-                        Rejected
-                      </span>
-                    )}
-                  </td>
-
-                  <td>
-                    {user.status === "Pending" ? (
-                      <div className="flex gap-2">
-                        <button className="bg-blue-900 text-white px-3 py-1 rounded text-xs">
-                          Approve
-                        </button>
-                        <button className="bg-red-400 text-white px-3 py-1 rounded text-xs">
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-gray-500 text-xs cursor-pointer">
-                        View Details
-                      </span>
-                    )}
-                  </td>
-
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="block md:hidden space-y-4">
-          {users.map((user, i) => (
-            <div key={i} className="border rounded-lg p-4 space-y-2">
-              <div className="flex justify-between">
-                <h3 className="font-semibold">{user.name}</h3>
-                <span className="text-xs">
+        <div className="table-row-group text-sm">
+          {users.map((user) => (
+            <div key={user.id} className="table-row border-t">
+              <div className="table-cell px-6 py-4">
+                {user.fullName}
+              </div>
+              <div className="table-cell px-6 py-4">
+                {user.role}
+              </div>
+              <div className="table-cell px-6 py-4">
+                {user.email}
+              </div>
+              <div className="table-cell px-6 py-4">
+                <span
+                  className={`px-3 py-1 text-xs rounded-full ${
+                    user.status === "PENDING"
+                      ? "bg-orange-100 text-orange-600"
+                      : user.status === "APPROVED"
+                      ? "bg-gray-100 text-gray-700"
+                      : "bg-red-100 text-red-600"
+                  }`}
+                >
                   {user.status}
                 </span>
               </div>
-
-              <p className="text-sm text-gray-500">
-                {user.email}
-              </p>
-
-              <p className="text-sm text-gray-400">
-                {user.date}
-              </p>
-
-              {user.status === "Pending" && (
-                <div className="flex flex-col gap-2 pt-2">
-                  <button className="bg-blue-900 text-white py-2 rounded">
-                    Approve
-                  </button>
-                  <button className="bg-red-400 text-white py-2 rounded">
-                    Reject
-                  </button>
-                </div>
-              )}
+              <div className="table-cell px-6 py-4 flex gap-2">
+                <button
+                  onClick={() =>
+                    updateStatus(user.id, "APPROVED")
+                  }
+                  className="bg-blue-900 text-white px-3 py-1 rounded flex items-center gap-1 text-xs"
+                >
+                  <Check size={14} /> Approve
+                </button>
+                <button
+                  onClick={() =>
+                    updateStatus(user.id, "REJECTED")
+                  }
+                  className="bg-red-500 text-white px-3 py-1 rounded flex items-center gap-1 text-xs"
+                >
+                  <X size={14} /> Reject
+                </button>
+              </div>
             </div>
           ))}
         </div>
-
       </div>
 
-    </DashboardLayout>
+      {/* Mobile Cards */}
+      <div className="grid md:hidden gap-4">
+        {users.map((user) => (
+          <div
+            key={user.id}
+            className="bg-white p-4 rounded-lg shadow"
+          >
+            <div className="flex items-center gap-3">
+              <img
+                src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=200&q=80"
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div>
+                <h3 className="font-semibold">
+                  {user.fullName}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex justify-between items-center">
+              <span className="text-sm">{user.role}</span>
+              <span className="text-xs">{user.status}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

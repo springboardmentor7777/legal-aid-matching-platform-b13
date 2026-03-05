@@ -1,43 +1,33 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import PrivateRoute from "./routes/PrivateRoute";
+import DashboardLayout from "./components/DashboardLayout";
+
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AdminDashboard from "./pages/AdminDashboard";
-import LawyerDashboard from "./pages/LawyerDashboard";
-import NgoDashboard from "./pages/NgoDashboard";
 import CitizenDashboard from "./pages/CitizenDashboard";
-import Profile from "./pages/Profile";
-import PrivateRoute from "./routes/PrivateRoute";
+import CaseSubmission from "./pages/CaseSubmission";
+import FilterableDirectory from "./pages/FilterableDirectory";
+import DirectoryIngestion from "./pages/DirectoryIngestion";
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" />} />
+      {/* Redirect root */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* Protected Routes */}
       <Route
         path="/dashboard/admin"
         element={
-          <PrivateRoute role="ADMIN">
-            <AdminDashboard />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/dashboard/lawyer"
-        element={
-          <PrivateRoute role="LAWYER">
-            <LawyerDashboard />
-          </PrivateRoute>
-        }
-      />
-
-      <Route
-        path="/dashboard/ngo"
-        element={
-          <PrivateRoute role="NGO">
-            <NgoDashboard />
+          <PrivateRoute>
+            <DashboardLayout>
+              <AdminDashboard />
+            </DashboardLayout>
           </PrivateRoute>
         }
       /> 
@@ -45,20 +35,49 @@ export default function App() {
       <Route
         path="/dashboard/citizen"
         element={
-          <PrivateRoute role="CITIZEN">
-            <CitizenDashboard />
+          <PrivateRoute>
+            <DashboardLayout>
+              <CitizenDashboard />
+            </DashboardLayout>
           </PrivateRoute>
         }
       />
 
       <Route
-        path="/profile"
+        path="/case-submission"
         element={
           <PrivateRoute>
-            <Profile />
+            <DashboardLayout>
+              <CaseSubmission />
+            </DashboardLayout>
           </PrivateRoute>
         }
       />
+
+      <Route
+        path="/directory"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <FilterableDirectory />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/directory-ingestion"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <DirectoryIngestion />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }
