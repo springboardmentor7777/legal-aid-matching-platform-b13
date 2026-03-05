@@ -32,5 +32,22 @@ public class DirectoryService {
                 .verified(p.isVerified())
                 .build());
     }
+    public Page<DirectoryProfileResponse> getNgos(int page, int size) {
+
+        Page<DirectoryProfile> profiles =
+                repository.findByUserRoleAndVerifiedTrue(
+                        Role.NGO,
+                        PageRequest.of(page, size)
+                );
+
+        return profiles.map(p -> DirectoryProfileResponse.builder()
+                .id(p.getId())
+                .name(p.getUser().getName())
+                .organizationName(p.getOrganizationName())
+                .expertise(p.getExpertise())
+                .location(p.getLocation())
+                .verified(p.isVerified())
+                .build());
+    }
 
 }
