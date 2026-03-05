@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../auth/AuthContext";
-import { getCitizenCases, type CitizenCase, type CaseStatus } from "../api/caseService";
+import { type CitizenCase, type CaseStatus } from "../api/caseService";
 
 export type Role = "CITIZEN" | "LAWYER" | "NGO" | "ADMIN";
 
@@ -61,8 +61,20 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchCases = async () => {
+      setLoading(true);
       try {
-        const data = await getCitizenCases();
+        const response = await fetch("http://localhost:8081/cases/my", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        });
+        if (!response.ok) {
+          setError("failed to fetch");
+        }
+        const data = await response.json();
+
         setCases(data);
       } catch (err) {
         console.error(err);
@@ -91,13 +103,13 @@ const Dashboard: React.FC = () => {
     .filter(
       (c) =>
         c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.description.toLowerCase().includes(searchTerm.toLowerCase())
+        c.description.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
   const totalPages = Math.ceil(filteredCases.length / casesPerPage);
   const paginatedCases = filteredCases.slice(
     (currentPage - 1) * casesPerPage,
-    currentPage * casesPerPage
+    currentPage * casesPerPage,
   );
 
   // Cards for other roles
@@ -133,7 +145,11 @@ const Dashboard: React.FC = () => {
     <div className="flex min-h-screen bg-blue-50">
       {/* Sidebar */}
       <div className="hidden lg:block w-64">
-        <Sidebar role={user.role as Role} isOpen={true} toggleSidebar={() => {}} />
+        <Sidebar
+          role={user.role as Role}
+          isOpen={true}
+          toggleSidebar={() => {}}
+        />
       </div>
 
       {sidebarOpen && (
@@ -152,11 +168,18 @@ const Dashboard: React.FC = () => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
-        <Navbar title="Dashboard" name={user.username} toggleSidebar={toggleSidebar} />
+        <Navbar
+          title="Dashboard"
+          name={user.username}
+          role={user.role}
+          toggleSidebar={toggleSidebar}
+        />
 
         <main className="px-6 py-6 flex-1">
           <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 mb-6">
-            <h1 className="text-2xl font-bold text-blue-900">Welcome, {user.username}!</h1>
+            <h1 className="text-2xl font-bold text-blue-900">
+              Welcome, {user.username}!
+            </h1>
           </div>
 
           {user.role === "CITIZEN" ? (
@@ -172,7 +195,9 @@ const Dashboard: React.FC = () => {
               {/* Case List */}
               <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 mb-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-3">
-                  <h2 className="text-xl font-bold text-blue-900">My Submitted Cases</h2>
+                  <h2 className="text-xl font-bold text-blue-900">
+                    My Submitted Cases
+                  </h2>
 
                   <div className="flex gap-3 flex-wrap">
                     <input
@@ -224,20 +249,26 @@ const Dashboard: React.FC = () => {
                         className="p-4 border rounded-xl hover:shadow-md transition"
                       >
                         <div className="flex justify-between items-center">
-                          <h3 className="font-semibold text-blue-800">{caseItem.title}</h3>
+                          <h3 className="font-semibold text-blue-800">
+                            {caseItem.title}
+                          </h3>
                           <StatusBadge status={caseItem.status} />
                         </div>
 
-                        <p className="text-gray-600 text-sm mt-2">{caseItem.description}</p>
+                        <p className="text-gray-600 text-sm mt-2">
+                          {caseItem.description}
+                        </p>
 
                         <p className="text-xs text-gray-400 mt-2">
-                          Submitted on {new Date(caseItem.createdAt).toLocaleDateString()}
+                          Submitted on{" "}
+                          {new Date(caseItem.createdAt).toLocaleDateString()}
                         </p>
 
                         {caseItem.status === "MATCHED" && caseItem.lawyer && (
                           <div className="mt-3 p-3 bg-green-50 rounded-lg text-sm">
                             <p>
-                              <strong>Assigned Lawyer:</strong> {caseItem.lawyer.name}
+                              <strong>Assigned Lawyer:</strong>{" "}
+                              {caseItem.lawyer.name}
                             </p>
                             <p>
                               <strong>Email:</strong> {caseItem.lawyer.email}
@@ -292,7 +323,9 @@ const Dashboard: React.FC = () => {
                   key={title}
                   className="bg-white p-6 rounded-2xl shadow-md border border-blue-100"
                 >
-                  <h3 className="text-blue-900 text-sm font-semibold">{title}</h3>
+                  <h3 className="text-blue-900 text-sm font-semibold">
+                    {title}
+                  </h3>
                   <p className="text-3xl font-bold text-blue-700 mt-3">0</p>
                 </div>
               ))}

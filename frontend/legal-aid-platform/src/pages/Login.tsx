@@ -31,7 +31,13 @@ export default function Login() {
     try{
       const data = await signin({email: form.email, password: form.password});
       login(data, form.email);
-      navigate("/dashboard");
+      // console.log(data.role);
+      // navigate("/dashboard");
+      if(data.role !=="ADMIN" ){
+        navigate("/dashboard");
+      }else{
+        navigate("/admin");
+      }
 
     }catch(err:any){
       setError(err.response?.data?.message || "Login failed, please check your credentials");
@@ -50,7 +56,7 @@ export default function Login() {
             Login
           </h1>
           <p className="text-sm text-gray-500 mt-2">
-            Sign in to continue to Legal Aid Matching Platoform
+            Sign in to continue to Legal Aid Matching Platform
           </p>
         </div>
         {error && (

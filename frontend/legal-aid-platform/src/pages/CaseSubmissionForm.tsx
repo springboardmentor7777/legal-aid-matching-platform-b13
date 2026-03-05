@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
+import { LuSquareArrowLeft } from "react-icons/lu";
 
 interface CaseFormData {
   title: string;
@@ -49,13 +50,14 @@ const CaseSubmissionForm: React.FC = () => {
     else if (formData.description.length < 10)
       newErrors.description = "Minimum 10 characters required.";
     if (!formData.category) newErrors.category = "Category is required.";
-    if (!formData.location.trim())
-      newErrors.location = "Location is required.";
+    if (!formData.location.trim()) newErrors.location = "Location is required.";
     return newErrors;
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
     if (name === "attachment") {
@@ -106,6 +108,15 @@ const CaseSubmissionForm: React.FC = () => {
       });
       */
 
+      await fetch("http://localhost:8081/cases", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+        body: JSON.stringify(jsonData),
+      });
+
       setSuccessMessage("Case submitted successfully.");
       setFormData({
         title: "",
@@ -127,18 +138,33 @@ const CaseSubmissionForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-blue-50">
-      <Navbar title="Submit Case" name={user.username} />
+      <Navbar
+        title="Submit Case"
+        name={user.username}
+        role={user.role}
+        toggleSidebar={() => {}}
+      />
       <div className="flex justify-center mt-10">
         <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-8 border-t-4 border-blue-900">
-          <h2 className="text-2xl font-bold mb-6 text-blue-900">Submit Your Case</h2>
+          <a href="/dashboard" className="text-blue-900 mb-2">
+            {<LuSquareArrowLeft />}back to dashboard
+          </a>
+          <h2 className="text-2xl font-bold mb-6 text-blue-900">
+            Submit Your Case
+          </h2>
 
-          {successMessage && <p className="text-green-600 mb-4">{successMessage}</p>}
+          {successMessage && (
+            <p className="text-green-600 mb-4">{successMessage}</p>
+          )}
           {serverError && <p className="text-red-600 mb-4">{serverError}</p>}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="title"
+                className="block font-medium text-gray-700 mb-1"
+              >
                 Case Title
               </label>
               <input
@@ -150,12 +176,17 @@ const CaseSubmissionForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
-              {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
+              {errors.title && (
+                <p className="text-red-600 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="description"
+                className="block font-medium text-gray-700 mb-1"
+              >
                 Case Description
               </label>
               <textarea
@@ -167,12 +198,19 @@ const CaseSubmissionForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
-              {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
+              {errors.description && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             {/* Category */}
             <div>
-              <label htmlFor="category" className="block font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="category"
+                className="block font-medium text-gray-700 mb-1"
+              >
                 Category
               </label>
               <select
@@ -189,12 +227,17 @@ const CaseSubmissionForm: React.FC = () => {
                   </option>
                 ))}
               </select>
-              {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category}</p>}
+              {errors.category && (
+                <p className="text-red-600 text-sm mt-1">{errors.category}</p>
+              )}
             </div>
 
             {/* Location */}
             <div>
-              <label htmlFor="location" className="block font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="location"
+                className="block font-medium text-gray-700 mb-1"
+              >
                 Location
               </label>
               <input
@@ -206,13 +249,18 @@ const CaseSubmissionForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
-              {errors.location && <p className="text-red-600 text-sm mt-1">{errors.location}</p>}
+              {errors.location && (
+                <p className="text-red-600 text-sm mt-1">{errors.location}</p>
+              )}
             </div>
 
             {/* Date & Time */}
             <div className="flex gap-2">
               <div className="flex-1">
-                <label htmlFor="incidentDate" className="block font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="incidentDate"
+                  className="block font-medium text-gray-700 mb-1"
+                >
                   Incident Date
                 </label>
                 <input
@@ -225,7 +273,10 @@ const CaseSubmissionForm: React.FC = () => {
                 />
               </div>
               <div className="flex-1">
-                <label htmlFor="incidentTime" className="block font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="incidentTime"
+                  className="block font-medium text-gray-700 mb-1"
+                >
                   Incident Time
                 </label>
                 <input
@@ -241,21 +292,35 @@ const CaseSubmissionForm: React.FC = () => {
 
             {/* Attachment */}
             <div>
-              <label className="block font-medium text-gray-700 mb-1">Attachment</label>
+              <label className="block font-medium text-gray-700 mb-1">
+                Attachment
+              </label>
               <div className="flex gap-2">
-                <div className={`flex-1 border rounded px-3 py-2 ${formData.attachment ? "bg-gray-200" : "bg-white"}`}>
-                  {formData.attachment ? formData.attachment.name : "No file chosen"}
+                <div
+                  className={`flex-1 border rounded px-3 py-2 ${formData.attachment ? "bg-gray-200" : "bg-white"}`}
+                >
+                  {formData.attachment
+                    ? formData.attachment.name
+                    : "No file chosen"}
                 </div>
                 <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
                   {formData.attachment ? "Choose Another File" : "Choose File"}
-                  <input type="file" name="attachment" onChange={handleChange} className="hidden" />
+                  <input
+                    type="file"
+                    name="attachment"
+                    onChange={handleChange}
+                    className="hidden"
+                  />
                 </label>
               </div>
             </div>
 
             {/* Contact */}
             <div>
-              <label htmlFor="contactInfo" className="block font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="contactInfo"
+                className="block font-medium text-gray-700 mb-1"
+              >
                 Contact Info
               </label>
               <input
@@ -271,7 +336,10 @@ const CaseSubmissionForm: React.FC = () => {
 
             {/* Notes */}
             <div>
-              <label htmlFor="additionalNotes" className="block font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="additionalNotes"
+                className="block font-medium text-gray-700 mb-1"
+              >
                 Additional Notes
               </label>
               <textarea

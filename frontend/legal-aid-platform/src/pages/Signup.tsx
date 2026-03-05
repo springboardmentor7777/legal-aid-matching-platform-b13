@@ -29,7 +29,14 @@ export default function Signup() {
 
   const validate = () => {
     // if (!form.name) return "Name is required";
-    if (!form.email.includes("@")) return "Invalid email";
+    if (
+      !form.email.includes("@gmail.com") &&
+      !form.email.includes("@") &&
+      !form.email.includes("@yahoo.com") &&
+      !form.email.includes("") &&
+      !form.email.includes("/^[\s@]+@[^\s@]+\.[^\s@]+$/")
+    )
+      return "Invalid email";
     if (form.password.length < 6)
       return "Password must be at least 6 characters";
     return null;
@@ -60,7 +67,9 @@ export default function Signup() {
         <h2 className="text-2xl text-blue-900 font-sans font-bold text-center mb-6">
           Welcome to Legal Aid Matching platform!
         </h2>
-        <p className="text-center mb-6 text-mono text-m text-gray-700">We serve what you deserve</p>
+        <p className="text-center mb-6 text-mono text-m text-gray-700">
+          We serve what you deserve
+        </p>
 
         {error && (
           <div className="mb-4 text-red-500 text-sm text-center font-mono">
