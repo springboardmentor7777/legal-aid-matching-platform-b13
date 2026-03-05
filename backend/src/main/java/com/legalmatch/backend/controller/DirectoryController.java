@@ -19,6 +19,7 @@ public class DirectoryController {
 
         return ResponseEntity.ok(service.getLawyers(page, size));
     }
+
     @GetMapping("/ngos")
     public ResponseEntity<?> getNgos(
             @RequestParam(defaultValue = "0") int page,
@@ -26,5 +27,4 @@ public class DirectoryController {
 
         return ResponseEntity.ok(service.getNgos(page, size));
     }
-
 }
