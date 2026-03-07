@@ -3,7 +3,12 @@ package com.teamthree.legalaid.service;
 import com.teamthree.legalaid.dto.AuthResponse;
 import com.teamthree.legalaid.dto.LoginRequest;
 import com.teamthree.legalaid.dto.RegisterRequest;
+import com.teamthree.legalaid.entity.LawyerProfile;
+import com.teamthree.legalaid.entity.NgoProfile;
+import com.teamthree.legalaid.entity.Role;
 import com.teamthree.legalaid.entity.User;
+import com.teamthree.legalaid.repository.LawyerRepository;
+import com.teamthree.legalaid.repository.NgoProfileRepository;
 import com.teamthree.legalaid.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,9 +21,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final LawyerRepository lawyerRepository;
+    private final NgoProfileRepository ngoProfileRepository;
 
     public AuthResponse register(RegisterRequest request) {
-
         if (userRepository.existsByEmail(request.getEmail())) {
             return AuthResponse.builder()
                     .status("error")
@@ -32,8 +38,32 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user.setProvider("local");
-
         userRepository.save(user);
+
+        // If registering as LAWYER — create LawyerProfile
+        if (request.getRole() == Role.LAWYER) {
+            LawyerProfile profile = new LawyerProfile();
+            profile.setUser(user);
+            profile.setSpecialization(request.getSpecialization());
+            profile.setExpertise(request.getSpecialization());
+            profile.setLocation(request.getLocation());
+            profile.setExperienceYears(request.getExperienceYears());
+            profile.setVerified(false);
+            profile.setIsAvailable(true);
+            lawyerRepository.save(profile);
+        }
+
+        // If registering as NGO — create NgoProfile
+        if (request.getRole() == Role.NGO) {
+            NgoProfile profile = new NgoProfile();
+            profile.setUser(user);
+            profile.setOrganizationName(request.getFullName());
+            profile.setExpertise(request.getSpecialization());
+            profile.setLocation(request.getLocation());
+            profile.setVerified(false);
+            profile.setIsActive(true);
+            ngoProfileRepository.save(profile);
+        }
 
         return AuthResponse.builder()
                 .status("success")
@@ -42,7 +72,6 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

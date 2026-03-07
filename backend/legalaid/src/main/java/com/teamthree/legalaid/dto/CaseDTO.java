@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class CaseDTO {
 
-    // --- Core fields (used by CaseController / CaseService) ---
+    // Core fields
     private Long id;
     private Long userId;
     private String title;
@@ -25,10 +26,35 @@ public class CaseDTO {
     private String userName;
     private String userEmail;
 
-    // --- Extended fields (used by dashboard services) ---
-    private Long caseId;        // alias for id — used by Lawyer/Ngo/User dashboard mappers
-    private String caseTitle;   // alias for title — used by Lawyer/Ngo/User dashboard mappers
-    private String clientName;  // name of the citizen who filed the case
-    private String lawyerName;  // name of the assigned lawyer
-    private String ngoName;     // name of the assigned NGO
+    // Extended fields
+    private String keywords;
+    private String dateTime;
+    private String contactInfo;
+
+    // Other Party
+    private String otherPartyName;
+    private String otherPartyLocation;
+    private String otherPartyContact;
+    private String otherPartyRepresentative;
+
+    // Criminal
+    private String investigatingOfficer;
+    private String witnesses;
+
+    // Status
+    private String currentStatus;
+
+    // Evidence
+    private String firNumber;
+    private String firDocument;
+    private String firDocumentName;
+    private List<String> caseDocuments;
+    private List<String> caseDocumentNames;
+
+    // Aliases used by dashboard services
+    private Long caseId;
+    private String caseTitle;
+    private String clientName;
+    private String lawyerName;
+    private String ngoName;
 }
