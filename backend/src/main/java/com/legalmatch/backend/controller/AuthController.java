@@ -14,6 +14,7 @@ import com.legalmatch.backend.dto.RefreshTokenRequest;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = {"http://localhost:5173","http://localhost:5174"})
 @RequiredArgsConstructor
 public class AuthController {
 
