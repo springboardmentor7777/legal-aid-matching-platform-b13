@@ -8,7 +8,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
     password: "",
     role: "CITIZEN",
@@ -73,11 +73,11 @@ export default function Register() {
               <User className="absolute left-3 top-3 text-gray-400" size={18} />
               <input
                 type="text"
-                name="fullName"
+                name="name"
                 required
-                value={formData.fullName}
+                value={formData.name}
                 onChange={handleChange}
-                placeholder="Full Name"
+                placeholder="Name"
                 className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
               />
             </div>
