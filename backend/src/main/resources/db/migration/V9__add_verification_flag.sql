@@ -1,5 +1,0 @@
-ALTER TABLE lawyer_profiles
-ADD COLUMN verified BOOLEAN DEFAULT FALSE;
-
-ALTER TABLE ngo_profiles
-ADD COLUMN verified BOOLEAN DEFAULT FALSE;
