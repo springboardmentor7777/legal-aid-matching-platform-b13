@@ -1,3 +1,4 @@
+SET search_path TO public;
 CREATE TYPE user_role AS ENUM ('LAWYER', 'NGO', 'ADMIN');
 
 CREATE TABLE users (
