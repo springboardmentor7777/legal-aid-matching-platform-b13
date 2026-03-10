@@ -1,7 +1,6 @@
 package com.legalmatch.backend;
 
 import org.flywaydb.core.Flyway;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,9 +8,18 @@ import org.springframework.context.annotation.Configuration;
 public class FlywayRunner {
 
     @Bean
-    CommandLineRunner migrateDatabase(Flyway flyway) {
-        return args -> {
-            flyway.migrate();
-        };
+    public Flyway flyway() {
+        Flyway flyway = Flyway.configure()
+                .dataSource(
+                        "jdbc:postgresql://localhost:5432/legal_system",
+                        "legal_user",
+                        "legal@321"
+                )
+                .locations("classpath:db/migration")
+                .load();
+
+        flyway.migrate();
+
+        return flyway;
     }
 }
