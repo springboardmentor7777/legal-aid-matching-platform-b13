@@ -42,8 +42,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
-
+                .requestMatchers("/notifications/**").permitAll()
                 // Role-restricted endpoints
+                
                 .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
                 .requestMatchers("/lawyer/**").hasRole("LAWYER")
                 .requestMatchers("/ngo/**").hasRole("NGO")
@@ -70,7 +71,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Single source of truth for CORS — update this if your frontend port changes
         // Vite default is 5173; CRA default is 3000
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174" , "http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

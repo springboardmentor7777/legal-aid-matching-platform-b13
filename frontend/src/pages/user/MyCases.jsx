@@ -30,6 +30,24 @@ const MyCases = () => {
     fetchCases();
   }, []);
 
+ const acceptCase = async (id) => {
+    try {
+      await API.put(`/api/cases/${id}/accept`);
+      alert("Case accepted successfully");
+    } catch (error) {
+      console.error("Error accepting case", error);
+    }
+  };
+
+  const declineCase = async (id) => {
+    try {
+      await API.put(`/api/cases/${id}/decline`);
+      alert("Case declined");
+    } catch (error) {
+      console.error("Error declining case", error);
+    }
+  };
+
   const filtered = filter === "ALL" ? cases : cases.filter(c => c.status === filter);
 
   return (
@@ -99,6 +117,19 @@ const MyCases = () => {
                   {c.lawyerName && (
                     <span style={styles.metaItem}>⚖️ {c.lawyerName}</span>
                   )}
+                </div>
+                <div style={styles.actions}>
+                  <Link to={`/case-details/${c.id}`} style={styles.viewBtn}>
+                    View Details
+                  </Link>
+
+                  <button style={styles.acceptBtn} onClick={() => acceptCase(c.id)}>
+                    Accept
+                  </button>
+
+                  <button style={styles.declineBtn} onClick={() => declineCase(c.id)}>
+                    Decline
+                  </button>
                 </div>
               </div>
             );
