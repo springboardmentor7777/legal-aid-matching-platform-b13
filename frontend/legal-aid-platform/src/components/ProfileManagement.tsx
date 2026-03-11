@@ -27,7 +27,7 @@ export default function ProfileManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/users");
+      const res = await api.get("http://localhost:8081/profile/profiles/all");
       setUsers(res.data);
     } catch (error) {
       console.error("Error fetching users:", error);
