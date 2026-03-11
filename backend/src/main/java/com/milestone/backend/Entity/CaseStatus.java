@@ -1,7 +1,7 @@
 package com.milestone.backend.entity;
 
 public enum CaseStatus {
-     SUBMITTED,
+    SUBMITTED,
     IN_REVIEW,
     MATCHED
 }
