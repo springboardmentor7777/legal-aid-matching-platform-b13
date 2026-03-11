@@ -1,4 +1,5 @@
 // src/pages/CaseSubmissionForm.tsx
+
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
@@ -6,360 +7,473 @@ import Navbar from "../components/Navbar";
 import { LuSquareArrowLeft } from "react-icons/lu";
 
 interface CaseFormData {
+  // STEP 1 - CASE DETAILS
   title: string;
   description: string;
   category: string;
+  customCategory: string;
+  subcategory: string;
   location: string;
   incidentDate?: string;
   incidentTime?: string;
+  currentStatus: string;
+
+  // STEP 2 - OTHER PARTY INFO
+  personName: string;
+  contactInfo: string;
+  otherRepresentative: string;
+  otherLocation: string;
+
+  // STEP 3 - EVIDENCE
+  firNumber: string;
+  firFile?: File | null;
+  legalDocuments?: File | null;
   attachment?: File | null;
-  contactInfo?: string;
   additionalNotes?: string;
 }
 
 const CaseSubmissionForm: React.FC = () => {
   const { user } = useAuth();
+  const [step, setStep] = useState(1);
+
+  const caseCategories: Record<string, string[]> = {
+    civil: ["Contract Dispute", "Property Dispute", "Consumer Complaint", "Defamation"],
+    criminal: ["Theft", "Fraud", "Assault", "Robbery"],
+    family: ["Divorce", "Child Custody", "Domestic Violence"],
+    property: ["Illegal Possession", "Boundary Dispute"],
+    cyber: ["Online Fraud", "Identity Theft", "Phishing"],
+    employment: ["Wrongful Termination", "Workplace Harassment"],
+    financial: ["Bank Fraud", "Loan Dispute"],
+  };
 
   const [formData, setFormData] = useState<CaseFormData>({
     title: "",
     description: "",
     category: "",
+    customCategory: "",
+    subcategory: "",
     location: "",
     incidentDate: "",
     incidentTime: "",
-    attachment: null,
+    currentStatus: "",
+
+    personName: "",
     contactInfo: "",
+    otherRepresentative: "",
+    otherLocation: "",
+
+    firNumber: "",
+    firFile: null,
+    legalDocuments: null,
+    attachment: null,
     additionalNotes: "",
   });
 
   const [errors, setErrors] = useState<Partial<CaseFormData>>({});
-  const [successMessage, setSuccessMessage] = useState("");
-  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const categories = ["civil", "criminal", "family", "property"];
 
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== "CITIZEN") return <Navigate to="/dashboard" replace />;
 
-  const validate = () => {
-    const newErrors: Partial<CaseFormData> = {};
-    if (!formData.title.trim()) newErrors.title = "Title is required.";
-    if (!formData.description.trim())
-      newErrors.description = "Description is required.";
-    else if (formData.description.length < 10)
-      newErrors.description = "Minimum 10 characters required.";
-    if (!formData.category) newErrors.category = "Category is required.";
-    if (!formData.location.trim()) newErrors.location = "Location is required.";
-    return newErrors;
-  };
-
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
-    if (name === "attachment") {
-      setFormData((prev) => ({ ...prev, attachment: files ? files[0] : null }));
+
+    if (name === "category") {
+      setFormData((prev) => ({
+        ...prev,
+        category: value,
+        subcategory: "",
+        customCategory: "",
+      }));
+    } else if (files) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: files[0],
+      }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccessMessage("");
-    setServerError("");
+  const validateStep = () => {
+    const newErrors: Partial<CaseFormData> = {};
+    const now = new Date();
 
-    const validationErrors = validate();
+    // STEP 1: Case Details
+    if (step === 1) {
+      if (!formData.title) newErrors.title = "Title required";
+      if (!formData.description) newErrors.description = "Description required";
+      if (!formData.category) newErrors.category = "Category required";
+      if (formData.category === "other" && !formData.customCategory)
+        newErrors.customCategory = "Write category";
+      if (formData.category !== "other" && !formData.subcategory)
+        newErrors.subcategory = "Subcategory required";
+      if (!formData.location) newErrors.location = "Location required";
+      if (!formData.incidentDate) newErrors.incidentDate = "Incident date required";
+      else if (new Date(formData.incidentDate) > now)
+        newErrors.incidentDate = "Incident date cannot be in the future";
+      if (!formData.incidentTime) newErrors.incidentTime = "Incident time required";
+      if (!formData.currentStatus) newErrors.currentStatus = "Select current status";
+    }
+
+    // STEP 2: Other Party Info
+    if (step === 2) {
+      if (!formData.personName) newErrors.personName = "Other party name required";
+      if (formData.contactInfo && !/^\d{10}$/.test(formData.contactInfo))
+        newErrors.contactInfo = "Mobile number must be 10 digits";
+      if (!formData.otherRepresentative)
+        newErrors.otherRepresentative = "Representative required";
+      if (!formData.otherLocation) newErrors.otherLocation = "Representative location required";
+    }
+
+    // STEP 3: Evidence
+    if (step === 3) {
+      if (!formData.firNumber) newErrors.firNumber = "FIR number required";
+      if (!formData.firFile) newErrors.firFile = "FIR document is mandatory";
+    }
+
+    return newErrors;
+  };
+
+  const handleNext = () => {
+    const validationErrors = validateStep();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-
     setErrors({});
+    setStep((prev) => prev + 1);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validationErrors = validateStep();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     setLoading(true);
 
-    try {
-      const jsonData = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        location: formData.location,
-        incidentDate: formData.incidentDate,
-        incidentTime: formData.incidentTime,
-        attachment: formData.attachment ? formData.attachment.name : null,
-        contactInfo: formData.contactInfo,
-        additionalNotes: formData.additionalNotes,
-      };
+    const jsonData = {
+      ...formData,
+      firFile: formData.firFile?.name,
+      legalDocuments: formData.legalDocuments?.name,
+      attachment: formData.attachment?.name,
+    };
 
-      console.log("Data that will go to backend (JSON):", jsonData);
+    console.log("Submitting:", jsonData);
 
-      /* 
-      🔹 LATER WHEN CONNECTING BACKEND:
-      await fetch("YOUR_BACKEND_URL", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(jsonData),
-      });
-      */
+    await fetch("http://localhost:8081/cases", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+      body: JSON.stringify(jsonData),
+    });
 
-      await fetch("http://localhost:8081/cases", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-        body: JSON.stringify(jsonData),
-      });
-
-      setSuccessMessage("Case submitted successfully.");
-      setFormData({
-        title: "",
-        description: "",
-        category: "",
-        location: "",
-        incidentDate: "",
-        incidentTime: "",
-        attachment: null,
-        contactInfo: "",
-        additionalNotes: "",
-      });
-    } catch (error) {
-      setServerError("Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-blue-50">
-      <Navbar
-        title="Submit Case"
-        name={user.username}
-        role={user.role}
-        toggleSidebar={() => {}}
-      />
-      <div className="flex justify-center mt-10">
-        <div className="w-full max-w-lg bg-white shadow-lg rounded-lg p-8 border-t-4 border-blue-900">
-          <a href="/dashboard" className="text-blue-900 mb-2">
-            {<LuSquareArrowLeft />}back to dashboard
-          </a>
-          <h2 className="text-2xl font-bold mb-6 text-blue-900">
-            Submit Your Case
-          </h2>
+      <Navbar title="Submit Case" name={user.username} role={user.role} toggleSidebar={() => {}} />
 
-          {successMessage && (
-            <p className="text-green-600 mb-4">{successMessage}</p>
-          )}
-          {serverError && <p className="text-red-600 mb-4">{serverError}</p>}
+      <div className="flex justify-center mt-10">
+        <div className="w-full max-w-xl bg-white shadow-lg rounded-lg p-8 border-t-4 border-blue-900">
+          <a href="/dashboard" className="flex items-center gap-1 text-blue-900 mb-4">
+            <LuSquareArrowLeft /> Back to Dashboard
+          </a>
+
+          {/* STEP PROGRESS */}
+          <div className="flex items-center justify-between mb-8">
+            {[1, 2, 3].map((s) => (
+              <div key={s} className="flex items-center flex-1">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
+                    step >= s ? "bg-blue-900" : "bg-gray-300"
+                  }`}
+                >
+                  {s}
+                </div>
+                {s !== 3 && <div className={`flex-1 h-1 ${step > s ? "bg-blue-900" : "bg-gray-300"}`}></div>}
+              </div>
+            ))}
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Title */}
-            <div>
-              <label
-                htmlFor="title"
-                className="block font-medium text-gray-700 mb-1"
-              >
-                Case Title
-              </label>
-              <input
-                id="title"
-                type="text"
-                name="title"
-                placeholder="Enter case title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
-              {errors.title && (
-                <p className="text-red-600 text-sm mt-1">{errors.title}</p>
-              )}
-            </div>
+            {/* STEP 1 - CASE DETAILS */}
+            {step === 1 && (
+              <>
+                <h3 className="font-semibold text-lg">Case Details</h3>
 
-            {/* Description */}
-            <div>
-              <label
-                htmlFor="description"
-                className="block font-medium text-gray-700 mb-1"
-              >
-                Case Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                placeholder="Enter case description"
-                rows={4}
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
-              {errors.description && (
-                <p className="text-red-600 text-sm mt-1">
-                  {errors.description}
-                </p>
-              )}
-            </div>
-
-            {/* Category */}
-            <div>
-              <label
-                htmlFor="category"
-                className="block font-medium text-gray-700 mb-1"
-              >
-                Category
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              >
-                <option value="">Select category</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-              {errors.category && (
-                <p className="text-red-600 text-sm mt-1">{errors.category}</p>
-              )}
-            </div>
-
-            {/* Location */}
-            <div>
-              <label
-                htmlFor="location"
-                className="block font-medium text-gray-700 mb-1"
-              >
-                Location
-              </label>
-              <input
-                id="location"
-                type="text"
-                name="location"
-                placeholder="Enter location"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
-              {errors.location && (
-                <p className="text-red-600 text-sm mt-1">{errors.location}</p>
-              )}
-            </div>
-
-            {/* Date & Time */}
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label
-                  htmlFor="incidentDate"
-                  className="block font-medium text-gray-700 mb-1"
-                >
-                  Incident Date
-                </label>
+                <label className="block font-medium">Case Title</label>
                 <input
-                  id="incidentDate"
-                  type="date"
-                  name="incidentDate"
-                  value={formData.incidentDate}
+                  name="title"
+                  placeholder="Case Title"
+                  value={formData.title}
                   onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
+                  className="w-full border px-3 py-2 rounded"
                 />
-              </div>
-              <div className="flex-1">
-                <label
-                  htmlFor="incidentTime"
-                  className="block font-medium text-gray-700 mb-1"
-                >
-                  Incident Time
-                </label>
-                <input
-                  id="incidentTime"
-                  type="time"
-                  name="incidentTime"
-                  value={formData.incidentTime}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
-            </div>
+                {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
 
-            {/* Attachment */}
-            <div>
-              <label className="block font-medium text-gray-700 mb-1">
-                Attachment
-              </label>
-              <div className="flex gap-2">
-                <div
-                  className={`flex-1 border rounded px-3 py-2 ${formData.attachment ? "bg-gray-200" : "bg-white"}`}
+                <label className="block font-medium">Case Description</label>
+                <textarea
+                  name="description"
+                  placeholder="Case Description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+                {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+
+                <label className="block font-medium">Category</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
                 >
-                  {formData.attachment
-                    ? formData.attachment.name
-                    : "No file chosen"}
+                  <option value="">Select Category</option>
+                  {Object.keys(caseCategories).map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.toUpperCase()}
+                    </option>
+                  ))}
+                  <option value="other">OTHER</option>
+                </select>
+                {errors.category && <p className="text-red-500 text-sm">{errors.category}</p>}
+
+                {formData.category === "other" && (
+                  <>
+                    <label className="block font-medium">Custom Category</label>
+                    <input
+                      name="customCategory"
+                      placeholder="Write your category"
+                      value={formData.customCategory}
+                      onChange={handleChange}
+                      className="w-full border px-3 py-2 rounded"
+                    />
+                    {errors.customCategory && <p className="text-red-500 text-sm">{errors.customCategory}</p>}
+                  </>
+                )}
+
+                {formData.category && formData.category !== "other" && (
+                  <>
+                    <label className="block font-medium">Subcategory</label>
+                    <select
+                      name="subcategory"
+                      value={formData.subcategory}
+                      onChange={handleChange}
+                      className="w-full border px-3 py-2 rounded"
+                    >
+                      <option value="">Select Subcategory</option>
+                      {caseCategories[formData.category].map((sub) => (
+                        <option key={sub} value={sub}>
+                          {sub}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.subcategory && <p className="text-red-500 text-sm">{errors.subcategory}</p>}
+                  </>
+                )}
+
+                <label className="block font-medium">Location</label>
+                <input
+                  name="location"
+                  placeholder="Location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+                {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
+
+                <div className="flex gap-2 mt-2">
+                  <div className="flex-1">
+                    <label className="block font-medium">Incident Date</label>
+                    <input
+                      type="date"
+                      name="incidentDate"
+                      value={formData.incidentDate}
+                      onChange={handleChange}
+                      className="border px-3 py-2 rounded w-full"
+                    />
+                    {errors.incidentDate && <p className="text-red-500 text-sm">{errors.incidentDate}</p>}
+                  </div>
+                  <div className="flex-1">
+                    <label className="block font-medium">Incident Time</label>
+                    <input
+                      type="time"
+                      name="incidentTime"
+                      value={formData.incidentTime}
+                      onChange={handleChange}
+                      className="border px-3 py-2 rounded w-full"
+                    />
+                    {errors.incidentTime && <p className="text-red-500 text-sm">{errors.incidentTime}</p>}
+                  </div>
                 </div>
-                <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
-                  {formData.attachment ? "Choose Another File" : "Choose File"}
-                  <input
-                    type="file"
-                    name="attachment"
-                    onChange={handleChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
 
-            {/* Contact */}
-            <div>
-              <label
-                htmlFor="contactInfo"
-                className="block font-medium text-gray-700 mb-1"
-              >
-                Contact Info
-              </label>
-              <input
-                id="contactInfo"
-                type="text"
-                name="contactInfo"
-                placeholder="Enter contact info"
-                value={formData.contactInfo}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
+                <label className="block font-medium">Current Status</label>
+                <select
+                  name="currentStatus"
+                  value={formData.currentStatus}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                >
+                  <option value="">Select Status</option>
+                  <option value="ongoing">Ongoing</option>
+                  <option value="to_be_initiated">To be Initiated</option>
+                </select>
+                {errors.currentStatus && <p className="text-red-500 text-sm">{errors.currentStatus}</p>}
+              </>
+            )}
 
-            {/* Notes */}
-            <div>
-              <label
-                htmlFor="additionalNotes"
-                className="block font-medium text-gray-700 mb-1"
-              >
-                Additional Notes
-              </label>
-              <textarea
-                id="additionalNotes"
-                name="additionalNotes"
-                placeholder="Enter any additional notes"
-                rows={3}
-                value={formData.additionalNotes}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2"
-              />
-            </div>
+            {/* STEP 2 - OTHER PARTY INFO */}
+            {step === 2 && (
+              <>
+                <h3 className="font-semibold text-lg">Other Party Information</h3>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-900 text-white py-2 rounded"
-            >
-              {loading ? "Submitting..." : "Submit Case"}
-            </button>
+                <label className="block font-medium">Other Party Name</label>
+                <input
+                  name="personName"
+                  placeholder="Other Party Name"
+                  value={formData.personName}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+                {errors.personName && <p className="text-red-500 text-sm">{errors.personName}</p>}
+
+                <label className="block font-medium">Contact Number (Optional)</label>
+                <input
+                  name="contactInfo"
+                  placeholder="10-digit mobile number"
+                  value={formData.contactInfo}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+                {errors.contactInfo && <p className="text-red-500 text-sm">{errors.contactInfo}</p>}
+
+                <label className="block font-medium">Representative</label>
+                <input
+                  name="otherRepresentative"
+                  placeholder="Representative Name"
+                  value={formData.otherRepresentative}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+                {errors.otherRepresentative && (
+                  <p className="text-red-500 text-sm">{errors.otherRepresentative}</p>
+                )}
+
+                <label className="block font-medium">Representative Location</label>
+                <input
+                  name="otherLocation"
+                  placeholder="Representative Location"
+                  value={formData.otherLocation}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+                {errors.otherLocation && <p className="text-red-500 text-sm">{errors.otherLocation}</p>}
+              </>
+            )}
+
+            {/* STEP 3 - EVIDENCE */}
+            {step === 3 && (
+              <>
+                <h3 className="font-semibold text-lg">Evidence & Documents</h3>
+
+                <label className="block font-medium">FIR Number</label>
+                <input
+                  name="firNumber"
+                  placeholder="FIR Number"
+                  value={formData.firNumber}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+                {errors.firNumber && <p className="text-red-500 text-sm">{errors.firNumber}</p>}
+
+                <label className="block font-medium">FIR Document</label>
+                <div className="flex gap-2">
+                  <div className="flex-1 border rounded px-3 py-2 bg-gray-50">
+                    {formData.firFile ? formData.firFile.name : "No file chosen"}
+                  </div>
+                  <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
+                    Choose File
+                    <input type="file" name="firFile" onChange={handleChange} className="hidden" />
+                  </label>
+                </div>
+                {errors.firFile && <p className="text-red-500 text-sm">{errors.firFile}</p>}
+
+                <label className="block font-medium mt-2">Legal Documents</label>
+                <div className="flex gap-2">
+                  <div className="flex-1 border rounded px-3 py-2 bg-gray-50">
+                    {formData.legalDocuments ? formData.legalDocuments.name : "No file chosen"}
+                  </div>
+                  <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
+                    Choose File
+                    <input type="file" name="legalDocuments" onChange={handleChange} className="hidden" />
+                  </label>
+                </div>
+
+                <label className="block font-medium mt-2">Other Evidence</label>
+                <div className="flex gap-2">
+                  <div className="flex-1 border rounded px-3 py-2 bg-gray-50">
+                    {formData.attachment ? formData.attachment.name : "No file chosen"}
+                  </div>
+                  <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
+                    Choose File
+                    <input type="file" name="attachment" onChange={handleChange} className="hidden" />
+                  </label>
+                </div>
+
+                <label className="block font-medium mt-2">Additional Notes</label>
+                <textarea
+                  name="additionalNotes"
+                  placeholder="Additional Notes"
+                  value={formData.additionalNotes}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded"
+                />
+              </>
+            )}
+
+            {/* NAVIGATION BUTTONS */}
+            <div className="flex justify-between pt-4">
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setStep(step - 1)}
+                  className="bg-gray-300 px-4 py-2 rounded"
+                >
+                  Previous
+                </button>
+              )}
+
+              {step < 3 && (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-blue-900 text-white px-4 py-2 rounded ml-auto"
+                >
+                  Next
+                </button>
+              )}
+
+              {step === 3 && (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-blue-900 text-white px-4 py-2 rounded ml-auto"
+                >
+                  {loading ? "Submitting..." : "Submit Case"}
+                </button>
+              )}
+            </div>
           </form>
         </div>
       </div>

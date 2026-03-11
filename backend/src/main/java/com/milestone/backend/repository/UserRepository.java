@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository; // 🔹 1. Added this import!
 import com.milestone.backend.entity.User;
 import com.milestone.backend.entity.Role; 
 
+
 @Repository // 🔹 2. Added this annotation to force Spring to create the Bean!
 public interface UserRepository extends JpaRepository<User, Long> {
 
