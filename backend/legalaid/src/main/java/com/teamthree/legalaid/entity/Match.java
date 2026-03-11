@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package com.teamthree.legalaid.entity;
 
 import jakarta.persistence.*;
@@ -49,3 +50,10 @@ public class Match {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
+=======
+package com.teamthree.legalaid.entity;
+
+public class Match {
+
+}
+>>>>>>> branch 'team-three' of https://github.com/springboardmentor7777/legal-aid-matching-platform-b13.git
