@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface CaseRepository extends JpaRepository<Case, Long> {
 
-    // --- Count methods ---
+
     long countByStatus(String status);
     long countByAssignedToAndStatus(User assignedTo, String status);
     long countByClient(User client);
@@ -27,27 +27,27 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
     @Query("SELECT COUNT(DISTINCT c.assignedTo) FROM Case c WHERE c.ngo = :ngo")
     long countDistinctLawyersByNgo(@Param("ngo") NgoProfile ngo);
 
-    // --- Lawyer dashboard ---
+
     List<Case> findByAssignedToAndStatusOrderByFiledDateDesc(User assignedTo, String status);
     List<Case> findByAssignedToAndHearingDateBetween(User assignedTo, LocalDateTime start, LocalDateTime end);
     List<Case> findTop5ByAssignedToOrderByFiledDateDesc(User assignedTo);
 
-    // --- User dashboard ---
+
     List<Case> findByClientOrderByFiledDateDesc(User client);
     List<Case> findByClientAndStatusIn(User client, List<String> statuses);
     List<Case> findByClientAndStatus(User client, String status);
     List<Case> findTop5ByClientOrderByFiledDateDesc(User client);
     Optional<Case> findFirstByClientOrderByFiledDateDesc(User client);
 
-    // --- NGO dashboard ---
+
     List<Case> findByNgoOrderByFiledDateDesc(NgoProfile ngo);
     List<Case> findByNgoAndStatus(NgoProfile ngo, String status);
     List<Case> findByNgoAndHearingDateAfterOrderByHearingDateAsc(NgoProfile ngo, LocalDateTime date);
 
-    // --- Admin dashboard --- (was missing, caused compile error)
+
     List<Case> findTop10ByOrderByFiledDateDesc();
 
-    // --- Admin recent activities (native query) ---
+
     @Query(value = "SELECT c.id, " +
            "CASE " +
            "  WHEN c.updated_at > c.created_at THEN 'CASE_UPDATED' " +
@@ -64,7 +64,7 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
            "ORDER BY timestamp DESC LIMIT 10", nativeQuery = true)
     List<Object[]> findRecentActivities();
 
-    // --- User-specific recent activities ---
+
     @Query(value = "SELECT c.id, " +
            "CASE " +
            "  WHEN c.updated_at > c.created_at THEN 'CASE_UPDATED' " +

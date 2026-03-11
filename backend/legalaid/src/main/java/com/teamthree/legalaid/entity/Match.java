@@ -11,77 +11,83 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "case_id")
-    private Long caseId;
+    @ManyToOne
+    @JoinColumn(name = "case_id")
+    private Case case_;
 
-    @Column(name = "lawyer_id")
-    private Long lawyerId;
+    @Column(name = "profile_id")
+    private Long profileId;
 
-    @Column(name = "ngo_id")
-    private Long ngoId;
+    @Column(name = "profile_type")
+    private String profileType;
 
     @Column(name = "match_score")
-    private Double matchScore;
+    private Integer matchScore;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "match_date")
+    private LocalDateTime matchDate;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    public enum Status {
-        PENDING,
-        ACCEPTED,
-        REJECTED
-    }
-
     public Match() {
         this.createdAt = LocalDateTime.now();
-        this.status = Status.PENDING;
+        this.status = "PENDING";
     }
 
     public Long getId() {
         return id;
     }
 
-    public Long getCaseId() {
-        return caseId;
+    public Case getCase() {
+        return case_;
     }
 
-    public void setCaseId(Long caseId) {
-        this.caseId = caseId;
+    public void setCase(Case case_) {
+        this.case_ = case_;
     }
 
-    public Long getLawyerId() {
-        return lawyerId;
+    public Long getProfileId() {
+        return profileId;
     }
 
-    public void setLawyerId(Long lawyerId) {
-        this.lawyerId = lawyerId;
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
     }
 
-    public Long getNgoId() {
-        return ngoId;
+    public String getProfileType() {
+        return profileType;
     }
 
-    public void setNgoId(Long ngoId) {
-        this.ngoId = ngoId;
+    public void setProfileType(String profileType) {
+        this.profileType = profileType;
     }
 
-    public Double getMatchScore() {
+    public Integer getMatchScore() {
         return matchScore;
     }
 
-    public void setMatchScore(Double matchScore) {
+    public void setMatchScore(Integer matchScore) {
         this.matchScore = matchScore;
     }
 
-    public Status getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDateTime getMatchDate() {
+        return matchDate;
+    }
+
+    public void setMatchDate(LocalDateTime matchDate) {
+        this.matchDate = matchDate;
     }
 
     public LocalDateTime getCreatedAt() {
