@@ -64,6 +64,7 @@ function App() {
             {/* Dashboard redirect */}
             <Route path="/dashboard" element={<DashboardRedirect />} />
 
+<<<<<<< HEAD
             {/* Citizen Routes */}
             <Route
               path="/citizen/dashboard"
@@ -81,6 +82,19 @@ function App() {
                 </PrivateRoute>
               }
             />
+=======
+      {/* Protected Routes */}
+      <Route
+        path="/dashboard/admin"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <AdminDashboard />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      /> 
+>>>>>>> 2fa9e5e72acd3a0f2939a75f13b07aa7080f5b88
 
             {/* Lawyer Routes */}
             <Route

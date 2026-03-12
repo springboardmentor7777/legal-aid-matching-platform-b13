@@ -16,6 +16,7 @@ import org.springframework.security.config.Customizer;
 
 import com.legalmatch.backend.security.JwtAuthenticationFilter;
 import com.legalmatch.backend.service.CustomerUserDetailsService;
+import com.legalmatch.backend.security.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -32,8 +33,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
