@@ -34,7 +34,7 @@ public class CaseService {
         newCase.setDescription(request.getDescription());
         newCase.setCategory(request.getCategory());
         
-        // --- Mapping Sandeep's New Fields ---
+        
         newCase.setLocation(request.getLocation());
         newCase.setIncidentDate(request.getIncidentDate());
         newCase.setIncidentTime(request.getIncidentTime());
