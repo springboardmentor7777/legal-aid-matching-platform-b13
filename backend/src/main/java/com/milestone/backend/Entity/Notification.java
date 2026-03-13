@@ -20,16 +20,35 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Connects to the User who receives the notification
+    // Maps to user_id BIGINT NOT NULL
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(length = 150)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String message;
 
-    @Column(nullable = false)
+    @Column(length = 50)
+    private String type;
+
+    @Column(name = "reference_id")
+    private Long referenceId;
+
+    @Column(name = "reference_type", length = 50)
+    private String referenceType;
+
+    @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 
+    @Column(length = 20)
+    private String priority;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
 }
