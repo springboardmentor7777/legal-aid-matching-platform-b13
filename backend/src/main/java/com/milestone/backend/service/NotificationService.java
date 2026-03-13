@@ -11,6 +11,9 @@ public interface NotificationService {
 
     Map<Long, Boolean> UpdateIsRead(long id, boolean isRead);
 
-    void createNotification(User user, String message);
-    
+    // void createNotification(User user, String message);
+
+    // void createNotification(User user, String title, String message, String type, 
+    //                         Long referenceId, String referenceType, String priority);
+    void createNotification(User user, String title, String message, String type, Long referenceId);
 }

@@ -19,6 +19,12 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
+    private String appointmentDate;
+    private String appointmentTime;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
 
     // Connects the appointment to the specific Match
     @ManyToOne
