@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/chats/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
                 .requestMatchers("/notifications/**").permitAll()
                 // Role-restricted endpoints
