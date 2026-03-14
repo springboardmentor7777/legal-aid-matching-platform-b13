@@ -1,11 +1,8 @@
 package com.teamthree.legalaid.controller;
 
-<<<<<<< HEAD
-public class NotificationController {
 
-}
-=======
 import com.teamthree.legalaid.entity.Notification;
+
 import com.teamthree.legalaid.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -36,4 +33,4 @@ public class NotificationController {
     }
    
 }
->>>>>>> 1105205 (Added notification APIs)
+

@@ -1,10 +1,6 @@
 package com.teamthree.legalaid.service;
 
-<<<<<<< HEAD
-public class NotificationService {
 
-}
-=======
 import com.teamthree.legalaid.entity.Notification;
 import com.teamthree.legalaid.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,4 +28,4 @@ public class NotificationService {
         return repository.save(notification);
     }
 }
->>>>>>> 1105205 (Added notification APIs)
+

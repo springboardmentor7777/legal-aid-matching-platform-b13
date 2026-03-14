@@ -1,10 +1,5 @@
 package com.teamthree.legalaid.entity;
 
-<<<<<<< HEAD
-public class Notification {
-
-}
-=======
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,4 +24,4 @@ public class Notification {
     private String type;
     
 }
->>>>>>> 1105205 (Added notification APIs)
+
