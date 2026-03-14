@@ -2,12 +2,15 @@ package com.milestone.backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor // Added for better compatibility with JSON mapping
 public class MatchResponse {
     private Long matchId;
     private String status;
+    private Integer score;   // <--- Added this to make it visible in JSON
 
     // Case details
     private Long caseId;

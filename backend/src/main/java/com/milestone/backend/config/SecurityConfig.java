@@ -48,7 +48,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/auth/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/profile/**").authenticated()
-                          .requestMatchers("/matches/**").authenticated()
+                          // Generate matches: only citizens can do this
+                .requestMatchers(HttpMethod.POST, "/matches/generate/**").hasRole("CITIZEN")
+                
+                // Provider endpoints: lawyers/ngos can view their matches
+                .requestMatchers(HttpMethod.GET, "/matches/provider/**").hasAnyRole("LAWYER", "NGO")
+                
+                // Accept/reject matches: only providers
+                .requestMatchers(HttpMethod.PUT, "/matches/**/accept").hasAnyRole("LAWYER", "NGO")
+                .requestMatchers(HttpMethod.PUT, "/matches/**/reject").hasAnyRole("LAWYER", "NGO")
+                
                         .requestMatchers("/cases/**").authenticated()
 
                         .anyRequest().authenticated())
