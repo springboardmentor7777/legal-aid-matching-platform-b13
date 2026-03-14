@@ -13,6 +13,9 @@ import NgoDirectory from "./pages/NgoDirectories";
 import EditProfile from "./pages/Editprofile";
 import Mycase from "./pages/Mycase";
 import AdminPanel from "./pages/AdminPanel";
+import ChatPage from "./pages/ChatPage";
+import MatchingResults from "./pages/MatchingResults";
+import AppointmentScheduler from "./pages/AppointmentScheduler";
 
 function App() {
   return (
@@ -97,6 +100,10 @@ function App() {
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/chatpage" element={<ChatPage />} />
+      <Route path="/MatchingResults" element={<MatchingResults />} />
+      <Route path="/pages/AppointmentScheduler" element={<AppointmentScheduler />} />
+
     </Routes>
   );
 }
