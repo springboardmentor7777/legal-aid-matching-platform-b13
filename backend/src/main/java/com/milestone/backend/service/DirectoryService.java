@@ -185,6 +185,34 @@ public class DirectoryService {
             }
         }
     }
+    public User toggleLawyerAvailability(Long lawyerId) {
+        User user = userRepository.findById(lawyerId)
+                .orElseThrow(() -> new RuntimeException("Lawyer not found"));
+
+        if (user.getRole() != Role.LAWYER || user.getLawyerProfile() == null) {
+            throw new RuntimeException("Lawyer profile not found");
+        }
+
+        Boolean current = user.getLawyerProfile().getIsAvailable();
+        user.getLawyerProfile().setIsAvailable(current == null ? true : !current);
+
+        return userRepository.save(user);
+    }
+
+    public User toggleNgoAvailability(Long ngoId) {
+        User user = userRepository.findById(ngoId)
+                .orElseThrow(() -> new RuntimeException("NGO not found"));
+
+        if (user.getRole() != Role.NGO || user.getNgoProfile() == null) {
+            throw new RuntimeException("NGO profile not found");
+        }
+
+        Boolean current = user.getNgoProfile().getIsAvailable();
+        user.getNgoProfile().setIsAvailable(current == null ? true : !current);
+
+        return userRepository.save(user);
+    }
+
 
     // ══════════════════════════════════════════════════════════════════════════
     //  Private Helpers
