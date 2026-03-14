@@ -21,16 +21,20 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
-    const response = await axios.post(`${API_URL}/auth/login`, credentials);
+    try {
+      const response = await axios.post(`${API_URL}/auth/login`, credentials);
 
-    const { token, user } = response.data;
+      const { accessToken } = response.data;
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", accessToken);
 
-    setUser(user);
+      setUser({ email: credentials.email });
 
-    return user;
+      return response.data;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    }
   };
 
   const register = async (data) => {

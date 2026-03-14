@@ -1,5 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { Scale, User, Folder, Search, Handshake, BarChart2, Settings } from "lucide-react";
+import {
+  Scale,
+  User,
+  Folder,
+  Search,
+  Handshake,
+  BarChart2,
+  Settings,
+  MessageCircle
+} from "lucide-react";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -32,9 +41,12 @@ export default function Sidebar() {
       <div className="space-y-2">
         {navItem("/dashboard/admin", "Profile Management", User)}
         {navItem("/case-submission", "Case Submission", Folder)}
-        {navItem("#", "Directory", Search)}
-        {navItem("#", "Matches", Handshake)}
-        {navItem("#", "Impact Dashboard", BarChart2)}
+        {navItem("/directory", "Directory", Search)}
+
+        {navItem("/matches", "Matches", Handshake)}
+        {navItem("/chat", "Secure Chat", MessageCircle)}
+
+        {navItem("/impact-dashboard", "Impact Dashboard", BarChart2)}
         {navItem("/dashboard/admin", "Admin Panel", Settings)}
       </div>
     </div>

@@ -8,7 +8,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    emailOrUsername: "",
+    email: "",
     password: "",
   });
 
@@ -25,19 +25,19 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
+
+    console.log("Submitting login:", formData);
 
     try {
-      const user = await login(formData);
-      navigate("/dashboard/admin");
+      await login({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      navigate("/dashboard/citizen");
+
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          "Login failed. Please check your credentials."
-      );
-    } finally {
-      setIsLoading(false);
+      setError("Login failed. Please check your credentials.");
     }
   };
 
@@ -59,30 +59,36 @@ export default function Login() {
             <div className="bg-blue-900 p-4 rounded-xl mb-4">
               <Scale className="text-white w-8 h-8" />
             </div>
+
             <h1 className="text-2xl font-bold text-gray-900">
               Welcome Back
             </h1>
+
             <p className="text-gray-500 text-sm mt-2 text-center">
               Sign in to access your LegalMatch Pro dashboard.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* EMAIL */}
             <div className="relative">
               <Mail className="absolute left-3 top-3 text-gray-400" size={18} />
               <input
-                type="text"
-                name="emailOrUsername"
+                type="email"
+                name="email"
                 required
-                value={formData.emailOrUsername}
+                value={formData.email}
                 onChange={handleChange}
-                placeholder="Email or Username"
+                placeholder="Email"
                 className="w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
               />
             </div>
 
+            {/* PASSWORD */}
             <div className="relative">
               <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
+
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -92,6 +98,7 @@ export default function Login() {
                 placeholder="Password"
                 className="w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-blue-900 focus:outline-none"
               />
+
               <div
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 cursor-pointer text-gray-400"
@@ -100,10 +107,12 @@ export default function Login() {
               </div>
             </div>
 
+            {/* ERROR */}
             {error && (
               <p className="text-sm text-red-500 text-center">{error}</p>
             )}
 
+            {/* LOGIN BUTTON */}
             <button
               type="submit"
               disabled={isLoading}
@@ -113,12 +122,14 @@ export default function Login() {
             </button>
           </form>
 
+          {/* DIVIDER */}
           <div className="flex items-center my-6">
             <div className="flex-grow border-t"></div>
             <span className="px-3 text-gray-400 text-sm">OR</span>
             <div className="flex-grow border-t"></div>
           </div>
 
+          {/* SOCIAL LOGIN (UI ONLY) */}
           <div className="flex gap-4">
             <button className="w-1/2 border py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50">
               <img
@@ -139,6 +150,7 @@ export default function Login() {
             </button>
           </div>
 
+          {/* REGISTER LINK */}
           <p className="text-sm text-center mt-6 text-gray-600">
             Don't have an account?{" "}
             <Link to="/register" className="text-blue-900 font-medium">
@@ -150,3 +162,4 @@ export default function Login() {
     </div>
   );
 }
+
