@@ -101,7 +101,7 @@ function App() {
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/chatpage" element={<ChatPage />} />
-      <Route path="/MatchingResults" element={<MatchingResults />} />
+      <Route path="/pages/MatchingResult" element={<MatchingResults />} />
       <Route path="/pages/AppointmentScheduler" element={<AppointmentScheduler />} />
 
     </Routes>
