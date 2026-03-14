@@ -5,6 +5,7 @@ import Dropdown from "./Dropdown";
 import { FaUserCircle } from "react-icons/fa";
 import {FaSignOutAlt} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
 
 interface NavbarProps {
   title: string;
@@ -51,6 +52,7 @@ const Navbar: React.FC<NavbarProps> = ({ title, name, role, toggleSidebar }) => 
         {/* <button className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-900 font-bold" onClick={()=>{}}>
           {name.charAt(0)}
         </button> */}
+        <NotificationBell />
         <a className="text-blue-900 cursor-pointer border rounded-md p-1 justify-center" onClick={() =>{
           (role === "ADMIN")?navigate("/admin"):navigate("/dashboard");
         }}>Dashboard</a>
@@ -69,3 +71,4 @@ const Navbar: React.FC<NavbarProps> = ({ title, name, role, toggleSidebar }) => 
 };
 
 export default Navbar;
+ Navbar;
