@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
-// import jakarta.persistence.Column;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,9 +33,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_users_roles", columnList = "role")
+        @Index(name = "idx_users_roles", columnList = "role")
 }, uniqueConstraints = {
-    @UniqueConstraint(name="uk_users_email", columnNames = "email")
+        @UniqueConstraint(name = "uk_users_email", columnNames = "email")
 })
 public class User implements UserDetails {
 
@@ -44,9 +44,11 @@ public class User implements UserDetails {
     private Long id;
     @Column(nullable = false)
     private String name;
-@Column(nullable = false)
+
+    @Column(nullable = false)
     private String email;
-@Column(nullable = false)
+
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -54,7 +56,6 @@ public class User implements UserDetails {
 
     private LocalDateTime time_stamp;
 
-    
     private Boolean isVerified = false;
     // ===== UserDetails Methods =====
 
@@ -74,29 +75,33 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
-
-
+    public boolean isEnabled() {
+        return true;
+    }
 
     // getters & setters
 
-    @JsonIgnoreProperties({"user"})
+    @JsonIgnoreProperties({ "user" })
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private LawyerProfile lawyerProfile;
 
-    @JsonIgnoreProperties({"user"})
+    @JsonIgnoreProperties({ "user" })
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private NgoProfile ngoProfile;
 
-
 }
-
