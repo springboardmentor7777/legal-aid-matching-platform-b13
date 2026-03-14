@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -41,11 +42,11 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(nullable = false)
     private String name;
-
+@Column(nullable = false)
     private String email;
-
+@Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -88,11 +89,11 @@ public class User implements UserDetails {
 
     // getters & setters
 
-    @JsonIgnore
+    @JsonIgnoreProperties({"user"})
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private LawyerProfile lawyerProfile;
 
-    @JsonIgnore
+    @JsonIgnoreProperties({"user"})
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private NgoProfile ngoProfile;
 

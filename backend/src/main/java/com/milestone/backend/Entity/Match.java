@@ -8,11 +8,13 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder // Added for easier testing and object creation
 @Entity
 @Table(name = "matches",
        indexes = {
            @Index(name = "idx_case_id", columnList = "case_id"),
-           @Index(name = "idx_provider_id", columnList = "provider_id")
+           @Index(name = "idx_provider_id", columnList = "provider_id"),
+           @Index(name = "idx_status", columnList = "status") // Index on status for faster filtering
        })
 public class Match {
 
@@ -20,35 +22,45 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Connects to the Case table
-    @ManyToOne(fetch = FetchType.LAZY)
+    // fetch = FetchType.LAZY is good for performance
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "case_id", nullable = false)
     private Case legalCase;
 
-    // Connects to the Lawyer or NGO's main User account
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "provider_id", nullable = false)
     private User matchedProvider;
+            
+    @Column(nullable = false)
+    private Integer score = 0; 
 
-    // Automatically set match date when persisted
     @Column(nullable = false, updatable = false)
     private LocalDateTime matchDate;
 
-    // Status enum for type safety
+    // Added to track when a provider accepts or rejects the match
+    private LocalDateTime statusUpdatedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MatchStatus status = MatchStatus.PENDING;
 
-    // Automatically set matchDate before inserting
     @PrePersist
     public void prePersist() {
-        matchDate = LocalDateTime.now();
+        if (this.matchDate == null) {
+            this.matchDate = LocalDateTime.now();
+        }
+        if (this.status == null) {
+            this.status = MatchStatus.PENDING;
+        }
     }
 
-    // Enum for status
+    // Custom setter for status to automatically update the timestamp
+    public void setStatus(MatchStatus status) {
+        this.status = status;
+        this.statusUpdatedAt = LocalDateTime.now();
+    }
+
     public enum MatchStatus {
-        PENDING,
-        ACCEPTED,
-        REJECTED
+        PENDING, ACCEPTED, REJECTED
     }
 }
