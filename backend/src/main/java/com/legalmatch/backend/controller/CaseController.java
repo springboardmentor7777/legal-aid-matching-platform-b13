@@ -8,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/cases")
+@RequestMapping("api/cases")
 @RequiredArgsConstructor
 public class CaseController {
 
