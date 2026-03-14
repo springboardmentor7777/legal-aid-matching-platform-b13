@@ -20,7 +20,7 @@ public class MatchController {
     private final MatchingService matchingService;
     private final UserRepository userRepository;
 
-    @GetMapping("/generate/{caseId}")
+    @PostMapping("/generate/{caseId}")
     public List<MatchResponse> getRecommendations(@PathVariable Long caseId) {
         return matchingService.getPotentialProviders(caseId);
     }
