@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { FaBell } from "react-icons/fa";
 import NotificationPanel from "./NotificationPanel";
 import type { Notification } from "../types/NotificationType";
-import { fetchNotifications } from "../api/Notification.api";
+import { fetchNotifications }  from "../api/Notification.api";
 
 const NotificationBell = () => {
 

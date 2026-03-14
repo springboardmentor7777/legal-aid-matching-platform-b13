@@ -3,7 +3,8 @@ import type { Notification } from "../types/NotificationType";
 const BASE_URL = "http://localhost:8081"; // Replace with your backend URL
 
 // Fetch all notifications from backend
-export const fetchNotifications = async (token: string): Promise<Notification[]> => {
+export const fetchNotifications = async (): Promise<Notification[]> => {
+  const token = localStorage.getItem("accessToken");
   try {
     const res = await fetch(`${BASE_URL}/notifications`, {
       method: "GET",
