@@ -31,9 +31,9 @@ public class AppointmentService {
         }
 
         // 3. Validate Status
-        if (!"ACCEPTED".equalsIgnoreCase(match.getStatus())) {
-            throw new RuntimeException("Cannot book appointment: The provider has not accepted this match yet.");
-        }
+        // if (!"ACCEPTED".equalsIgnoreCase(match.getStatus())) {
+        //     throw new RuntimeException("Cannot book appointment: The provider has not accepted this match yet.");
+        // }
 
         // 4. Create Schedule (Appointment)
         Schedule schedule = new Schedule();

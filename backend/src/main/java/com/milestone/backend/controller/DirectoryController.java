@@ -1,5 +1,6 @@
 package com.milestone.backend.controller;
 
+import com.milestone.backend.dto.ExternalLawyerDto;
 import com.milestone.backend.dto.LawyerDto;
 import com.milestone.backend.dto.NgoDto;
 import com.milestone.backend.service.DirectoryService;
@@ -12,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/directory")    // FIX 1: was "/directory" — needs /api/v1 prefix
@@ -78,10 +80,22 @@ public class DirectoryController {
     }
 
 
-     @PatchMapping("/ngos/{id}/toggle-availability")
+    @PatchMapping("/ngos/{id}/toggle-availability")
     @PreAuthorize("hasRole('NGO') or hasRole('ADMIN')")
     public ResponseEntity<String> toggleNgoAvailability(@PathVariable Long id) {
         directoryService.toggleNgoAvailability(id);
         return ResponseEntity.ok("NGO availability toggled successfully");
+    }
+
+    @GetMapping("/external/lawyers")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ExternalLawyerDto>> externalLawyers(){
+        return null;
+    }
+
+    @GetMapping("/external/ngos")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ExternalLawyerDto>> externalNgos(){
+        return null;
     }
 }

@@ -42,6 +42,7 @@ public class ProfileController {
             safeProfile.put("specialization", user.getLawyerProfile().getSpecialization());
             safeProfile.put("experience", user.getLawyerProfile().getExperience());
             safeProfile.put("location", user.getLawyerProfile().getLocation());
+            safeProfile.put("isAvailable", user.getLawyerProfile().getIsAvailable());
         }
 
         if (user.getRole() == Role.NGO && user.getNgoProfile() != null) {
@@ -49,6 +50,7 @@ public class ProfileController {
             safeProfile.put("serviceArea", user.getNgoProfile().getServiceArea());
             // CHANGE 1: Added location to the NGO GET response
             safeProfile.put("location", user.getNgoProfile().getLocation());
+            safeProfile.put("isAvailable", user.getNgoProfile().getIsAvailable());
         }
 
         return ResponseEntity.ok(safeProfile);
@@ -84,6 +86,8 @@ public class ProfileController {
                 user.getLawyerProfile().setExperience(request.getExperience());
             if (request.getLocation() != null)
                 user.getLawyerProfile().setLocation(request.getLocation());
+             if(request.isAvailable() != true)
+                user.getNgoProfile().setIsAvailable(request.isAvailable());
         }
 
         // 3. Update NGO specific details
@@ -100,6 +104,8 @@ public class ProfileController {
             // CHANGE 3: Catch the location from the frontend and save it
             if (request.getLocation() != null)
                 user.getNgoProfile().setLocation(request.getLocation());
+            if(request.isAvailable() != true)
+                user.getNgoProfile().setIsAvailable(request.isAvailable());
         }
 
         // Save the user to the database

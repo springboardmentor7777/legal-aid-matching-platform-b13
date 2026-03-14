@@ -1,1 +1,1 @@
-SELECT * FROM matches;
+SELECT * from lawyer_profile

@@ -14,4 +14,6 @@ public class ProfileUpdateRequest {
     // NGO specific fields
     private String organizationName;
     private String serviceArea;
+
+    private boolean isAvailable;
 }
