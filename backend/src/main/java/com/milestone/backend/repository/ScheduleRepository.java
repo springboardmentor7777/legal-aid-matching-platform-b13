@@ -10,4 +10,6 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     
     // Find all scheduled appointments for a specific match
     List<Schedule> findByMatch_Id(Long matchId);
+
+    List<Schedule> findByMatch_LegalCase_User_IdOrMatch_MatchedProvider_Id(Long citizenId, Long providerId);
 }
