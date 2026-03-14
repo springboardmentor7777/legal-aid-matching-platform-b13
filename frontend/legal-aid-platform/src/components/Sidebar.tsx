@@ -61,6 +61,9 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={()=> navigate("/mycases")}>
               View Filed Cases
             </li>
+            <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={()=> navigate("/pages/MatchingResult")}>
+              Matching Result
+              </li>
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/lawyers">Lawyers Directory</a>
             </li>
@@ -73,8 +76,23 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
           </>
         )}
       </ul>
+      <ul className="p-4 space-y-3 lg:space-y-0 lg:flex lg:flex-col lg:space-x-0">
+        <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={() => {
+          localStorage.clear();
+          navigate("/chatpage");
+        }}>
+          Secure Chat
+        </li>
+        <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={() => {
+          localStorage.clear();
+          navigate("/pages/AppointmentScheduler");
+        }}>
+          Appointment Scheduler
+        </li>
+      </ul>
     </aside>
   );
 };
 
 export default Sidebar;
+

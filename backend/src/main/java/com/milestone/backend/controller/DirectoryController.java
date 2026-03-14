@@ -46,7 +46,12 @@ public class DirectoryController {
 
         return ResponseEntity.ok(directoryService.searchLawyers(location, expertise, isVerified, pageable));
     }
-
+         @PatchMapping("/lawyers/{id}/toggle-availability")
+    @PreAuthorize("hasRole('LAWYER') or hasRole('ADMIN')")
+    public ResponseEntity<String> toggleLawyerAvailability(@PathVariable Long id) {
+        directoryService.toggleLawyerAvailability(id);
+        return ResponseEntity.ok("Lawyer availability toggled successfully");
+    }
     // GET /api/v1/directory/ngos
     @GetMapping("/ngos")
     @PreAuthorize("isAuthenticated()")  // FIX 6: was missing
@@ -70,5 +75,13 @@ public class DirectoryController {
             Pageable pageable) {
 
         return ResponseEntity.ok(directoryService.searchNgos(location, isVerified, pageable));
+    }
+
+
+     @PatchMapping("/ngos/{id}/toggle-availability")
+    @PreAuthorize("hasRole('NGO') or hasRole('ADMIN')")
+    public ResponseEntity<String> toggleNgoAvailability(@PathVariable Long id) {
+        directoryService.toggleNgoAvailability(id);
+        return ResponseEntity.ok("NGO availability toggled successfully");
     }
 }

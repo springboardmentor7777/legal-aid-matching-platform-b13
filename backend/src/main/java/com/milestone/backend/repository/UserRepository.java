@@ -1,47 +1,63 @@
 package com.milestone.backend.repository;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.List; 
+
+import com.milestone.backend.entity.Role;
+import com.milestone.backend.entity.User;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository; // 🔹 1. Added this import!
+import org.springframework.stereotype.Repository;
 
-import com.milestone.backend.entity.User;
-import com.milestone.backend.entity.Role; 
-
-
-@Repository // 🔹 2. Added this annotation to force Spring to create the Bean!
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    // Find by email
     Optional<User> findByEmail(String email);
-    
+
+    // Check if email exists
     boolean existsByEmail(String email);
 
-    // Added this method to fetch users by their role (LAWYER, NGO, etc.)
+    // Fetch all users by role
     List<User> findAllByRole(Role role);
 
-    // Part D: Search, Filter, and Pagination Logic
+    // --- Fetch only available providers for matching ---
+    
+    // Available Lawyers
+    @Query("SELECT u FROM User u JOIN u.lawyerProfile lp WHERE u.role = :role AND lp.isAvailable = true")
+    List<User> findAvailableLawyers(@Param("role") Role role);
+
+    // Available NGOs
+    @Query("SELECT u FROM User u JOIN u.ngoProfile np WHERE u.role = :role AND np.isAvailable = true")
+    List<User> findAvailableNgos(@Param("role") Role role);
+
+    // --- Search and filter with pagination ---
+
+    // Search and filter Lawyers
     @Query("SELECT u FROM User u LEFT JOIN u.lawyerProfile lp WHERE u.role = :role " +
-           "AND (CAST(:location AS string) IS NULL OR LOWER(lp.location) LIKE LOWER(CONCAT('%', CAST(:location AS string), '%'))) " +
-           "AND (CAST(:expertise AS string) IS NULL OR LOWER(lp.specialization) LIKE LOWER(CONCAT('%', CAST(:expertise AS string), '%'))) " +
+           "AND (:location IS NULL OR LOWER(lp.location) LIKE LOWER(CONCAT('%', :location, '%'))) " +
+           "AND (:expertise IS NULL OR LOWER(lp.specialization) LIKE LOWER(CONCAT('%', :expertise, '%'))) " +
            "AND (:isVerified IS NULL OR u.isVerified = :isVerified)")
     Page<User> searchLawyers(
             @Param("role") Role role,
             @Param("location") String location,
             @Param("expertise") String expertise,
             @Param("isVerified") Boolean isVerified,
-            Pageable pageable);
+            Pageable pageable
+    );
 
-    // Part D: Search, Filter, and Pagination for NGOs
+    // Search and filter NGOs
     @Query("SELECT u FROM User u LEFT JOIN u.ngoProfile np WHERE u.role = :role " +
-           "AND (CAST(:location AS string) IS NULL OR LOWER(np.serviceArea) LIKE LOWER(CONCAT('%', CAST(:location AS string), '%'))) " +
+           "AND (:location IS NULL OR LOWER(np.serviceArea) LIKE LOWER(CONCAT('%', :location, '%'))) " +
            "AND (:isVerified IS NULL OR u.isVerified = :isVerified)")
     Page<User> searchNgos(
             @Param("role") Role role,
             @Param("location") String location,
             @Param("isVerified") Boolean isVerified,
-            Pageable pageable);
+            Pageable pageable
+    );
 }
