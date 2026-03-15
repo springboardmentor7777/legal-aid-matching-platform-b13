@@ -20,23 +20,23 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.Lob;
+// import jakarta.persistence.Lob;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Builder.Default;
+// import lombok.Builder.Default;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "users", indexes = {
-    @Index(name = "idx_users_roles", columnList = "role")
+        @Index(name = "idx_users_roles", columnList = "role")
 }, uniqueConstraints = {
-    @UniqueConstraint(name="uk_users_email", columnNames = "email")
+        @UniqueConstraint(name = "uk_users_email", columnNames = "email")
 })
 public class User implements UserDetails {
 
@@ -45,9 +45,11 @@ public class User implements UserDetails {
     private Long id;
     @Column(nullable = false)
     private String name;
-@Column(nullable = false)
+
+    @Column(nullable = false)
     private String email;
-@Column(nullable = false)
+
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -55,7 +57,6 @@ public class User implements UserDetails {
 
     private LocalDateTime time_stamp;
 
-    
     private Boolean isVerified = false;
     // ===== UserDetails Methods =====
 
@@ -75,29 +76,42 @@ public class User implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
-
-
+    public boolean isEnabled() {
+        return true;
+    }
 
     // getters & setters
 
+<<<<<<< HEAD
     @JsonIgnoreProperties({"user"})
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private LawyerProfile lawyerProfile;
 
     @JsonIgnoreProperties({"user"})
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+=======
+    @JsonIgnoreProperties({ "user" })
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private LawyerProfile lawyerProfile;
+
+    @JsonIgnoreProperties({ "user" })
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+>>>>>>> f84d0c56e21e37cfff78fa64733e8b8898c294f7
     private NgoProfile ngoProfile;
 
-
 }
-
