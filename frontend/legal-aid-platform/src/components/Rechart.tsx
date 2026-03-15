@@ -9,31 +9,38 @@ import {
   ResponsiveContainer
 } from "recharts";
 
-export default function MatchesOverTime({ providerId }) {
+export default function MatchesOverTime() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
     fetchMatches();
-  }, [providerId]);
+  }, []);
 
   const fetchMatches = async () => {
+    const token = localStorage.getItem("token");
+
     const res = await axios.get(
-      `http://localhost:8080/matches/provider/${providerId}`
+      "http://localhost:8081/matches/my",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
 
     const matches = res.data;
 
-    const monthly = {};
+    const monthly: any = {};
 
-    matches.forEach((m) => {
+    matches.forEach((m: any) => {
+      if (!m.createdAt) return;
+
       const date = new Date(m.createdAt);
-      const month = date.toLocaleString("default", { month: "short" });
+      const month = date.toLocaleString("default", {
+        month: "short"
+      });
 
-      if (!monthly[month]) {
-        monthly[month] = 0;
-      }
-
-      monthly[month]++;
+      monthly[month] = (monthly[month] || 0) + 1;
     });
 
     const chartData = Object.keys(monthly).map((m) => ({
