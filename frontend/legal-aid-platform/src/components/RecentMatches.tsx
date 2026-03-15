@@ -1,40 +1,72 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-export default function RecentMatches({ providerId }) {
+export default function RecentMatches() {
   const [matches, setMatches] = useState([]);
 
   useEffect(() => {
     fetchMatches();
-  }, [providerId]);
+  }, []);
 
   const fetchMatches = async () => {
     try {
+      const token = localStorage.getItem("token");
+
       const res = await axios.get(
-        `http://localhost:8080/matches/provider/${providerId}`
+        "http://localhost:8081/matches/my",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
+
       setMatches(res.data);
     } catch (err) {
       console.error("Error fetching matches", err);
     }
   };
 
-  const acceptMatch = async (matchId) => {
-    await axios.put(`http://localhost:8080/matches/${matchId}/accept`);
+  const acceptMatch = async (matchId: number) => {
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      `http://localhost:8081/matches/${matchId}/accept`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     fetchMatches();
   };
 
-  const rejectMatch = async (matchId) => {
-    await axios.put(`http://localhost:8080/matches/${matchId}/reject`);
+  const rejectMatch = async (matchId: number) => {
+    const token = localStorage.getItem("token");
+
+    await axios.put(
+      `http://localhost:8081/matches/${matchId}/reject`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     fetchMatches();
   };
 
   return (
     <div className="bg-white rounded-xl p-6 shadow">
-      <h2 className="text-lg font-semibold mb-4">Recent Matches</h2>
+      <h2 className="text-lg font-semibold mb-4">
+        Recent Matches
+      </h2>
 
       <div className="space-y-4">
-        {matches.map((match) => (
+        {matches.map((match: any) => (
           <div
             key={match.matchId}
             className="flex justify-between items-center border p-4 rounded-lg"
@@ -42,9 +74,10 @@ export default function RecentMatches({ providerId }) {
             <div>
               <p className="font-medium">
                 {match.providerName}
-                <span className="text-gray-500 text-sm ml-1">
-                  ({match.providerType})
-                </span>
+              </p>
+
+              <p className="text-sm text-gray-500">
+                Type: {match.providerType}
               </p>
 
               <p className="text-sm text-gray-500">
