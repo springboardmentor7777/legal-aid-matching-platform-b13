@@ -25,4 +25,15 @@ public class CaseResponse {
     private String additionalNotes;
     private String contactInfo;
     private String attachment;
+
+    // --- NEW FIELDS FOR 3-LEVEL FORM ---
+    private String personName;
+    private String customCategory;
+    private String subcategory;
+    private String currentStatus;
+    private String firNumber;
+    private String firFile;
+    private String otherLocation;
+    private String otherRepresentative;
+    private String legalDocuments;
 }
