@@ -97,21 +97,12 @@ public class User implements UserDetails {
 
     // getters & setters
 
-<<<<<<< HEAD
     @JsonIgnoreProperties({"user"})
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private LawyerProfile lawyerProfile;
 
     @JsonIgnoreProperties({"user"})
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-=======
-    @JsonIgnoreProperties({ "user" })
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private LawyerProfile lawyerProfile;
-
-    @JsonIgnoreProperties({ "user" })
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
->>>>>>> f84d0c56e21e37cfff78fa64733e8b8898c294f7
     private NgoProfile ngoProfile;
 
 }

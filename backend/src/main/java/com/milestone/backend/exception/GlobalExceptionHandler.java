@@ -8,11 +8,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import java.time.LocalDateTime;
 
 import com.milestone.backend.exception.ErrorResponse;
-<<<<<<< HEAD
 
 
-=======
->>>>>>> f84d0c56e21e37cfff78fa64733e8b8898c294f7
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
