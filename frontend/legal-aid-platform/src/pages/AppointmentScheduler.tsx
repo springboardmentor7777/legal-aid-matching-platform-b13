@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AppointmentScheduler() {
   const [date, setDate] = useState("2025-12-28");
@@ -10,7 +10,23 @@ export default function AppointmentScheduler() {
     hour: false,
   });
 
+  // ✅ Added profile state
+  const [profile, setProfile] = useState({
+    name: "",
+    role: "",
+    matchScore: "",
+    image: "",
+  });
+
   const times = ["9:00 AM", "10:30 AM", "2:00 PM", "3:30 PM", "5:00 PM"];
+
+  // ✅ Fetch profile data from backend
+  useEffect(() => {
+    fetch("http://localhost:5000/profile")
+      .then((res) => res.json())
+      .then((data) => setProfile(data))
+      .catch((err) => console.error(err));
+  }, []);
 
   const toggleReminder = (key) => {
     setReminders({ ...reminders, [key]: !reminders[key] });
@@ -28,23 +44,37 @@ export default function AppointmentScheduler() {
     alert("Appointment Confirmed: " + JSON.stringify(appointment, null, 2));
   };
 
+  const handleCancel = () => {
+    setDate("2025-12-28");
+    setTimezone("");
+    setSelectedTime(null);
+    setDuration("");
+    setReminders({
+      fifteen: false,
+      hour: false,
+    });
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-[500px]">
         <h2 className="text-2xl font-semibold mb-1">Schedule a Call</h2>
         <p className="text-gray-500 mb-6">
-          Propose a time to connect with Sarah Jenkins, Esq.
+          Propose a time to connect with {profile.name}, {profile.role}.
         </p>
 
+        {/* ✅ Profile Section Updated */}
         <div className="flex items-center gap-4 bg-gray-100 p-3 rounded-lg mb-6">
-          <img
-            src="https://i.pravatar.cc/50"
+       {/*}   <img
+            src={profile.image || "https://i.pravatar.cc/50"}
             className="rounded-full"
             alt="profile"
-          />
+          />*/}
           <div>
-            <p className="font-medium">Sarah Jenkins, Esq.</p>
-            <p className="text-sm text-gray-500">Lawyer • Match Score 92%</p>
+            <p className="font-medium">{profile.name}</p>
+            <p className="text-sm text-gray-500">
+              {profile.role}Match Score: {profile.matchScore}%
+            </p>
           </div>
         </div>
 
@@ -139,7 +169,9 @@ export default function AppointmentScheduler() {
         </div>
 
         <div className="flex justify-end gap-4">
-          <button className="text-gray-500">Cancel</button>
+          <button className="text-gray-500" onClick={handleCancel}>
+            Cancel
+          </button>
 
           <button
             onClick={handleSubmit}
