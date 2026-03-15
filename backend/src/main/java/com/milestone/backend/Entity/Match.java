@@ -17,7 +17,7 @@ public class Match {
 
     private Long userId;
 
-    private double score =0.0;
+    private double score = 0.0;
 
     @Enumerated(EnumType.STRING)
     private MatchStatus status = MatchStatus.PENDING; // default to PENDING

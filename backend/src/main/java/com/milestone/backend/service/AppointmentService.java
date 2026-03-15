@@ -1,153 +1,154 @@
-// package com.milestone.backend.service;
+package com.milestone.backend.service;
 
-// import java.util.List;
-// import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
-// import org.springframework.stereotype.Service;
-// import lombok.RequiredArgsConstructor;
-// import com.milestone.backend.dto.AppointmentRequestDto;
-// import com.milestone.backend.dto.AppointmentResponseDto;
-// import com.milestone.backend.entity.*;
-// import com.milestone.backend.repository.ScheduleRepository;
-// import com.milestone.backend.repository.MatchRepository;
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import com.milestone.backend.dto.AppointmentRequestDto;
+import com.milestone.backend.dto.AppointmentResponseDto;
+import com.milestone.backend.entity.*;
+import com.milestone.backend.repository.ScheduleRepository;
+import com.milestone.backend.repository.MatchRepository;
+import com.milestone.backend.repository.CaseRepository;
+import com.milestone.backend.repository.UserRepository;
 
-// @Service
-// @RequiredArgsConstructor
-// public class AppointmentService {
+@Service
+@RequiredArgsConstructor
+public class AppointmentService {
 
-//     private final MatchRepository matchRepository;
-//     private final ScheduleRepository scheduleRepository;
-//     private final NotificationService notificationService;
+    private final MatchRepository matchRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final CaseRepository caseRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
-//     public AppointmentResponseDto bookAppointment(User citizen, AppointmentRequestDto request) {
+    public AppointmentResponseDto bookAppointment(User citizen, AppointmentRequestDto request) {
 
-//         // 1. Validate Match Existence
-//         Match match = matchRepository.findById(request.getMatchId())
-//                 .orElseThrow(() -> new RuntimeException("Match not found"));
+        Match match = matchRepository.findById(request.getMatchId())
+                .orElseThrow(() -> new RuntimeException("Match not found"));
 
-//         // 2. Validate Ownership
-//         if (!match.getLegalCase().getUser().getId().equals(citizen.getId())) {
-//             throw new RuntimeException("Unauthorized: This match does not belong to your case.");
-//         }
+        Case caseObj = caseRepository.findById(match.getCaseId())
+                .orElseThrow(() -> new RuntimeException("Case not found"));
 
-//         // 3. Validate Status
-//         // if (!"ACCEPTED".equalsIgnoreCase(match.getStatus())) {
-//         //     throw new RuntimeException("Cannot book appointment: The provider has not accepted this match yet.");
-//         // }
+        if (!caseObj.getUser().getId().equals(citizen.getId())) {
+            throw new RuntimeException("Unauthorized: This match does not belong to your case.");
+        }
 
-//         // 4. Create Schedule (Appointment)
-//         Schedule schedule = new Schedule();
-//         schedule.setMatch(match);
-//         schedule.setAppointmentDate(request.getAppointmentDate());
-//         schedule.setAppointmentTime(request.getAppointmentTime());
-//         schedule.setNotes(request.getNotes());
-//         schedule.setStatus("SCHEDULED");
+        if (!"ACCEPTED".equalsIgnoreCase(match.getStatus().name())) {
+            throw new RuntimeException("Cannot book appointment: The provider has not accepted this match yet.");
+        }
 
-//         schedule = scheduleRepository.save(schedule);
+        User provider = userRepository.findById(match.getUserId())
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
 
-//         // 5. Send Notification to Citizen
-//         notificationService.createNotification(
-//                 citizen,
-//                 "Appointment Confirmed",
-//                 "You have successfully booked an appointment for " + request.getAppointmentDate() + " at "
-//                         + request.getAppointmentTime(),
-//                 "APPOINTMENT",
-//                 schedule.getId()
+        Schedule schedule = new Schedule();
+        schedule.setMatch(match);
+        schedule.setAppointmentDate(request.getAppointmentDate());
+        schedule.setAppointmentTime(request.getAppointmentTime());
+        schedule.setNotes(request.getNotes());
+        schedule.setStatus("SCHEDULED");
+        schedule.setScheduledTime(LocalDateTime.now()); 
 
-//         );
+        // Must save the schedule first so we have an ID for the referenceId in notifications
+        schedule = scheduleRepository.save(schedule);
 
-//         // 6. Send Notification to Provider (Lawyer/NGO)
-//         notificationService.createNotification(
-//                 match.getMatchedProvider(),
-//                 "New Appointment Request",
-//                 "A new appointment has been scheduled for Case: " + match.getLegalCase().getTitle() + " on "
-//                         + request.getAppointmentDate(),
-//                 "APPOINTMENT",
-//                 schedule.getId());
+        // FIXED: Using 5 arguments matching NotificationService.java
+        notificationService.createNotification(
+                citizen,
+                "Appointment Confirmed",
+                "You have successfully booked an appointment for " + request.getAppointmentDate() + " at " + request.getAppointmentTime(),
+                "APPOINTMENT",
+                schedule.getId()
+        );
 
-//         return new AppointmentResponseDto(
-//                 schedule.getId(),
-//                 match.getId(),
-//                 "SCHEDULED",
-//                 "Appointment successfully booked and notifications sent.");
-//     }
+        // FIXED: Using 5 arguments matching NotificationService.java
+        notificationService.createNotification(
+                provider,
+                "New Appointment Request",
+                "A new appointment has been scheduled for Case: " + caseObj.getTitle() + " on " + request.getAppointmentDate(),
+                "APPOINTMENT",
+                schedule.getId()
+        );
 
-//     public List<AppointmentResponseDto> getAllAppointments(User currentUser) {
-//         // Fetch appointments where the user is either the case creator or the matched provider
-//         List<Schedule> schedules = scheduleRepository.findByMatch_LegalCase_User_IdOrMatch_MatchedProvider_Id(
-//                 currentUser.getId(), currentUser.getId());
+        return new AppointmentResponseDto(
+                schedule.getId(), match.getId(), "SCHEDULED", "Appointment successfully booked and notifications sent.",
+                schedule.getAppointmentDate(), schedule.getAppointmentTime(), schedule.getNotes()
+        );
+    }
 
-//         return schedules.stream()
-//                 .map(this::mapToDto)
-//                 .collect(Collectors.toList());
-//     }
+    public List<AppointmentResponseDto> getAllAppointments(User currentUser) {
+        List<Schedule> schedules = scheduleRepository.findAllUserAppointments(currentUser.getId());
 
-//     // --- NEW GET BY ID METHOD ---
-//     public AppointmentResponseDto getAppointmentById(Long id, User currentUser) {
-//         Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
-//         return mapToDto(schedule);
-//     }
+        return schedules.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
 
-//     // --- NEW PUT METHOD ---
-//     public AppointmentResponseDto updateAppointment(Long id, AppointmentRequestDto request, User currentUser) {
-//         Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
+    public AppointmentResponseDto getAppointmentById(Long id, User currentUser) {
+        Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
+        return mapToDto(schedule);
+    }
 
-//         // Update fields if they are provided
-//         if (request.getAppointmentDate() != null) schedule.setAppointmentDate(request.getAppointmentDate());
-//         if (request.getAppointmentTime() != null) schedule.setAppointmentTime(request.getAppointmentTime());
-//         if (request.getNotes() != null) schedule.setNotes(request.getNotes());
+    public AppointmentResponseDto updateAppointment(Long id, AppointmentRequestDto request, User currentUser) {
+        Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
 
-//         schedule = scheduleRepository.save(schedule);
+        if (request.getAppointmentDate() != null) schedule.setAppointmentDate(request.getAppointmentDate());
+        if (request.getAppointmentTime() != null) schedule.setAppointmentTime(request.getAppointmentTime());
+        if (request.getNotes() != null) schedule.setNotes(request.getNotes());
 
-//         return mapToDto(schedule);
-//     }
+        schedule = scheduleRepository.save(schedule);
+        return mapToDto(schedule);
+    }
 
-//     // --- NEW DELETE METHOD ---
-//     public void deleteAppointment(Long id, User currentUser) {
-//         Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
+    public void deleteAppointment(Long id, User currentUser) {
+        Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
+        schedule.setStatus("CANCELLED");
+        scheduleRepository.save(schedule);
         
-//         // Soft delete: Change status to CANCELLED instead of wiping it from DB
-//         schedule.setStatus("CANCELLED");
-//         scheduleRepository.save(schedule);
+        Case caseObj = caseRepository.findById(schedule.getMatch().getCaseId()).orElseThrow();
+        User provider = userRepository.findById(schedule.getMatch().getUserId()).orElseThrow();
         
-//         // Figure out who the "other person" is to notify them of the cancellation
-//         User otherUser = schedule.getMatch().getLegalCase().getUser().getId().equals(currentUser.getId()) 
-//                             ? schedule.getMatch().getMatchedProvider() 
-//                             : schedule.getMatch().getLegalCase().getUser();
+        User otherUser = caseObj.getUser().getId().equals(currentUser.getId()) ? provider : caseObj.getUser();
 
-//         notificationService.createNotification(
-//             otherUser,
-//             "Appointment Cancelled",
-//             "An appointment for Case: " + schedule.getMatch().getLegalCase().getTitle() + " has been cancelled.",
-//             "APPOINTMENT",
-//             schedule.getId()
-//         );
-//     }
+        // FIXED: Using 5 arguments matching NotificationService.java
+        notificationService.createNotification(
+            otherUser,
+            "Appointment Cancelled",
+            "An appointment for Case: " + caseObj.getTitle() + " has been cancelled.",
+            "APPOINTMENT",
+            schedule.getId()
+        );
+    }
 
-//     //--- HELPER METHODS ---
-//     private Schedule getScheduleAndVerifyOwnership(Long id, User currentUser) {
-//         Schedule schedule = scheduleRepository.findById(id)
-//                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
+    // --- HELPER METHODS ---
+    private Schedule getScheduleAndVerifyOwnership(Long id, User currentUser) {
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
 
-//         Long citizenId = schedule.getMatch().getLegalCase().getUser().getId();
-//         Long providerId = schedule.getMatch().getMatchedProvider().getId();
+        Case caseObj = caseRepository.findById(schedule.getMatch().getCaseId())
+                .orElseThrow(() -> new RuntimeException("Case not found"));
 
-//         if (!citizenId.equals(currentUser.getId()) && !providerId.equals(currentUser.getId())) {
-//             throw new RuntimeException("Unauthorized: You do not have access to this appointment.");
-//         }
+        Long citizenId = caseObj.getUser().getId();
+        Long providerId = schedule.getMatch().getUserId();
 
-//         return schedule;
-//     }
-//     private AppointmentResponseDto mapToDto(Schedule schedule) {
-//         return new AppointmentResponseDto(
-//                 schedule.getId(),
-//                 schedule.getMatch().getId(),
-//                 schedule.getStatus(),
-//                 "Success",
-//                 schedule.getAppointmentDate(),
-//                 schedule.getAppointmentTime(),
-//                 schedule.getNotes()
-//         );
-//     }
+        if (!citizenId.equals(currentUser.getId()) && !providerId.equals(currentUser.getId())) {
+            throw new RuntimeException("Unauthorized: You do not have access to this appointment.");
+        }
 
-// }
+        return schedule;
+    }
+
+    private AppointmentResponseDto mapToDto(Schedule schedule) {
+        return new AppointmentResponseDto(
+                schedule.getId(),
+                schedule.getMatch().getId(),
+                schedule.getStatus(),
+                "Success",
+                schedule.getAppointmentDate(),
+                schedule.getAppointmentTime(),
+                schedule.getNotes()
+        );
+    }
+}
