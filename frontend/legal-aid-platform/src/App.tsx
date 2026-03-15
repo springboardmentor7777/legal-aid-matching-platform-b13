@@ -16,6 +16,7 @@ import AdminPanel from "./pages/AdminPanel";
 import ChatPage from "./pages/ChatPage";
 import MatchingResults from "./pages/MatchingResults";
 import AppointmentScheduler from "./pages/AppointmentScheduler";
+import SupportPage from "./pages/SupportPage";
 
 function App() {
   return (
@@ -103,6 +104,8 @@ function App() {
       <Route path="/chatpage" element={<ChatPage />} />
       <Route path="/pages/MatchingResult" element={<MatchingResults />} />
       <Route path="/pages/AppointmentScheduler" element={<AppointmentScheduler />} />
+      <Route path="/pages/SupportPage" element={<SupportPage />} />
+
 
     </Routes>
   );

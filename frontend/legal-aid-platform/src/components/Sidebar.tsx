@@ -9,7 +9,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
-  const menuItems: string[] = ["Home", "Notifications", "Reports", "Support"];
   const navigate = useNavigate();
 
   return (
@@ -38,14 +37,18 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
       {/* <hr className="bg-gray-200 border-sm" /> */}
       <hr className="border-t border-blue-200 my-4" />
       <ul className="p-4 space-y-3 lg:space-y-0 lg:flex lg:flex-col lg:space-x-0">
-        {menuItems.map((item, idx) => (
-          <li
-            key={idx}
-            className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
-          >
-            {item}
-          </li>
-        ))}
+        <li
+              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
+              onClick={() => navigate("/")}
+            >
+              Home
+            </li>
+        <li
+              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
+              onClick={() => navigate("/pages/SupportPage")}
+            >
+              Support
+            </li>
       </ul>
       {/* <hr className="bg-gray-200 border-sm" /> */}
       <hr className="border-t border-blue-200 my-4" />
