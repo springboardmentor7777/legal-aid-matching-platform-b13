@@ -10,16 +10,27 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CaseRequest {
-
+    // Level 1: Basic Info
     private String title;
-    private String description;
-    private String category;
+    private String personName;
+    private String contactInfo;
     
-    // New fields to match frontend JSON exactly
-    private String location;
+    // Level 2: Categorization & Details
+    private String category;
+    private String customCategory;
+    private String subcategory;
+    private String description;
+    private String additionalNotes;
+    private String currentStatus;
+    
+    // Level 3: Incident Details & Files
+    private String firNumber; 
+    private String firFile; 
     private String incidentDate;
     private String incidentTime;
-    private String additionalNotes;
-    private String contactInfo;
+    private String location;
+    private String otherLocation;
+    private String otherRepresentative;
     private String attachment;
+    private String legalDocuments;
 }

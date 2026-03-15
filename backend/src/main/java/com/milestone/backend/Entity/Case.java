@@ -38,9 +38,23 @@ public class Case {
     private String contactInfo;
     private String attachment;
 
+    // --- NEW FIELDS FOR 3-LEVEL FORM ---
+    private String personName;
+    private String customCategory;
+    private String subcategory;
+    private String currentStatus;
+    private String firNumber;
+    private String firFile;
+    private String otherLocation;
+    private String otherRepresentative;
+    
+    @Column(columnDefinition = "TEXT")
+    private String legalDocuments;
+    // -----------------------------------
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private CaseStatus status = CaseStatus.SUBMITTED;  // ✅ Use standalone enum
+    private CaseStatus status = CaseStatus.SUBMITTED;  
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

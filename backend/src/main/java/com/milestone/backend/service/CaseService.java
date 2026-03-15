@@ -34,14 +34,24 @@ public class CaseService {
         newCase.setDescription(request.getDescription());
         newCase.setCategory(request.getCategory());
         
-        
         newCase.setLocation(request.getLocation());
         newCase.setIncidentDate(request.getIncidentDate());
         newCase.setIncidentTime(request.getIncidentTime());
         newCase.setAdditionalNotes(request.getAdditionalNotes());
         newCase.setContactInfo(request.getContactInfo());
         newCase.setAttachment(request.getAttachment());
-        // ------------------------------------
+
+        // --- NEW FIELDS MAPPING ---
+        newCase.setPersonName(request.getPersonName());
+        newCase.setCustomCategory(request.getCustomCategory());
+        newCase.setSubcategory(request.getSubcategory());
+        newCase.setCurrentStatus(request.getCurrentStatus());
+        newCase.setFirNumber(request.getFirNumber());
+        newCase.setFirFile(request.getFirFile());
+        newCase.setOtherLocation(request.getOtherLocation());
+        newCase.setOtherRepresentative(request.getOtherRepresentative());
+        newCase.setLegalDocuments(request.getLegalDocuments());
+        // --------------------------
 
         newCase.setStatus(CaseStatus.SUBMITTED);
         newCase.setUser(user);
@@ -50,6 +60,7 @@ public class CaseService {
 
         return mapToResponse(saved);
     }
+    
     // Get My Cases
     public List<CaseResponse> getMyCases(User user) {
 
@@ -82,27 +93,38 @@ public class CaseService {
         response.setDescription(caseObj.getDescription());
         response.setCategory(caseObj.getCategory());
         
-        // --- Add these new lines! ---
         response.setLocation(caseObj.getLocation());
         response.setIncidentDate(caseObj.getIncidentDate());
         response.setIncidentTime(caseObj.getIncidentTime());
         response.setAdditionalNotes(caseObj.getAdditionalNotes());
         response.setContactInfo(caseObj.getContactInfo());
         response.setAttachment(caseObj.getAttachment());
-        // ----------------------------
+        
+        // --- ADDED TO RESPONSE ---
+        response.setPersonName(caseObj.getPersonName());
+        response.setCustomCategory(caseObj.getCustomCategory());
+        response.setSubcategory(caseObj.getSubcategory());
+        response.setCurrentStatus(caseObj.getCurrentStatus());
+        response.setFirNumber(caseObj.getFirNumber());
+        response.setFirFile(caseObj.getFirFile());
+        response.setOtherLocation(caseObj.getOtherLocation());
+        response.setOtherRepresentative(caseObj.getOtherRepresentative());
+        response.setLegalDocuments(caseObj.getLegalDocuments());
+        // --------------------------------------------------------------------------------------
         
         response.setStatus(caseObj.getStatus().name());
         response.setUpdatedAt(caseObj.getUpdatedAt());
 
         return response;
     }
+    
     public CaseResponse updateStatus(Long id, CaseStatus status) {
 
-    Case caseObj = caseRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Case not found"));
+        Case caseObj = caseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Case not found"));
 
-    caseObj.setStatus(status);
+        caseObj.setStatus(status);
 
-    return mapToResponse(caseRepository.save(caseObj));
-}
+        return mapToResponse(caseRepository.save(caseObj));
+    }
 }
