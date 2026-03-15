@@ -343,11 +343,11 @@ const Dashboard: React.FC = () => {
            <div className="grid grid-cols-3 gap-6">
 
       <div className="col-span-2">
-        <RecentMatches providerId={providerId} />
+        <RecentMatches />
       </div>
 
       <div>
-        <MatchesOverTime providerId={providerId}/>
+        <MatchesOverTime />
       </div>
 
     </div>
