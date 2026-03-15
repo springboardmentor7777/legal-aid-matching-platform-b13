@@ -19,7 +19,6 @@ public class MatchController {
 
     private final MatchService matchService;
 
-    
     @PostMapping("/generate/{caseId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<MatchDTO>> generateMatches(@PathVariable Long caseId) {
@@ -38,12 +37,21 @@ public class MatchController {
         return ResponseEntity.ok(matchService.getMatchesForLawyer(lawyerProfileId));
     }
 
-   
     @GetMapping("/ngo/{ngoProfileId}")
     @PreAuthorize("hasRole('NGO')")
     public ResponseEntity<List<MatchDTO>> getMatchesForNgo(@PathVariable Long ngoProfileId) {
         return ResponseEntity.ok(matchService.getMatchesForNgo(ngoProfileId));
     }
 
-}
+    @PutMapping("/accept/{matchId}")
+    @PreAuthorize("hasRole('LAWYER') or hasRole('NGO')")
+    public ResponseEntity<MatchDTO> acceptMatch(@PathVariable Long matchId) {
+        return ResponseEntity.ok(matchService.acceptMatch(matchId));
+    }
 
+    @PutMapping("/reject/{matchId}")
+    @PreAuthorize("hasRole('LAWYER') or hasRole('NGO')")
+    public ResponseEntity<MatchDTO> rejectMatch(@PathVariable Long matchId) {
+        return ResponseEntity.ok(matchService.rejectMatch(matchId));
+    }
+}
