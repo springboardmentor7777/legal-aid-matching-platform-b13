@@ -24,6 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Fetch all users by role
     List<User> findAllByRole(Role role);
+     List<User> findByRoleIn(List<Role> roles);
 
     // --- Fetch only available providers for matching ---
     
