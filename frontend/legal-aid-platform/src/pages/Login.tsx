@@ -34,7 +34,8 @@ export default function Login() {
       // console.log(data.role);
       // navigate("/dashboard");
       if(data.role !=="ADMIN" ){
-        navigate("/dashboard");
+        window.location.replace("/dashboard");
+        // navigate("/dashboard");
       }else{
         navigate("/admin");
       }
