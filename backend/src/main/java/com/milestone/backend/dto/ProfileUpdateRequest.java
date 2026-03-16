@@ -15,5 +15,5 @@ public class ProfileUpdateRequest {
     private String organizationName;
     private String serviceArea;
 
-    private boolean isAvailable;
+    private Boolean isAvailable;
 }

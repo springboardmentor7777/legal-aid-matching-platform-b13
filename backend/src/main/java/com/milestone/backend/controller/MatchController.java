@@ -24,8 +24,8 @@ public class MatchController {
 
     @GetMapping("/my")
     public List<MatchResponse> getMyMatches(@AuthenticationPrincipal User currentUser) { 
-        // Automatically fetches matches for the logged-in Provider (Lawyer/NGO)
-        return matchService.getMyMatches(currentUser.getId()); 
+        // Fetches matches for the logged-in user (provider or citizen)
+        return matchService.getMyMatches(currentUser); 
     }
 
     @PutMapping("/{matchId}/accept")

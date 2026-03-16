@@ -3,7 +3,6 @@ package com.milestone.backend.entity;
 import java.time.LocalDateTime;
 
 import lombok.*;
-
 import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,13 +23,19 @@ public class Chat {
     // Connect message to match
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "match_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "caseEntity", "matchedUser"})
     private Match match;
 
     // Sender of message
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({
+        "hibernateLazyInitializer",
+        "handler",
+        "password",
+        "lawyerProfile",
+        "ngoProfile"
+    })
     private User sender;
 
     @Column(columnDefinition = "TEXT", nullable = false)

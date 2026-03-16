@@ -1,11 +1,13 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
-import { Navigate, useNavigate } from "react-router-dom";
-import { LuArrowLeftToLine, LuSquareArrowLeft } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
+import { LuSquareArrowLeft } from "react-icons/lu";
 
 export default function EditProfile() {
   const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   //   const [data, setData] = useState<string | any>("");
   type Role = "CITIZEN" | "LAWYER" | "NGO";
@@ -18,36 +20,37 @@ export default function EditProfile() {
     specialization: string;
     experience: number;
     location: string;
+    isAvailable: boolean;
   }
 
   interface NgoUpdate extends CitizenUpdate {
     organizationName: string;
     serviceArea: string;
-    location:string;
+    location: string;
+    isAvailable: boolean;
   }
 
   type FormData = CitizenUpdate | LawyerUpdate | NgoUpdate;
 
   const role = (user?.role ?? "CITIZEN") as Role;
 
-
   const [formData, setFormData] = useState<FormData>(() => {
-
-
     if (role === "LAWYER") {
       return {
         name: user?.username,
         specialization: "",
         experience: 0,
         location: "",
+        isAvailable: true,
       } as LawyerUpdate;
     }
     if (role === "NGO") {
       return {
         name: "",
-        organizationName:"",
+        organizationName: "",
         serviceArea: "",
-        location:""
+        location: "",
+        isAvailable: true,
       } as NgoUpdate;
     }
     return {
@@ -82,6 +85,7 @@ export default function EditProfile() {
         specialization: d.specialization,
         experience: d.experience,
         location: d.location,
+        isAvailable:d.isAvailable
       };
     } else {
       const d = formData as NgoUpdate;
@@ -89,7 +93,7 @@ export default function EditProfile() {
         name: d.name,
         organizationName: d.organizationName,
         serviceArea: d.serviceArea,
-        location:d.location,
+        location: d.location,
       };
     }
 
@@ -112,8 +116,7 @@ export default function EditProfile() {
     const navigate = useNavigate();
     navigate("/profile");
   };
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState("");
+
   // const [success, setSuccess] = useState(false);
 
   return (

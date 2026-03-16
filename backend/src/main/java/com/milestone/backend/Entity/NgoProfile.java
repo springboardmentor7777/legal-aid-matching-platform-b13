@@ -23,7 +23,7 @@ public class NgoProfile {
     private String organizationName;
     private String serviceArea;
     private String location;
-    private Boolean isAvailable = true; 
+    private Boolean isAvailable; 
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;

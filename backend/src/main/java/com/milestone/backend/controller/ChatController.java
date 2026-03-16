@@ -3,12 +3,13 @@ package com.milestone.backend.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.milestone.backend.entity.Chat;
+import com.milestone.backend.entity.User;
 import com.milestone.backend.service.ChatService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -20,15 +21,15 @@ public class ChatController {
 
     // Get chat history
     @GetMapping("/{matchId}")
-    public List<Chat> getChats(@PathVariable Long matchId, HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
+    public List<Chat> getChats(@PathVariable Long matchId, @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
         return chatService.getChat(matchId, userId);
     }
 
     // Send message
     @PostMapping("/send")
-    public Chat sendMessage(@RequestBody Map<String, String> body, HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
+    public Chat sendMessage(@RequestBody Map<String, String> body, @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
 
         Long matchId = Long.parseLong(body.get("matchId"));
         String content = body.get("content");

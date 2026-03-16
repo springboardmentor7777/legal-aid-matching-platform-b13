@@ -78,12 +78,19 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * Get matches for provider
+     * Get matches for user (provider or citizen)
      */
     @Override
-    public List<MatchResponse> getMyMatches(Long userId) {
+    public List<MatchResponse> getMyMatches(User user) {
+        List<Match> matches;
 
-        List<Match> matches = matchRepository.findByUserId(userId);
+        if (user.getRole() == Role.CITIZEN) {
+            // For citizens, get matches for their cases
+            matches = matchRepository.findByCaseEntity_User_Id(user.getId());
+        } else {
+            // For providers (lawyer/NGO), get assigned matches
+            matches = matchRepository.findByUserId(user.getId());
+        }
 
         List<MatchResponse> responses = new ArrayList<>();
 

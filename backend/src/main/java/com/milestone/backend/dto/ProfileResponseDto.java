@@ -23,4 +23,5 @@ public class ProfileResponseDto {
     private String serviceArea;
 
     private boolean isVerified;
+    private boolean isAvailable;
 }

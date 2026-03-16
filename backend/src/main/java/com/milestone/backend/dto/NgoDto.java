@@ -18,4 +18,6 @@ public class NgoDto {
     // Pulled from NgoProfile
     private String organizationName;
     private String serviceArea;
+
+    private Boolean isAvailable;
 }
