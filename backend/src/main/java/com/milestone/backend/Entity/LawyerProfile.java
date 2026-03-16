@@ -23,7 +23,7 @@ public class LawyerProfile {
     private String specialization;
     private Integer experience;
     private String location;
-    private Boolean isAvailable = true; 
+    private Boolean isAvailable; 
 
     @OneToOne
     @JoinColumn(name = "user_id")

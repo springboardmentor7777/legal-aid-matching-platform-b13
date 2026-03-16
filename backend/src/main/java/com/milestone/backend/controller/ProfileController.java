@@ -86,8 +86,8 @@ public class ProfileController {
                 user.getLawyerProfile().setExperience(request.getExperience());
             if (request.getLocation() != null)
                 user.getLawyerProfile().setLocation(request.getLocation());
-             if(request.isAvailable() != true)
-                user.getNgoProfile().setIsAvailable(request.isAvailable());
+            if(request.getIsAvailable() != null)
+                user.getLawyerProfile().setIsAvailable(request.getIsAvailable());
         }
 
         // 3. Update NGO specific details
@@ -104,8 +104,8 @@ public class ProfileController {
             // CHANGE 3: Catch the location from the frontend and save it
             if (request.getLocation() != null)
                 user.getNgoProfile().setLocation(request.getLocation());
-            if(request.isAvailable() != true)
-                user.getNgoProfile().setIsAvailable(request.isAvailable());
+            if(request.getIsAvailable() != null)
+                user.getNgoProfile().setIsAvailable(request.getIsAvailable());
         }
 
         // Save the user to the database

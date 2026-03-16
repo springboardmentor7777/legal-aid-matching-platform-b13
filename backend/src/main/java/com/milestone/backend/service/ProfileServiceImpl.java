@@ -38,6 +38,7 @@ public class ProfileServiceImpl implements ProfileService {
             dto.setSpecialization(user.getLawyerProfile().getSpecialization());
             dto.setExperience(user.getLawyerProfile().getExperience());
             dto.setLocation(user.getLawyerProfile().getLocation());
+            dto.setAvailable(user.getLawyerProfile().getIsAvailable());
         }
 
         // 🔹 If user is NGO
@@ -45,6 +46,7 @@ public class ProfileServiceImpl implements ProfileService {
             dto.setOrganizationName(user.getNgoProfile().getOrganizationName());
             dto.setServiceArea(user.getNgoProfile().getServiceArea());
             dto.setLocation(user.getNgoProfile().getLocation());
+            dto.setAvailable(user.getNgoProfile().getIsAvailable());
         }
 
         return dto;

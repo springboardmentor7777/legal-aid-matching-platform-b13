@@ -18,4 +18,6 @@ public class LawyerDto {
     private String specialization; 
     private Integer experience;
     private String location; 
+
+    private Boolean isAvailable;
 }

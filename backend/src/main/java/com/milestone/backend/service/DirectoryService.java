@@ -272,6 +272,7 @@ public class DirectoryService {
             builder.specialization(user.getLawyerProfile().getSpecialization());
             builder.experience(user.getLawyerProfile().getExperience());
             builder.location(user.getLawyerProfile().getLocation());
+            builder.isAvailable(user.getLawyerProfile().getIsAvailable());
         }
         return builder.build();
     }
@@ -286,6 +287,7 @@ public class DirectoryService {
         if (user.getNgoProfile() != null) {
             builder.organizationName(user.getNgoProfile().getOrganizationName());
             builder.serviceArea(user.getNgoProfile().getServiceArea());
+            builder.isAvailable(user.getNgoProfile().getIsAvailable());
         }
         return builder.build();
     }
