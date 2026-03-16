@@ -1,40 +1,42 @@
-import axios from 'axios';
+import axios from "axios";
 
 const API = axios.create({
+  baseURL: "http://localhost:8080/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Clean up any stale invalid tokens from previous sessions
-const storedToken = localStorage.getItem('token');
-if (storedToken && (!storedToken.includes('.') || storedToken === 'undefined')) {
-  localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('user');
-}
-
-// Request interceptor — attach JWT token
+// Attach JWT automatically
 API.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token && token !== 'undefined' && token.includes('.')) {
+    const token = localStorage.getItem("token");
+
+    if (token && token !== "undefined") {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor — redirect on 401
+// Handle expired tokens
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    const status = error.response?.status;
+
+    // Only logout if token is invalid
+    if (status === 401) {
+      console.log("Token expired → logging out");
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href = "/login";
     }
+
     return Promise.reject(error);
   }
 );

@@ -1,119 +1,72 @@
 import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useParams } from "react-router-dom";
+import API from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
 
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-  });
-
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const { id } = useParams();
+  const [profile, setProfile] = useState(null);
+  const [error, setError]= useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    if (id) {
+      fetchProfile();
+    }
+  }, [id]);
 
   const fetchProfile = async () => {
     try {
-      const res = await api.get("/profile/me");
-
-      setFormData({
-        fullName: res.data.name,
-        email: res.data.email,
-      });
-
+      const res = await API.get(`/directory/profile/${id}`);
+      setProfile(res.data);
     } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+      console.error("Failed to fetch profile", err);
+      setError("Profile not available yet.");
     }
   };
 
-  const handleChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
-    setMessage("");
-
-    try {
-      await api.put("/profile/update", {
-        name: formData.name
-      });
-
-      setMessage("Profile updated successfully.");
-
-      fetchProfile(); // refresh profile data
-
-    } catch (err) {
-      setMessage("Update failed.");
-    } finally {
-      setSaving(false);
+  if (!profile) {
+    if (error) {
+      return (
+        <div className="bg-white p-6 rounded-xl shadow">
+          <p className="text-red-500">{error}</p>
+        </div>
+      );
     }
-  };
-
-  if (loading) return <div>Loading profile...</div>;
+  }
 
   return (
-    <div className="max-w-xl bg-white p-6 rounded-lg shadow">
+    <div className="bg-white p-6 rounded-xl shadow max-w-xl">
 
-      <h2 className="text-xl font-semibold mb-6">
-        My Profile
+      <img
+        src={`https://i.pravatar.cc/150?img=${id}`}
+        className="w-20 h-20 rounded-full"
+      />
+
+      <h2 className="text-xl font-bold mt-4">
+        {profile.organization_name}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <p className="text-gray-500">
+        {profile.expertise}
+      </p>
 
-        <div>
-          <label className="text-sm text-gray-600">
-            Full Name
-          </label>
+      <p className="text-gray-400">
+        📍 {profile.location}
+      </p>
 
-          <input
-            type="text"
-            name="fullName"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
+      <p className="mt-4">
+        {profile.bio}
+      </p>
 
-        <div>
-          <label className="text-sm text-gray-600">
-            Email
-          </label>
+      <button
+        onClick={() => navigate(`/chat/${id}`)}
+        className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg"
+      >
+        Start Chat
+      </button>
 
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-blue-900 text-white px-4 py-2 rounded-lg"
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
-
-        {message && (
-          <p className="text-sm text-green-600">
-            {message}
-          </p>
-        )}
-
-      </form>
     </div>
   );
 }

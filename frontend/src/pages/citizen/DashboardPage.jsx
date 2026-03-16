@@ -18,7 +18,7 @@ const DashboardPage = () => {
   const fetchCases = async () => {
     try {
       setLoading(true);
-      const response = await API.get('/api/cases/my');
+      const response = await API.get('/cases/my');
       const data = Array.isArray(response.data) ? response.data : [];
       setCases(data);
       setStats({

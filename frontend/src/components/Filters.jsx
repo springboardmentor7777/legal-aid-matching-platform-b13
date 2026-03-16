@@ -1,4 +1,15 @@
+import { useState } from "react";
+
 export default function Filters({ filters, setFilters }) {
+
+  const [localExpertise, setLocalExpertise] = useState(filters.expertise);
+
+  const applyFilters = () => {
+    setFilters({
+      ...filters,
+      expertise: localExpertise
+    });
+  };
 
   return (
     <div className="w-64 bg-white p-4 rounded-xl shadow">
@@ -26,17 +37,23 @@ export default function Filters({ filters, setFilters }) {
         Expertise
       </label>
 
-      <input
-        type="text"
-        placeholder="Family, Criminal..."
+      <select
         className="w-full border p-2 rounded-lg"
-        onChange={(e) =>
-          setFilters({
-            ...filters,
-            expertise: e.target.value
-          })
-        }
-      />
+        value={localExpertise}
+        onChange={(e) => setLocalExpertise(e.target.value)}
+      >
+        <option value="">Select Expertise</option>
+        <option value="Family Law">Family Law</option>
+        <option value="Criminal Law">Criminal Law</option>
+        <option value="Corporate Law">Corporate Law</option>
+      </select>
+
+      <button
+        onClick={applyFilters}
+        className="w-full mt-4 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700"
+      >
+        Apply Filters
+      </button>
 
     </div>
   );

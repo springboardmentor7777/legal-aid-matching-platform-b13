@@ -44,16 +44,18 @@ const CaseSubmissionPage = () => {
     setLoading(true);
 
     try {
+
       const payload = {
-        caseType: formData.caseType,
+        title: formData.caseType,
         description: formData.description,
-        urgency: formData.urgency,
-        location: formData.location,
+        category: formData.caseType
       };
 
-      await API.post('/api/cases', payload);
+      await API.post('/cases', payload);
+
       setSuccess('Case submitted successfully!');
-      setTimeout(() => navigate('/dashboard'), 2000);
+      setTimeout(() => navigate('/matches'), 2000);
+
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to submit case. Please try again.');
     } finally {

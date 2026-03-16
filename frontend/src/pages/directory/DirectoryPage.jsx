@@ -49,7 +49,12 @@ const DirectoryPage = () => {
   const fetchProfiles = async () => {
     try {
       setLoading(true);
-      const endpoint = roleFilter === 'Lawyer' ? '/api/directory/lawyers' : '/api/directory/ngos';
+
+      const endpoint =
+        roleFilter === 'Lawyer'
+          ? '/directory/lawyers'
+          : '/directory/ngos';
+
       const params = {
         page: currentPage - 1,
         size: 12,
@@ -61,8 +66,11 @@ const DirectoryPage = () => {
         languages: selectedLanguages.length > 0 ? selectedLanguages.join(',') : undefined,
         sort: sortBy !== 'Relevance' ? sortBy : undefined,
       };
+
       const response = await API.get(endpoint, { params });
+
       const data = response.data;
+
       if (Array.isArray(data)) {
         setProfiles(data);
         setTotalPages(1);

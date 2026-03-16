@@ -1,113 +1,91 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import PrivateRoute from "./routes/PrivateRoute";
-import DashboardLayout from "./components/DashboardLayout";
 
+import PrivateRoute from "./routes/PrivateRoute";
+import Sidebar from "./components/Sidebar";
+
+import Login from "./pages/auth/LoginPage";
+import Register from "./pages/auth/RegisterPage";
+import CitizenDashboard from "./pages/citizen/DashboardPage";
+import CaseSubmission from "./pages/citizen/CaseSubmissionPage";
+import Directory from "./pages/directory/DirectoryPage";
 import MatchingResults from "./pages/MatchingResults";
 import Chat from "./pages/Chat";
-
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import AdminDashboard from "./pages/AdminDashboard";
-import CitizenDashboard from "./pages/CitizenDashboard";
-import CaseSubmission from "./pages/CaseSubmission";
-import FilterableDirectory from "./pages/FilterableDirectory";
-import DirectoryIngestion from "./pages/DirectoryIngestion";
 import Profile from "./pages/Profile";
 
 export default function App() {
   return (
     <Routes>
 
-      {/* Redirect root */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<Navigate to="/login" />} />
 
-      {/* Public Routes */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Admin Dashboard */}
       <Route
-        path="/dashboard/admin"
+        path="/dashboard"
         element={
           <PrivateRoute>
-            <DashboardLayout>
-              <AdminDashboard />
-            </DashboardLayout>
+            <Sidebar>
+              <CitizenDashboard />
+            </Sidebar>
           </PrivateRoute>
         }
       />
 
-      {/* Citizen Dashboard */}
-      <Route
-        path="/dashboard/citizen"
-        element={
-            <DashboardLayout>
-              <CitizenDashboard />
-            </DashboardLayout>
-        }
-      />
-
-      {/* Case Submission */}
       <Route
         path="/case-submission"
         element={
-            <DashboardLayout>
+          <PrivateRoute>
+            <Sidebar>
               <CaseSubmission />
-            </DashboardLayout>
+            </Sidebar>
+          </PrivateRoute>
         }
       />
 
-      {/* Directory */}
       <Route
         path="/directory"
         element={
-            <DashboardLayout>
-              <FilterableDirectory />
-            </DashboardLayout>
+          <PrivateRoute>
+            <Sidebar>
+              <Directory />
+            </Sidebar>
+          </PrivateRoute>
         }
       />
 
-      {/* Directory Ingestion */}
-      <Route
-        path="/directory-ingestion"
-        element={
-            <DashboardLayout>
-              <DirectoryIngestion />
-            </DashboardLayout>
-        }
-      />
-
-      {/* Matching Results */}
       <Route
         path="/matches"
         element={
-            <DashboardLayout>
+          <PrivateRoute>
+            <Sidebar>
               <MatchingResults />
-            </DashboardLayout>
+            </Sidebar>
+          </PrivateRoute>
         }
       />
 
-      {/* Chat */}
       <Route
         path="/chat/:matchId"
         element={
-            <DashboardLayout>
+          <PrivateRoute>
+            <Sidebar>
               <Chat />
-            </DashboardLayout>
+            </Sidebar>
+          </PrivateRoute>
         }
       />
 
       <Route
-        path="/profile"
+        path="/profile/:id"
         element={
-            <DashboardLayout>
+          <PrivateRoute>
+            <Sidebar>
               <Profile />
-            </DashboardLayout>
+            </Sidebar>
+          </PrivateRoute>
         }
       />
-
-      {/* Catch-all */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
 
     </Routes>
   );

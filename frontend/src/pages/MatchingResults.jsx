@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../api/axios";
 import MatchCard from "../components/MatchCard";
 import Filters from "../components/Filters";
-
-const API_URL = "http://localhost:8080/api";
 
 export default function MatchingResults() {
 
   const [profiles, setProfiles] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [filters, setFilters] = useState({
     role: "LAWYER",
     expertise: ""
@@ -19,14 +19,24 @@ export default function MatchingResults() {
 
   const fetchProfiles = async () => {
 
-    let url =
-      filters.role === "LAWYER"
-        ? `${API_URL}/directory/lawyers?expertise=${filters.expertise}`
-        : `${API_URL}/directory/ngos`;
+    try {
 
-    const res = await axios.get(url);
+      setLoading(true);
 
-    setProfiles(res.data.content || res.data);
+      let url =
+        filters.role === "LAWYER"
+          ? `/directory/lawyers?expertise=${filters.expertise}`
+          : `/directory/ngos`;
+
+      const res = await API.get(url);
+
+setProfiles(res.data?.content || res.data?.data || res.data || []);
+    } catch (error) {
+      console.error("Failed to fetch profiles", error);
+    } finally {
+      setLoading(false);
+    }
+
   };
 
   return (
@@ -35,9 +45,19 @@ export default function MatchingResults() {
       <Filters filters={filters} setFilters={setFilters} />
 
       <div className="grid grid-cols-3 gap-6 flex-1">
-        {profiles.map((p) => (
+
+        {loading && (
+          <p className="text-gray-500">Loading profiles...</p>
+        )}
+
+        {!loading && profiles.length === 0 && (
+          <p className="text-gray-500">No matching profiles found</p>
+        )}
+
+        {!loading && profiles.map((p) => (
           <MatchCard key={p.id} profile={p} />
         ))}
+
       </div>
 
     </div>

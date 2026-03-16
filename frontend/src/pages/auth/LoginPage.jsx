@@ -17,8 +17,11 @@ const LoginPage = () => {
     setError('');
     setLoading(true);
     try {
-      const userData = await login(email, password);
-      const role = userData?.role?.toUpperCase();
+        const userData = await login({
+          email,
+          password
+        });
+   const role = userData?.role?.toUpperCase();
       if (role === 'ADMIN') navigate('/admin');
       else navigate('/dashboard');
     } catch (err) {
