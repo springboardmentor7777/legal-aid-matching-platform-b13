@@ -85,6 +85,10 @@ export default function Mycase() {
                   <p className="text-gray-700">
                     incident date: {Case.incidentDate || "N/A"}
                   </p>
+                  <div className="flex gap-3">
+                    <button className="rounded-md bg-blue-500 text-white p-2">generate</button>
+                    <button className="rounded-md bg-red-500 text-white p-2">delete case</button>
+                  </div>
                 </div>
               ))}
           </div>
