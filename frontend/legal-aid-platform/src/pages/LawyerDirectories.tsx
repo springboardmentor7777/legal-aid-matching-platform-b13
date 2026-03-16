@@ -11,6 +11,7 @@ interface Lawyer {
   experience: number;
   location: string;
   isVerified: boolean;
+  isAvailable: boolean;
 }
 
 type locationStatus = "NONE";
@@ -130,6 +131,9 @@ export default function LawyerDirectories() {
                 </p>
                 <p className="text-gray-700">
                   Location: {lawyer.location || "N/A"}
+                </p>
+                <p className="text-gray-700">
+                  Availability: {lawyer.isAvailable? "available":"unavailable"}
                 </p>
               </div>
             ))}
