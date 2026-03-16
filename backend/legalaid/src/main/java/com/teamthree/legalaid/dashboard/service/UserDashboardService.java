@@ -87,7 +87,9 @@ public class UserDashboardService {
                 case_.getCaseTitle(),
                 case_.getStatus(),
                 case_.getFiledDate(),
-                case_.getAssignedTo() != null ? case_.getAssignedTo().getFullname() : "Unassigned"
+                case_.getAssignedTo() != null ? case_.getAssignedTo().getFullname() : "Unassigned",
+                case_.getCategory(),
+                case_.getLocation()
             ))
             .collect(Collectors.toList());
     }

@@ -34,7 +34,7 @@ public class AppointmentService {
         Match match = matchRepository.findById(request.getMatchId())
                 .orElseThrow(() -> new RuntimeException("Match not found: " + request.getMatchId()));
 
-        if (match.getCase() == null || !match.getCase().getClient().getId().equals(user.getId())) {
+        if (match.getCaseEntity() == null || !match.getCaseEntity().getClient().getId().equals(user.getId())) {
             throw new RuntimeException("You are not authorised to book an appointment on this match");
         }
 

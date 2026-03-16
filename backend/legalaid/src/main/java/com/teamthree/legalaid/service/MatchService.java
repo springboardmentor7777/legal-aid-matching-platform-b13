@@ -5,6 +5,7 @@ import com.teamthree.legalaid.entity.Case;
 import com.teamthree.legalaid.entity.LawyerProfile;
 import com.teamthree.legalaid.entity.Match;
 import com.teamthree.legalaid.entity.NgoProfile;
+import com.teamthree.legalaid.entity.Notification;
 import com.teamthree.legalaid.entity.User;
 import com.teamthree.legalaid.repository.CaseRepository;
 import com.teamthree.legalaid.repository.LawyerRepository;
@@ -27,6 +28,7 @@ public class MatchService {
     private final CaseRepository caseRepository;
     private final LawyerRepository lawyerRepository;
     private final NgoProfileRepository ngoProfileRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public List<MatchDTO> generateMatches(Long caseId) {
@@ -39,16 +41,13 @@ public class MatchService {
         List<LawyerProfile> lawyers = lawyerRepository.findAll();
 
         for (LawyerProfile lawyer : lawyers) {
-        	//System.out.println("Checking lawyer: " + lawyer.getId());
 
             if (matchRepository.existsByCaseEntityAndProfileIdAndProfileType(
                     caseEntity, lawyer.getId(), "LAWYER")) {
-            	//System.out.println("Match already exists for profile: " + lawyer.getId());
                 continue;
             }
 
             int score = calculateLawyerScore(caseEntity, lawyer);
-            
 
             if (score > 0) {
                 Match match = Match.builder()
@@ -67,16 +66,13 @@ public class MatchService {
         List<NgoProfile> ngos = ngoProfileRepository.findAll();
 
         for (NgoProfile ngo : ngos) {
-        	//System.out.println("Checking NGO: " + ngo.getId());
 
             if (matchRepository.existsByCaseEntityAndProfileIdAndProfileType(
                     caseEntity, ngo.getId(), "NGO")) {
-            	//System.out.println("Match already exists for NGO profile: " + ngo.getId());
                 continue;
             }
 
             int score = calculateNgoScore(caseEntity, ngo);
-            //System.out.println("Score for NGO " + ngo.getId() + " = " + score);
 
             if (score > 0) {
                 Match match = Match.builder()
@@ -93,6 +89,16 @@ public class MatchService {
         }
 
         List<Match> saved = matchRepository.saveAll(newMatches);
+
+        // Notify the citizen that matches were found
+        if (!saved.isEmpty() && caseEntity.getClient() != null) {
+            notificationService.saveNotification(Notification.builder()
+                    .userId(caseEntity.getClient().getId())
+                    .message(saved.size() + " match(es) found for your case: " + caseEntity.getCaseTitle())
+                    .type("NEW_MATCH")
+                    .read(false)
+                    .build());
+        }
 
         return saved.stream()
                 .map(this::mapToDTO)
@@ -121,11 +127,64 @@ public class MatchService {
                 .collect(Collectors.toList());
     }
 
+    public List<MatchDTO> getMatchesForLawyerUser(User user) {
+        return lawyerRepository.findByUser(user)
+                .map(lawyer -> matchRepository.findByProfileIdAndProfileType(lawyer.getId(), "LAWYER")
+                        .stream()
+                        .map(this::mapToDTO)
+                        .collect(Collectors.toList()))
+                .orElse(new ArrayList<>());
+    }
+
     public List<MatchDTO> getMatchesForNgo(Long ngoProfileId) {
         return matchRepository.findByProfileIdAndProfileType(ngoProfileId, "NGO")
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    public List<MatchDTO> getMatchesForNgoUser(User user) {
+        return ngoProfileRepository.findByUser(user)
+                .map(ngo -> matchRepository.findByProfileIdAndProfileType(ngo.getId(), "NGO")
+                        .stream()
+                        .map(this::mapToDTO)
+                        .collect(Collectors.toList()))
+                .orElse(new ArrayList<>());
+    }
+
+    @Transactional
+    public MatchDTO requestMatch(Long matchId, User user) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found: " + matchId));
+
+        match.setStatus("REQUESTED");
+
+        // Notify the lawyer/NGO that user has sent a request
+        if ("LAWYER".equals(match.getProfileType())) {
+            lawyerRepository.findById(match.getProfileId()).ifPresent(lawyer -> {
+                if (lawyer.getUser() != null) {
+                    notificationService.saveNotification(Notification.builder()
+                            .userId(lawyer.getUser().getId())
+                            .message(user.getFullname() + " has requested your help for case: " + match.getCaseEntity().getCaseTitle())
+                            .type("MATCH_REQUESTED")
+                            .read(false)
+                            .build());
+                }
+            });
+        } else if ("NGO".equals(match.getProfileType())) {
+            ngoProfileRepository.findById(match.getProfileId()).ifPresent(ngo -> {
+                if (ngo.getUser() != null) {
+                    notificationService.saveNotification(Notification.builder()
+                            .userId(ngo.getUser().getId())
+                            .message(user.getFullname() + " has requested your help for case: " + match.getCaseEntity().getCaseTitle())
+                            .type("MATCH_REQUESTED")
+                            .read(false)
+                            .build());
+                }
+            });
+        }
+
+        return mapToDTO(matchRepository.save(match));
     }
 
     @Transactional
@@ -139,7 +198,30 @@ public class MatchService {
         Case caseEntity = match.getCaseEntity();
         caseEntity.setStatus("ACTIVE");
 
+        // Assign the lawyer/NGO to the case
+        if ("LAWYER".equals(match.getProfileType())) {
+            lawyerRepository.findById(match.getProfileId()).ifPresent(lawyer -> {
+                if (lawyer.getUser() != null) {
+                    caseEntity.setAssignedTo(lawyer.getUser());
+                }
+            });
+        } else if ("NGO".equals(match.getProfileType())) {
+            ngoProfileRepository.findById(match.getProfileId()).ifPresent(ngo -> {
+                caseEntity.setNgo(ngo);
+            });
+        }
+
         caseRepository.save(caseEntity);
+
+        // Notify the citizen their match was accepted
+        if (caseEntity.getClient() != null) {
+            notificationService.saveNotification(Notification.builder()
+                    .userId(caseEntity.getClient().getId())
+                    .message("Your case \"" + caseEntity.getCaseTitle() + "\" has been accepted by " + match.getProfileType())
+                    .type("MATCH_ACCEPTED")
+                    .read(false)
+                    .build());
+        }
 
         return mapToDTO(matchRepository.save(match));
     }
@@ -151,6 +233,17 @@ public class MatchService {
                 .orElseThrow(() -> new RuntimeException("Match not found: " + matchId));
 
         match.setStatus("REJECTED");
+
+        // Notify the citizen their match was rejected
+        Case caseEntity = match.getCaseEntity();
+        if (caseEntity != null && caseEntity.getClient() != null) {
+            notificationService.saveNotification(Notification.builder()
+                    .userId(caseEntity.getClient().getId())
+                    .message("A match for your case \"" + caseEntity.getCaseTitle() + "\" was declined.")
+                    .type("MATCH_REJECTED")
+                    .read(false)
+                    .build());
+        }
 
         return mapToDTO(matchRepository.save(match));
     }

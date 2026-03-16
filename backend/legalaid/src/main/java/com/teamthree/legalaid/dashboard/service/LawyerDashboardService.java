@@ -36,7 +36,7 @@ public class LawyerDashboardService {
         dashboard.setIsAvailable(lawyer.getIsAvailable());
         
         // Case statistics
-        dashboard.setAssignedCases(caseRepository.countByAssignedToAndStatus(user, "ASSIGNED"));
+        dashboard.setAssignedCases(caseRepository.countByAssignedToAndStatus(user, "ACTIVE"));
         dashboard.setCompletedCases(caseRepository.countByAssignedToAndStatus(user, "COMPLETED"));
         dashboard.setPendingCases(caseRepository.countByAssignedToAndStatus(user, "PENDING"));
         
@@ -50,7 +50,7 @@ public class LawyerDashboardService {
     }
 
     public List<CaseDTO> getAssignedCases(User user) {
-        return caseRepository.findByAssignedToAndStatusOrderByFiledDateDesc(user, "ASSIGNED")
+        return caseRepository.findByAssignedToAndStatusOrderByFiledDateDesc(user, "ACTIVE")
             .stream()
             .map(this::mapToCaseDTO)
             .collect(Collectors.toList());

@@ -14,4 +14,6 @@ public class RecentCaseDTO {
     private String status;
     private LocalDateTime filedDate;
     private String assignedTo;
+    private String category;
+    private String location;
 }

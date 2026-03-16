@@ -24,7 +24,6 @@ public class AdminDashboardService {
 
     public DashboardStatsDTO getDashboardStats() {
         DashboardStatsDTO stats = new DashboardStatsDTO();
-        
         stats.setTotalUsers(userRepository.count());
         stats.setTotalLawyers(userRepository.countByRole(Role.LAWYER));
         stats.setTotalNgos(userRepository.countByRole(Role.NGO));
@@ -32,7 +31,6 @@ public class AdminDashboardService {
         stats.setActiveCases(caseRepository.countByStatus("ACTIVE"));
         stats.setResolvedCases(caseRepository.countByStatus("RESOLVED"));
         stats.setPendingCases(caseRepository.countByStatus("PENDING"));
-        
         return stats;
     }
 
@@ -57,7 +55,9 @@ public class AdminDashboardService {
                 case_.getCaseTitle(),
                 case_.getStatus(),
                 case_.getFiledDate(),
-                case_.getAssignedTo() != null ? case_.getAssignedTo().getFullname() : "Unassigned"
+                case_.getAssignedTo() != null ? case_.getAssignedTo().getFullname() : "Unassigned",
+                case_.getCategory(),
+                case_.getLocation()
             ))
             .collect(Collectors.toList());
     }
@@ -83,17 +83,14 @@ public class AdminDashboardService {
 
     public List<Map<String, Object>> getRecentActivities() {
         List<Object[]> activities = caseRepository.findRecentActivities();
-        
         return activities.stream()
             .map(activity -> {
                 Map<String, Object> map = new HashMap<>();
-                // Access array elements by index based on your query
-                // Assuming the query returns: [id, type, description, timestamp, user]
-                map.put("id", activity[0]);           // id
-                map.put("type", activity[1]);          // type
-                map.put("description", activity[2]);   // description
-                map.put("timestamp", activity[3]);     // timestamp
-                map.put("user", activity[4]);          // user name
+                map.put("id", activity[0]);
+                map.put("type", activity[1]);
+                map.put("description", activity[2]);
+                map.put("timestamp", activity[3]);
+                map.put("user", activity[4]);
                 return map;
             })
             .collect(Collectors.toList());
