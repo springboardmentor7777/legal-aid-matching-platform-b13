@@ -46,12 +46,14 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/auth/**").permitAll()
+                         .requestMatchers("/ws-chat/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/profile/**").authenticated()
                  .requestMatchers(HttpMethod.GET, "/matches/my/**").hasAnyRole("LAWYER", "NGO")
 .requestMatchers(HttpMethod.POST, "/matches/generate/**").hasRole("CITIZEN")
 .requestMatchers(HttpMethod.PUT, "/matches/*/accept").hasAnyRole("LAWYER", "NGO")
 .requestMatchers(HttpMethod.PUT, "/matches/*/reject").hasAnyRole("LAWYER", "NGO")
+     .requestMatchers("/chats/**").authenticated()
 
                         .requestMatchers("/cases/**").authenticated()
 

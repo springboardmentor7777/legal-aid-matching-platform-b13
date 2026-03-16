@@ -1,8 +1,9 @@
 package com.milestone.backend.entity;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.time.LocalDateTime;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,55 +11,50 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-// import jakarta.persistence.Lob;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-// import lombok.Builder.Default;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "users", indexes = {
+@Table(
+    name = "users",
+    indexes = {
         @Index(name = "idx_users_roles", columnList = "role")
-}, uniqueConstraints = {
+    },
+    uniqueConstraints = {
         @UniqueConstraint(name = "uk_users_email", columnNames = "email")
-})
+    }
+)
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    private LocalDateTime time_stamp;
+    @Column(name = "created_at")
+    private LocalDateTime timeStamp = LocalDateTime.now();
 
     private Boolean isVerified = false;
-    // ===== UserDetails Methods =====
+
+    // ===== Spring Security Methods =====
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -71,6 +67,7 @@ public class User implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -95,14 +92,13 @@ public class User implements UserDetails {
         return true;
     }
 
-    // getters & setters
+    // ===== Profiles =====
 
     @JsonIgnoreProperties({"user"})
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private LawyerProfile lawyerProfile;
 
     @JsonIgnoreProperties({"user"})
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private NgoProfile ngoProfile;
-
 }
