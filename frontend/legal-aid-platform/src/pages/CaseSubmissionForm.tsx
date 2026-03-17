@@ -178,11 +178,13 @@ const CaseSubmissionForm: React.FC = () => {
     });
 
     setLoading(false);
+    alert("Case submitted successfully!");
+    window.location.href = '/dashboard';
   };
 
   return (
     <div className="min-h-screen bg-blue-50">
-      <Navbar title="Submit Case" name={user.username} role={user.role} toggleSidebar={() => {}} />
+      <Navbar title="Submit Case" name={user.username} role={user.role} toggleSidebar={() => { }} />
 
       <div className="flex justify-center mt-10">
         <div className="w-full max-w-xl bg-white shadow-lg rounded-lg p-8 border-t-4 border-blue-900">
@@ -195,9 +197,8 @@ const CaseSubmissionForm: React.FC = () => {
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center flex-1">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${
-                    step >= s ? "bg-blue-900" : "bg-gray-300"
-                  }`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${step >= s ? "bg-blue-900" : "bg-gray-300"
+                    }`}
                 >
                   {s}
                 </div>
