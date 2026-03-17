@@ -5,10 +5,7 @@ export default function AppointmentScheduler() {
   const [timezone, setTimezone] = useState("");
   const [selectedTime, setSelectedTime] = useState(null);
   const [duration, setDuration] = useState("");
-  const [reminders, setReminders] = useState({
-    fifteen: false,
-    hour: false,
-  });
+  const [reminders, setReminders] = useState<boolean>(true);
 
   // ✅ Added profile state
   const [profile, setProfile] = useState({
@@ -28,8 +25,8 @@ export default function AppointmentScheduler() {
       .catch((err) => console.error(err));
   }, []);
 
-  const toggleReminder = (key) => {
-    setReminders({ ...reminders, [key]: !reminders[key] });
+  const toggleReminder = () => {
+    setReminders(true);
   };
 
   const handleSubmit = () => {
@@ -49,10 +46,7 @@ export default function AppointmentScheduler() {
     setTimezone("");
     setSelectedTime(null);
     setDuration("");
-    setReminders({
-      fifteen: false,
-      hour: false,
-    });
+    setReminders(false);
   };
 
   return (
@@ -151,19 +145,10 @@ export default function AppointmentScheduler() {
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={reminders.fifteen}
-                onChange={() => toggleReminder("fifteen")}
+                checked={reminders}
+                onChange={() => toggleReminder()}
               />
               15 minutes before the call
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={reminders.hour}
-                onChange={() => toggleReminder("hour")}
-              />
-              1 hour before the call
             </label>
           </div>
         </div>
