@@ -14,11 +14,30 @@ public class AppointmentResponseDto {
     private String appointmentDate; 
     private String appointmentTime; 
     private String notes;
+    private String callDuration;
+    private Boolean reminder;
+    private String zone;
+    private String selectedTime;
 
-    public AppointmentResponseDto(Long id, Long matchId, String status, String message) {
+    public AppointmentResponseDto(Long id, 
+        Long matchId, 
+        String status, 
+        String message, 
+        String appointmentDate, 
+        String appointementTime, 
+        String notes,
+        String duration,
+        String zone,
+        String selectedTime 
+    ) {
         this.id = id;
         this.matchId = matchId;
         this.status = status;
         this.message = message;
+        this.appointmentDate = appointmentDate;
+        this.appointmentTime = appointementTime;
+        this.zone = zone;
+        this.selectedTime = selectedTime;
+        this.callDuration = duration;
     }
 }

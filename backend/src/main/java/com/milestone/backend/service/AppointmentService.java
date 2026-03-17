@@ -48,6 +48,10 @@ public class AppointmentService {
         schedule.setAppointmentDate(request.getAppointmentDate());
         schedule.setAppointmentTime(request.getAppointmentTime());
         schedule.setNotes(request.getNotes());
+        schedule.setCallDuration(request.getCallDuration());
+        schedule.setZone(request.getZone());
+        schedule.setReminder(request.getReminder());
+        schedule.setSelectedTime(request.getSelectedTime());
         schedule.setStatus("SCHEDULED");
         schedule.setScheduledTime(LocalDateTime.now()); 
 
@@ -74,7 +78,7 @@ public class AppointmentService {
 
         return new AppointmentResponseDto(
                 schedule.getId(), match.getId(), "SCHEDULED", "Appointment successfully booked and notifications sent.",
-                schedule.getAppointmentDate(), schedule.getAppointmentTime(), schedule.getNotes()
+                schedule.getAppointmentDate(), schedule.getAppointmentTime(), schedule.getNotes(), schedule.getCallDuration(), schedule.getZone(), schedule.getSelectedTime()
         );
     }
 
@@ -148,7 +152,10 @@ public class AppointmentService {
                 "Success",
                 schedule.getAppointmentDate(),
                 schedule.getAppointmentTime(),
-                schedule.getNotes()
+                schedule.getNotes(),
+                schedule.getCallDuration(),
+                schedule.getZone(),
+                schedule.getSelectedTime()
         );
     }
 }

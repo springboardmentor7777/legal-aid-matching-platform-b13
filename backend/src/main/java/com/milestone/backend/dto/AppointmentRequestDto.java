@@ -8,4 +8,8 @@ public class AppointmentRequestDto {
     private String appointmentDate; 
     private String appointmentTime; 
     private String notes;
+    private String callDuration;
+    private Boolean reminder;
+    private String zone;
+    private String selectedTime;
 }

@@ -127,4 +127,27 @@ public class CaseService {
 
         return mapToResponse(caseRepository.save(caseObj));
     }
+
+
+    // Delete Case By ID
+    public CaseResponse deleteCaseById(Long id, User user) {
+        
+        // 1. Find the case or throw an error
+        Case caseObj = caseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Case not found with ID: " + id));
+
+        // 2. Verify Ownership: Only the citizen who created the case can delete it
+        if (!caseObj.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized access: You can only delete your own cases.");
+        }
+
+        // 3. Map to response before deleting so we can return the deleted data to the user
+        CaseResponse deletedCaseResponse = mapToResponse(caseObj);
+
+        // 4. Delete the case from the database
+        caseRepository.delete(caseObj);
+
+        return deletedCaseResponse;
+    }
+
 }

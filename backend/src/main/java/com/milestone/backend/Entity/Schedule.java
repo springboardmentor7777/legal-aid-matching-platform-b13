@@ -26,6 +26,10 @@ public class Schedule {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    private String callDuration;
+    private Boolean reminder = true;
+    private String zone;
+    private String selectedTime;
     // Connects the appointment to the specific Match
     @ManyToOne
     @JoinColumn(name = "match_id", nullable = false)
