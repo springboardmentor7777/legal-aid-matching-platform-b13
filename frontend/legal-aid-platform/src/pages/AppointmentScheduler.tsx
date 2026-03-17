@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 export default function AppointmentScheduler() {
   const [date, setDate] = useState("2025-12-28");
   const [timezone, setTimezone] = useState("");
-  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [duration, setDuration] = useState("");
   const [reminders, setReminders] = useState<boolean>(true);
 
-  // ✅ Added profile state
   const [profile, setProfile] = useState({
     name: "",
     role: "",
@@ -17,19 +17,22 @@ export default function AppointmentScheduler() {
 
   const times = ["9:00 AM", "10:30 AM", "2:00 PM", "3:30 PM", "5:00 PM"];
 
-  // ✅ Fetch profile data from backend
   useEffect(() => {
-    fetch("http://localhost:5000/profile")
-      .then((res) => res.json())
-      .then((data) => setProfile(data))
-      .catch((err) => console.error(err));
+    axios
+      .get("http://localhost:8081/profile", {
+        headers: {
+          Authorization: `Bearer ${localStorage.accessToken}`,
+        },
+      })
+      .then((res) => setProfile(res.data))
+      .catch((err) => console.error("Error fetching profile:", err));
   }, []);
 
-  const toggleReminder = () => {
-    setReminders(true);
+  const toggleReminder = (key) => {
+    setReminders({ ...reminders, [key]: !reminders[key] });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const appointment = {
       date,
       timezone,
@@ -38,7 +41,23 @@ export default function AppointmentScheduler() {
       reminders,
     };
 
-    alert("Appointment Confirmed: " + JSON.stringify(appointment, null, 2));
+    try {
+      await axios.post(
+        "http://localhost:8081/appointments/create",
+        appointment,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.accessToken}`,
+          },
+        }
+      );
+
+      alert("Appointment successfully scheduled!");
+      handleCancel();
+    } catch (error) {
+      console.error("Error scheduling appointment:", error);
+      alert("There was a problem scheduling the appointment.");
+    }
   };
 
   const handleCancel = () => {
@@ -57,17 +76,12 @@ export default function AppointmentScheduler() {
           Propose a time to connect with {profile.name}, {profile.role}.
         </p>
 
-        {/* ✅ Profile Section Updated */}
         <div className="flex items-center gap-4 bg-gray-100 p-3 rounded-lg mb-6">
-       {/*}   <img
-            src={profile.image || "https://i.pravatar.cc/50"}
-            className="rounded-full"
-            alt="profile"
-          />*/}
           <div>
-            <p className="font-medium">{profile.name}</p>
+            <p className="font-medium">{profile.name || "Loading..."}</p>
             <p className="text-sm text-gray-500">
-              {profile.role}Match Score: {profile.matchScore}%
+              {profile.role ? `${profile.role} | ` : ""}
+              Match Score: {profile.matchScore || "0"}%
             </p>
           </div>
         </div>
