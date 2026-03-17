@@ -10,8 +10,8 @@ export default function RecentMatches() {
 
   const fetchMatches = async () => {
     try {
-      const token = localStorage.getItem("token");
-
+      const token = localStorage.getItem("accessToken");
+      console.log("THE TOKEN IS: ", token);
       const res = await axios.get(
         "http://localhost:8081/matches/my",
         {
