@@ -6,17 +6,17 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
 
-    private String name;
+    private String username;
     private String email;
     private String password;
     private Role role;
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {

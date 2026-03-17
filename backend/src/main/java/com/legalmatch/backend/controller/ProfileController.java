@@ -24,7 +24,7 @@ public class ProfileController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return new ProfileResponse(
-                user.getName(),
+                user.getUsername(),
                 user.getEmail(),
                 user.getRole().name(),
                 user.isEnabled()
@@ -43,13 +43,13 @@ public class ProfileController {
 
         // Update only allowed fields
         if (request.getName() != null) {
-            user.setName(request.getName());
+            user.setUsername(request.getName());
         }
 
         userRepository.save(user);
 
         return new ProfileResponse(
-                user.getName(),
+                user.getUsername(),
                 user.getEmail(),
                 user.getRole().name(),
                 user.isEnabled()

@@ -34,7 +34,7 @@ public class DirectoryService {
 
         return profiles.map(p -> DirectoryProfileResponse.builder()
                 .id(p.getId())
-                .name(p.getUser().getName())
+                .name(p.getUser().getUsername())
                 .organizationName(p.getOrganizationName())
                 .expertise(p.getExpertise())
                 .location(p.getLocation())
@@ -52,7 +52,7 @@ public class DirectoryService {
 
         return profiles.map(p -> DirectoryProfileResponse.builder()
                 .id(p.getId())
-                .name(p.getUser().getName())
+                .name(p.getUser().getUsername())
                 .organizationName(p.getOrganizationName())
                 .expertise(p.getExpertise())
                 .location(p.getLocation())
