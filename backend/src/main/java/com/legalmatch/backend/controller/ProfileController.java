@@ -42,8 +42,8 @@ public class ProfileController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Update only allowed fields
-        if (request.getName() != null) {
-            user.setUsername(request.getName());
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
         }
 
         userRepository.save(user);
