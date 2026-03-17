@@ -26,7 +26,7 @@ public class ProfileController {
         return new ProfileResponse(
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole().name(),
+                user.getRole()!=null? user.getRole().name():null,
                 user.isEnabled()
         );
     }
@@ -51,7 +51,7 @@ public class ProfileController {
         return new ProfileResponse(
                 user.getUsername(),
                 user.getEmail(),
-                user.getRole().name(),
+                user.getRole()!=null? user.getRole().name():null,
                 user.isEnabled()
         );
     }
