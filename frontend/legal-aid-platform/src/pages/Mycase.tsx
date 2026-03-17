@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
+import axios from "axios";
 
 interface Case {
   id?: number;
@@ -20,7 +21,6 @@ interface Case {
 
 export default function Mycase() {
   const { user } = useAuth();
-
   const [data, setData] = useState<Case[]>([]);
 
   useEffect(() => {
@@ -32,11 +32,54 @@ export default function Mycase() {
     })
       .then((res) => res.json())
       .then((data) => {
-        const casedata = data;
-        setData(casedata);
-        // console.log(casedata);
+        setData(data);
       });
   }, []);
+
+  // --- NEW: Generate Matches Handler ---
+  const handleGenerateMatches = async (caseId?: number) => {
+    if (!caseId) return;
+
+    try {
+      await axios.post(
+        `http://localhost:8081/matches/generate/${caseId}`,
+        {}, // empty body
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.accessToken}`,
+          },
+        }
+      );
+      alert("AI generation triggered successfully!");
+    } catch (error) {
+      console.error("Error generating matches:", error);
+      alert("Failed to trigger match generation.");
+    }
+  };
+
+  // --- NEW: Delete Case Handler ---
+  const handleDeleteCase = async (caseId?: number) => {
+    if (!caseId) return;
+
+    const isConfirmed = window.confirm("Are you sure you want to delete this case?");
+    if (!isConfirmed) return;
+
+    try {
+      await axios.delete(`http://localhost:8081/cases/${caseId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.accessToken}`,
+        },
+      });
+      
+      alert("Case deleted successfully!");
+      
+      // Remove the deleted case from the UI instantly
+      setData((prevData) => prevData.filter((c) => c.id !== caseId));
+    } catch (error) {
+      console.error("Error deleting case:", error);
+      alert("There was a problem deleting the case. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-blue-50">
@@ -64,12 +107,9 @@ export default function Mycase() {
                     description: {Case.description || "N/A"}
                   </p>
                   <p className="text-gray-700">
-                    location:{" "}
-                    {Case.location || "N/A"}
+                    location: {Case.location || "N/A"}
                   </p>
-                  <p className="text-gray-700">
-                    status: {Case.status || "N/A"}
-                  </p>
+                  <p className="text-gray-700">status: {Case.status || "N/A"}</p>
                   <p className="text-gray-700">
                     additional note: {Case.additionalNotes || "N/A"}
                   </p>
@@ -85,9 +125,20 @@ export default function Mycase() {
                   <p className="text-gray-700">
                     incident date: {Case.incidentDate || "N/A"}
                   </p>
-                  <div className="flex gap-3">
-                    <button className="rounded-md bg-blue-500 text-white p-2">generate</button>
-                    <button className="rounded-md bg-red-500 text-white p-2">delete case</button>
+                  <div className="flex gap-3 mt-3">
+                    {/* --- NEW: onClick Handlers --- */}
+                    <button 
+                      className="rounded-md bg-blue-500 hover:bg-blue-600 text-white p-2 transition-colors"
+                      onClick={() => handleGenerateMatches(Case.id)}
+                    >
+                      generate
+                    </button>
+                    <button 
+                      className="rounded-md bg-red-500 hover:bg-red-600 text-white p-2 transition-colors"
+                      onClick={() => handleDeleteCase(Case.id)}
+                    >
+                      delete case
+                    </button>
                   </div>
                 </div>
               ))}
