@@ -40,7 +40,14 @@ protected boolean shouldNotFilter(HttpServletRequest request) {
         }
 
         String jwt = authHeader.substring(7);
-        String userEmail = jwtService.extractUsername(jwt);
+String userEmail = null;
+
+try {
+    userEmail = jwtService.extractUsername(jwt);
+} catch (Exception e) {
+    filterChain.doFilter(request, response);
+    return;
+}
 
         if (userEmail != null &&
                 SecurityContextHolder.getContext().getAuthentication() == null) {
