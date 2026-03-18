@@ -18,6 +18,9 @@ public class ProfileController {
     @GetMapping("/me")
     public ProfileResponse getProfile(Authentication authentication) {
 
+        if(authentication==null){
+                throw new RuntimeException("Authentication failed");
+        }
         String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
@@ -36,7 +39,8 @@ public class ProfileController {
             Authentication authentication,
             @RequestBody UpdateProfileRequest request) {
 
-        String email = authentication.getName();
+        
+                String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
