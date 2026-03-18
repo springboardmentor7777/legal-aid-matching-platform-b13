@@ -17,6 +17,7 @@ public class ProfileController {
 
     @GetMapping("/me")
     public ProfileResponse getProfile(Authentication authentication) {
+        System.out.println("Authentication object:"+authentication);
 
         
         String email = authentication.getName();
