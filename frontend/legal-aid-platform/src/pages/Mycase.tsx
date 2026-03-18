@@ -65,7 +65,7 @@ export default function Mycase() {
     if (!isConfirmed) return;
 
     try {
-      await axios.delete(`http://localhost:8081/cases/${caseId}`, {
+      await axios.delete(`http://localhost:8081/cases/${caseId}/delete`, {
         headers: {
           Authorization: `Bearer ${localStorage.accessToken}`,
         },
