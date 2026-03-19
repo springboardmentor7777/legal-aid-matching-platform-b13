@@ -46,20 +46,16 @@ export default function MatchCard({ profile, onAccept, onReject }) {
         </button>
         <br/>
         <button
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-          onClick={() => {
-          navigate("/pages/AppointmentScheduler");
-        }}
-
+          className="bg-purple-600 hover:bg-purple-700 transition-colors text-white px-3 py-1 rounded w-full sm:w-auto"
+          onClick={() => navigate(`/pages/AppointmentScheduler/${profile.id}`)} 
         >
           Schedule Call
         </button>
 
         <button
-          className="bg-blue-500 text-white px-3 py-1 rounded"
-          onClick={() => {
-          navigate("/chatpage");
-        }}>
+          className="bg-blue-600 hover:bg-blue-700 transition-colors text-white px-3 py-1 rounded w-full sm:w-auto"
+          onClick={() => navigate(`/chatpage/${profile.id}`)} 
+        >
           Secure Chat
         </button>
       </div>

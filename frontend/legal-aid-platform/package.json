@@ -20,6 +20,8 @@
     "react-type-animation": "^3.2.0",
     "rechart": "^0.0.1",
     "recharts": "^3.8.0",
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
