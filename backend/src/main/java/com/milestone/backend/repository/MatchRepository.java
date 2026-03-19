@@ -3,10 +3,10 @@ package com.milestone.backend.repository;
 import com.milestone.backend.entity.Match;
 import com.milestone.backend.entity.MatchStatus;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +38,33 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
         WHERE m.id = :matchId
     """)
     Optional<Match> findMatchWithCase(@Param("matchId") Long matchId);
+
+    // ================================
+    // 🔥 NEW METHODS (IMPORTANT)
+    // ================================
+
+    // ✅ Check if case already accepted
+    boolean existsByCaseIdAndStatus(Long caseId, MatchStatus status);
+
+    // ✅ Show only visible matches to provider
+    @Query("""
+        SELECT m FROM Match m
+        WHERE m.userId = :userId
+        AND (
+            m.status = 'PENDING'
+            OR (m.status = 'ACCEPTED' AND m.userId = :userId)
+        )
+    """)
+    List<Match> findVisibleMatchesForProvider(@Param("userId") Long userId);
+
+    // ✅ Reject all other matches when one is accepted
+    @Modifying
+    @Transactional
+    @Query("""
+        UPDATE Match m
+        SET m.status = 'REJECTED'
+        WHERE m.caseId = :caseId AND m.id != :matchId
+    """)
+    void rejectOtherMatches(@Param("caseId") Long caseId,
+                            @Param("matchId") Long matchId);
 }

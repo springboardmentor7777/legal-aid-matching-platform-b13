@@ -3,38 +3,42 @@ package com.milestone.backend.controller;
 import com.milestone.backend.dto.MatchResponse;
 import com.milestone.backend.entity.User;
 import com.milestone.backend.service.MatchService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/matches") //
+@RequestMapping("/matches")
+@RequiredArgsConstructor
 public class MatchController {
 
     private final MatchService matchService;
-    
-    public MatchController(MatchService matchService) { 
-        this.matchService = matchService; 
-    }
 
     @PostMapping("/generate/{caseId}")
-    public List<MatchResponse> generateMatches(@PathVariable Long caseId) { 
-        return matchService.generateMatches(caseId); 
+    public List<MatchResponse> generateMatches(@PathVariable Long caseId) {
+        return matchService.generateMatches(caseId);
     }
 
-    @GetMapping("/my")
-    public List<MatchResponse> getMyMatches(@AuthenticationPrincipal User currentUser) { 
-        // Fetches matches for the logged-in user (provider or citizen)
-        return matchService.getMyMatches(currentUser); 
+    @GetMapping("/me")
+    public List<MatchResponse> getMyMatches(@AuthenticationPrincipal User currentUser) {
+        return matchService.getMyMatches(currentUser);
     }
 
     @PutMapping("/{matchId}/accept")
-    public MatchResponse acceptMatch(@PathVariable Long matchId) { 
-        return matchService.acceptMatch(matchId); 
+    public MatchResponse acceptMatch(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal User currentUser) {
+
+        return matchService.acceptMatch(matchId, currentUser);
     }
 
     @PutMapping("/{matchId}/reject")
-    public MatchResponse rejectMatch(@PathVariable Long matchId) { 
-        return matchService.rejectMatch(matchId); 
+    public MatchResponse rejectMatch(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal User currentUser) {
+
+        return matchService.rejectMatch(matchId, currentUser);
     }
 }
