@@ -337,20 +337,20 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                 ))}
+              <div className="grid grid-cols-3 gap-6">
 
-            </>
-          )}
-           <div className="grid grid-cols-3 gap-6">
+              <div className="col-span-2">
+                <RecentMatches />
+              </div>
 
-      <div className="col-span-2">
-        <RecentMatches />
-      </div>
-
-      <div>
-        <MatchesOverTime />
-      </div>
+              <div>
+                <MatchesOverTime />
+              </div>
 
     </div>
+        </>
+          )}
+           
 
         </main>
 
