@@ -10,26 +10,30 @@ interface Notification {
 }
 
 const NotificationBell = () => {
-
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
 
   const BASE_URL = "http://localhost:8081/notifications";
 
-  // 🔥 Fetch notifications from backend
   const loadNotifications = async () => {
     try {
+      const token = localStorage.getItem("accessToken"); 
+      
+      if (!token) return;
+
       const res = await fetch(BASE_URL, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${token}`
         }
       });
 
-      const data = await res.json();
-      setNotifications(data);
-
+      if (res.ok) {
+        const data = await res.json();
+        // Ensure data is an array before setting state
+        setNotifications(Array.isArray(data) ? data : []);
+      }
     } catch (error) {
       console.error("Error fetching notifications:", error);
     }
@@ -37,71 +41,62 @@ const NotificationBell = () => {
 
   useEffect(() => {
     loadNotifications();
+    
+    //  INTEGRATION BOOST: Check for new notifications every 30 seconds
+    const interval = setInterval(loadNotifications, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  // 🔥 Mark single notification as read
   const toggleRead = async (id: number) => {
-
     // Optimistic UI update
     setNotifications(prev =>
-      prev.map(n =>
-        n.id === id ? { ...n, isRead: true } : n
-      )
+      prev.map(n => n.id === id ? { ...n, isRead: true } : n)
     );
 
     try {
+      const token = localStorage.getItem("accessToken"); 
       await fetch(`${BASE_URL}/${id}/read`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ isRead: true })
+          Authorization: `Bearer ${token}`
+        }
       });
     } catch (error) {
       console.error("Error updating notification:", error);
     }
   };
 
-  // 🔥 (Optional) Mark all as read
-  const markAllRead = async () => {
-
-    setNotifications(prev =>
-      prev.map(n => ({ ...n, isRead: true }))
-    );
-
-    // Only works if backend provides this API
-    // await fetch(`${BASE_URL}/read-all`, { method: "PUT" });
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    // Add fetch call here if provides a /read-all endpoint
   };
 
   return (
     <div className="relative">
-
-      {/* Bell Icon */}
       <button
         onClick={() => setOpen(!open)}
-        className="text-blue-900 text-xl relative"
+        className="text-blue-900 text-xl relative p-2 hover:bg-gray-100 rounded-full transition"
       >
         <FaBell />
-
         {unreadCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
+          <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px]">
             {unreadCount}
           </span>
         )}
       </button>
 
-      {/* Notification Panel */}
       {open && (
-        <NotificationPanel
-          notifications={notifications}
-          toggleRead={toggleRead}
-          markAllRead={markAllRead}
-        />
+        <div className="absolute right-0 mt-2 z-50">
+          <NotificationPanel
+            notifications={notifications}
+            toggleRead={toggleRead}
+            markAllRead={markAllRead}
+          />
+        </div>
       )}
-
     </div>
   );
 };
