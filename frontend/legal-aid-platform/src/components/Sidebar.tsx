@@ -92,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
           navigate("/pages/AppointmentScheduler/4");
         }}>
           Appointment Scheduler
-        </li>*/}
+        </li>
       </ul>
     </aside>
   );

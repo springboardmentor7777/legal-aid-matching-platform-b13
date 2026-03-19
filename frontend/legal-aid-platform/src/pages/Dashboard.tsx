@@ -146,20 +146,18 @@ const Dashboard: React.FC = () => {
     }
   }, [user.role]);
 
-  
   const handleAccept = async (matchId: number) => {
     const token = localStorage.getItem("accessToken");
 
     try {
       const response = await fetch(`http://localhost:8081/matches/${matchId}/accept`, {
-        method: "PUT", // Changed from POST
+        method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
         alert("Match accepted successfully!");
-        // Remove from pending list
-        setPendingCases((prev) => prev.filter((c) => c.id !== matchId)); 
+        setPendingCases((prev) => prev.filter((c) => c.id !== matchId));
       } else {
         alert("Failed to accept match.");
       }
@@ -168,19 +166,17 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  
   const handleDecline = async (matchId: number) => {
     const token = localStorage.getItem("accessToken");
 
     try {
       const response = await fetch(`http://localhost:8081/matches/${matchId}/reject`, {
-        method: "PUT", // Changed from POST
+        method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.ok) {
         alert("Match rejected.");
-        // Remove from pending list
         setPendingCases((prev) => prev.filter((c) => c.id !== matchId));
       } else {
         alert("Failed to reject match.");
@@ -335,24 +331,11 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                 ))}
-              <div className="grid grid-cols-3 gap-6">
-
-              <div className="col-span-2">
-                <RecentMatches />
-              </div>
-
-              <div>
-                <MatchesOverTime />
-              </div>
-
-    </div>
-        </>
-          )}
-           
             </>
           )}
 
-          <div className="grid grid-cols-3 gap-6">
+          {/* UNIVERSAL DASHBOARD COMPONENTS */}
+          <div className="grid grid-cols-3 gap-6 mt-6">
             <div className="col-span-2">
               <RecentMatches />
             </div>

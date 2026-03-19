@@ -1,27 +1,8 @@
-import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import axios from "axios";
 
-export default function AppointmentScheduler() {
-  const [date, setDate] = useState("2025-12-28");
-  const [timezone, setTimezone] = useState("");
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [duration, setDuration] = useState("");
-
-  // FIXED: reminders should be an object
-  const [reminders, setReminders] = useState({
-    fifteen: false,
-    hour: false,
-  });
-
-  const [profile, setProfile] = useState({
-    name: "",
-    role: "",
-    matchScore: "",
-    image: "",
-    matchId: "", // added for API
 interface AppointmentProps {
-  matchId: number;
   initialScore?: number;
   providerName?: string;
 }
@@ -29,6 +10,7 @@ interface AppointmentProps {
 export default function AppointmentScheduler({ initialScore, providerName }: AppointmentProps) {
   const { matchId } = useParams<{ matchId: string }>(); // Grab the ID from the URL
   const numericMatchId = Number(matchId); // Convert string "4" to number 4
+  
   const [date, setDate] = useState("2026-03-20");
   const [timezone, setTimezone] = useState("IST");
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -46,9 +28,9 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
 
   // Note: Fetching the specific match details to ensure we have the latest score/name
   useEffect(() => {
-    if (matchId) {
+    if (numericMatchId) {
       axios
-        .get(`http://localhost:8081/matches/${matchId}`, {
+        .get(`http://localhost:8081/matches/${numericMatchId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
@@ -62,7 +44,7 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
         })
         .catch((err) => console.error("Error fetching match details:", err));
     }
-  }, [matchId, initialScore, providerName]);
+  }, [numericMatchId, initialScore, providerName]);
 
   const handleSubmit = async () => {
     if (!selectedTime) {
@@ -76,10 +58,10 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
     const formattedSelectedTime = selectedTime.split(" ")[0];
 
     const appointmentPayload = {
-      matchId: numericMatchId, // Dynamic ID from props
+      matchId: numericMatchId, // Dynamic ID from URL
       appointmentDate: date,
       appointmentTime: selectedTime,
-      notes: `Consultation regarding Case #${matchId}`, 
+      notes: `Consultation regarding Case #${numericMatchId}`, 
       callDuration: duration,
       reminder: reminders,
       zone: timezone,
