@@ -44,7 +44,24 @@ export default function MatchCard({ profile, onAccept, onReject }) {
         >
           Reject
         </button>
+        <br/>
+        <button
+          className="bg-blue-500 text-white px-3 py-1 rounded"
+          onClick={() => {
+          navigate("/pages/AppointmentScheduler");
+        }}
 
+        >
+          Schedule Call
+        </button>
+
+        <button
+          className="bg-blue-500 text-white px-3 py-1 rounded"
+          onClick={() => {
+          navigate("/chatpage");
+        }}>
+          Secure Chat
+        </button>
       </div>
     </div>
   );
