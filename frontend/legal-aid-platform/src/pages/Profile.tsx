@@ -2,10 +2,14 @@ import { useFetcher, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
+
 export default function Profile() {
   const { user } = useAuth();
 
   const [data, setData] = useState<any>(null);
+
+  //  Availability state
+  const [isAvailable, setIsAvailable] = useState<boolean>(false);
 
   useEffect(() => {
     fetch("http://localhost:8081/profile/me", {
@@ -18,12 +22,16 @@ export default function Profile() {
       .then((res) => res.json())
       .then((data) => {
         const userData = data;
-        // console.log(userData);
         setData(userData);
+
+        //  Sync from backend
+        setIsAvailable(userData?.isAvailable || false);
       });
   }, []);
+
   console.log(data);
   const navigate = useNavigate();
+
   return (
     <div>
       <div>
@@ -33,9 +41,7 @@ export default function Profile() {
           </div>
           <div className="flex gap-5">
             <a
-              href={
-                (user?.role !=="ADMIN")?"/dashboard":"/admin"
-              }
+              href={user?.role !== "ADMIN" ? "/dashboard" : "/admin"}
               className="p-2 text-blue-900 rounded-lg border border-blue-900 hover:bg-blue-900 hover:text-white transition"
             >
               Dashboard
@@ -44,7 +50,6 @@ export default function Profile() {
               href="/"
               className="bg-red-500 p-2 text-white rounded-lg"
               onClick={() => {
-                // localStorage.clear;
                 localStorage.clear();
                 navigate("/");
               }}
@@ -54,6 +59,7 @@ export default function Profile() {
           </div>
         </nav>
       </div>
+
       <div className="min-h-screen bg-gray-100 pt-20">
         <div className="flex justify-center items-start gap-1">
           <section className="flex-1">
@@ -63,13 +69,14 @@ export default function Profile() {
                   Welcome, <br />
                   <span>{data?.name}!</span>
                 </h1>
+
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="text-xl font-semibold text-blue-900 mb-2">
                     Personal Information
                   </h3>
                   <p className="text-gray-700">
-                    Name: {data?.name} (<span>{user?.role?.toLowerCase()}</span>
-                    )
+                    Name: {data?.name} (
+                    <span>{user?.role?.toLowerCase()}</span>)
                   </p>
                   <p className="text-gray-700">
                     Email: {user?.email || "Not available"}
@@ -79,6 +86,7 @@ export default function Profile() {
                     {data?.is_verified ? "Verified" : "Not Verified"}
                   </p>
                 </div>
+
                 <div>
                   {data?.role === "LAWYER" && (
                     <h1 className="text-2xl text-blue-900 pt-10">
@@ -90,8 +98,9 @@ export default function Profile() {
                       NGO Information
                     </h1>
                   )}
-                  {/* <h1 className="text-2xl text-blue-900 pt-10">Social Information</h1> */}
+
                   <hr className="border-t border-blue-200 my-4" />
+
                   <div>
                     {data?.role === "LAWYER" && (
                       <div className="text-blue-900">
@@ -100,20 +109,52 @@ export default function Profile() {
                         specialization: {data?.specialization || "N/A"}
                         <br />
                         experience:{" "}
-                        {data?.experience ? `${data.experience} years` : "N/A"}
+                        {data?.experience
+                          ? `${data.experience} years`
+                          : "N/A"}
                         <br />
                         location: {data?.location || "N/A"}
+
+                        {/*Availability Toggle  */}
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setIsAvailable(!isAvailable)}
+                            className={`px-4 py-2 rounded-lg text-white ${
+                              isAvailable
+                                ? "bg-green-500"
+                                : "bg-gray-500"
+                            }`}
+                          >
+                            {isAvailable ? "Available" : "Not Available"}
+                          </button>
+                        </div>
                       </div>
                     )}
+
                     {data?.role === "NGO" && (
                       <div className="text-blue-900">
                         role: {data?.role}
                         <br />
-                        organization name: {data?.organizationName || "N/A"}
+                        organization name:{" "}
+                        {data?.organizationName || "N/A"}
                         <br />
                         service area: {data?.serviceArea || "N/A"}
                         <br />
                         location: {data?.location || "N/A"}
+
+                        {/* Availability Toggle  */}
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setIsAvailable(!isAvailable)}
+                            className={`px-4 py-2 rounded-lg text-white ${
+                              isAvailable
+                                ? "bg-green-500"
+                                : "bg-gray-500"
+                            }`}
+                          >
+                            {isAvailable ? "Available" : "Not Available"}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -122,7 +163,7 @@ export default function Profile() {
             </div>
           </section>
 
-          {/* side panel for accessibilty */}
+          {/* side panel */}
           <div className="ml-3">
             <aside className="bg-white w-64 p-5 mt-10 text-white rounded-lg shadow-lg mr-[7rem]">
               <h3 className="text-xl font-semibold text-blue-900 mb-4">
@@ -148,6 +189,7 @@ export default function Profile() {
                 </li>
               </ul>
             </aside>
+
             <aside className="bg-white w-64 p-5 mt-10 text-white rounded-lg shadow-lg mr-[7rem]">
               <h3 className="text-xl font-semibold text-blue-900 mb-4">
                 Need Support?
@@ -187,6 +229,7 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
       <footer className="text-gray-500 justify-center items-center flex p-10 bg-gray-100">
         Legal Aid Matching platform @2026
       </footer>
