@@ -1,130 +1,92 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
-import Layout from './components/Layout';
+import { Routes, Route, Navigate } from "react-router-dom";
 
-// Auth Pages
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
+import PrivateRoute from "./routes/PrivateRoute";
+import Sidebar from "./components/Sidebar";
 
-// Citizen Pages
-import CitizenDashboardPage from './pages/citizen/DashboardPage';
-import CaseSubmissionPage from './pages/citizen/CaseSubmissionPage';
+import Login from "./pages/auth/LoginPage";
+import Register from "./pages/auth/RegisterPage";
+import CitizenDashboard from "./pages/citizen/DashboardPage";
+import CaseSubmission from "./pages/citizen/CaseSubmissionPage";
+import Directory from "./pages/directory/DirectoryPage";
+import MatchingResults from "./pages/MatchingResults";
+import Chat from "./pages/Chat";
+import Profile from "./pages/Profile";
 
-// Directory
-import DirectoryPage from './pages/directory/DirectoryPage';
-
-// Lawyer
-import LawyerDashboardPage from './pages/lawyer/DashboardPage';
-
-// NGO
-import NgoDashboardPage from './pages/ngo/DashboardPage';
-
-// Admin
-import AdminPanelPage from './pages/admin/AdminPanelPage';
-
-// Shared
-import ProfilePage from './pages/shared/ProfilePage';
-
-// Smart redirect based on role
-const DashboardRedirect = () => {
-  const { user } = useAuth();
-  const role = user?.role?.toUpperCase();
-
-  switch (role) {
-    case 'ADMIN':
-      return <Navigate to="/admin" replace />;
-    case 'LAWYER':
-      return <Navigate to="/lawyer/dashboard" replace />;
-    case 'NGO':
-      return <Navigate to="/ngo/dashboard" replace />;
-    case 'CITIZEN':
-    default:
-      return <Navigate to="/citizen/dashboard" replace />;
-  }
-};
-
-function App() {
+export default function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          {/* Public Auth Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+    <Routes>
 
-          {/* Protected Routes with Layout */}
-          <Route
-            element={
-              <PrivateRoute>
-                <Layout />
-              </PrivateRoute>
-            }
-          >
-            {/* Dashboard redirect */}
-            <Route path="/dashboard" element={<DashboardRedirect />} />
+      <Route path="/" element={<Navigate to="/login" />} />
 
-            {/* Citizen Routes */}
-            <Route
-              path="/citizen/dashboard"
-              element={
-                <PrivateRoute allowedRoles={['CITIZEN']}>
-                  <CitizenDashboardPage />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/case-submission"
-              element={
-                <PrivateRoute allowedRoles={['CITIZEN']}>
-                  <CaseSubmissionPage />
-                </PrivateRoute>
-              }
-            />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-            {/* Lawyer Routes */}
-            <Route
-              path="/lawyer/dashboard"
-              element={
-                <PrivateRoute allowedRoles={['LAWYER']}>
-                  <LawyerDashboardPage />
-                </PrivateRoute>
-              }
-            />
+      <Route
+        path="/dashboard"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <CitizenDashboard />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
 
-            {/* NGO Routes */}
-            <Route
-              path="/ngo/dashboard"
-              element={
-                <PrivateRoute allowedRoles={['NGO']}>
-                  <NgoDashboardPage />
-                </PrivateRoute>
-              }
-            />
+      <Route
+        path="/case-submission"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <CaseSubmission />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
 
-            {/* Directory — all roles */}
-            <Route path="/directory" element={<DirectoryPage />} />
+      <Route
+        path="/directory"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <Directory />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
 
-            {/* Admin Routes */}
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute allowedRoles={['ADMIN']}>
-                  <AdminPanelPage />
-                </PrivateRoute>
-              }
-            />
+      <Route
+        path="/matches"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <MatchingResults />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
 
-            {/* Profile — all roles */}
-            <Route path="/profile" element={<ProfilePage />} />
-          </Route>
+      <Route
+        path="/chat/:matchId"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <Chat />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
+      <Route
+        path="/profile/:id"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <Profile />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
+
+    </Routes>
   );
 }
-
-export default App;

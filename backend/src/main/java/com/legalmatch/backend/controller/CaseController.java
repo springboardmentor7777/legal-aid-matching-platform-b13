@@ -8,7 +8,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+<<<<<<< HEAD
 @RequestMapping("/api/cases")
+=======
+@RequestMapping("api/cases")
+>>>>>>> 4873db9f83eb616d40f282b063cf2164d13e5b7f
 @RequiredArgsConstructor
 public class CaseController {
 

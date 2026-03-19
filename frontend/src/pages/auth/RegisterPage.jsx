@@ -43,8 +43,13 @@ const RegisterPage = () => {
     }
     setLoading(true);
     try {
-      await register(formData.name, formData.email, formData.password, formData.role);
-      setSuccess('Registration successful! Redirecting to login...');
+await register({
+  name: formData.name,
+  email: formData.email,
+  password: formData.password,
+  role: formData.role
+});
+setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
