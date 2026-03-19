@@ -6,13 +6,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "cases")
+@Table(name = "notifications")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Case {
+public class NotificationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,31 +23,21 @@ public class Case {
     private User user;
 
     @Column(nullable = false)
-    private String caseType;
+    private String title;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
-    private String description;
+    @Column(columnDefinition = "TEXT")
+    private String message;
 
     @Column(nullable = false)
-    private String urgency;
+    private String type;
 
-    private String location;
-
-    @Enumerated(EnumType.STRING)
-    private CaseStatus status;
+    private boolean read;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.status = CaseStatus.SUBMITTED;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.read = false;
     }
 }

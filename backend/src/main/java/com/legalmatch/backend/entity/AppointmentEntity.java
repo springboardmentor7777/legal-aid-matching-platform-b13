@@ -6,35 +6,37 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "cases")
+@Table(name = "appointments")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Case {
+public class AppointmentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "match_id", nullable = false)
+    private MatchEntity match;
 
-    @Column(nullable = false)
-    private String caseType;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id", nullable = false)
+    private User createdBy;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String urgency;
+    private LocalDateTime appointmentDate;
 
     private String location;
 
     @Enumerated(EnumType.STRING)
-    private CaseStatus status;
+    private AppointmentStatus status;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -43,7 +45,9 @@ public class Case {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.status = CaseStatus.SUBMITTED;
+        if (this.status == null) {
+            this.status = AppointmentStatus.SCHEDULED;
+        }
     }
 
     @PreUpdate

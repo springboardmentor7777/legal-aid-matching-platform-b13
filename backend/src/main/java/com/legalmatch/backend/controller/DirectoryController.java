@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/directory")
+@RequestMapping("/api/directory")
 @RequiredArgsConstructor
 public class DirectoryController {
 
@@ -18,18 +18,22 @@ public class DirectoryController {
             @RequestParam(defaultValue = "") String location,
             @RequestParam(defaultValue = "true") boolean verified,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "12") int size
     ) {
-
         return ResponseEntity.ok(
                 service.getLawyers(expertise, location, verified, page, size)
         );
     }
+
     @GetMapping("/ngos")
     public ResponseEntity<?> getNgos(
+            @RequestParam(defaultValue = "") String expertise,
+            @RequestParam(defaultValue = "") String location,
+            @RequestParam(defaultValue = "true") boolean verified,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        return ResponseEntity.ok(service.getNgos(page, size));
+            @RequestParam(defaultValue = "12") int size) {
+        return ResponseEntity.ok(
+                service.getNgos(expertise, location, verified, page, size)
+        );
     }
 }

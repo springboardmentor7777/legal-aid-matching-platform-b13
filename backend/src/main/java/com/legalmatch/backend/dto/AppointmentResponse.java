@@ -7,14 +7,19 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class CaseResponse {
+public class AppointmentResponse {
 
     private Long id;
-    private String caseType;
+    private Long matchId;
+    private String title;
     private String description;
-    private String urgency;
+    private LocalDateTime appointmentDate;
     private String location;
     private String status;
+    private Long createdById;
+    private String createdByName;
+    private String citizenName;
+    private String providerName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

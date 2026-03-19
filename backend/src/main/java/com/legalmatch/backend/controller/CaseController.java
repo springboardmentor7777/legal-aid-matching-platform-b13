@@ -8,7 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/cases")
+@RequestMapping("/api/cases")
 @RequiredArgsConstructor
 public class CaseController {
 
@@ -25,13 +25,9 @@ public class CaseController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<?> getMyCases(
-            Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-
+    public ResponseEntity<?> getMyCases(Authentication authentication) {
         return ResponseEntity.ok(
-                caseService.getMyCases(authentication.getName(), page, size)
+                caseService.getMyCases(authentication.getName())
         );
     }
 

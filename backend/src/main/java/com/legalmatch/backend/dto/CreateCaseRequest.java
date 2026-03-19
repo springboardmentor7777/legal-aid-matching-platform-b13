@@ -5,7 +5,8 @@ import lombok.Data;
 @Data
 public class CreateCaseRequest {
 
-    private String title;
+    private String caseType;
     private String description;
-    private String category;
+    private String urgency;
+    private String location;
 }
