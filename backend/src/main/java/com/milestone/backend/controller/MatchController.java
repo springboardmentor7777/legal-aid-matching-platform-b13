@@ -21,7 +21,7 @@ public class MatchController {
         return matchService.generateMatches(caseId);
     }
 
-    @GetMapping("/me")
+    @GetMapping("/my")
     public List<MatchResponse> getMyMatches(@AuthenticationPrincipal User currentUser) {
         return matchService.getMyMatches(currentUser);
     }

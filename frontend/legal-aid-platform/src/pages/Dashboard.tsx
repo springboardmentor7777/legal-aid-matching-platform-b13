@@ -62,56 +62,30 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    const fetchAssigned = async () => {
+    
+    const fetchLawyerNgoCases = async () => {
       try {
-        const res = await fetch("http://localhost:8081/cases/assigned", {
+        const res = await fetch("http://localhost:8081/cases/my", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) {
           setAssignedCases([]);
-          return;
-        }
-
-        const data = await res.json();
-        setAssignedCases(Array.isArray(data) ? data : []);
-      } catch {
-        setAssignedCases([]);
-      }
-    };
-
-    const fetchPending = async () => {
-      try {
-        const res = await fetch("http://localhost:8081/cases/pending", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
           setPendingCases([]);
-          return;
-        }
-
-        const data = await res.json();
-        setPendingCases(Array.isArray(data) ? data : []);
-      } catch {
-        setPendingCases([]);
-      }
-    };
-
-    const fetchResolved = async () => {
-      try {
-        const res = await fetch("http://localhost:8081/cases/resolved", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
           setResolvedCases([]);
           return;
         }
 
         const data = await res.json();
-        setResolvedCases(Array.isArray(data) ? data : []);
+        const caseList: Case[] = Array.isArray(data) ? data : [];
+
+        // Filter the cases directly on the frontend
+        setAssignedCases(caseList.filter((c) => c.status === "ASSIGNED" || c.status === "ACCEPTED"));
+        setPendingCases(caseList.filter((c) => c.status === "PENDING" || c.status === "SUBMITTED"));
+        setResolvedCases(caseList.filter((c) => c.status === "RESOLVED"));
       } catch {
+        setAssignedCases([]);
+        setPendingCases([]);
         setResolvedCases([]);
       }
     };
@@ -139,9 +113,7 @@ const Dashboard: React.FC = () => {
     }
 
     if (user.role === "LAWYER" || user.role === "NGO") {
-      fetchAssigned();
-      fetchPending();
-      fetchResolved();
+      fetchLawyerNgoCases();
       fetchAppointments();
     }
   }, [user.role]);
