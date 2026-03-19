@@ -4,15 +4,21 @@ import axios from "axios";
 export default function AppointmentScheduler() {
   const [date, setDate] = useState("2025-12-28");
   const [timezone, setTimezone] = useState("");
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState(null);
   const [duration, setDuration] = useState("");
-  const [reminders, setReminders] = useState<boolean>(true);
+
+  // FIXED: reminders should be an object
+  const [reminders, setReminders] = useState({
+    fifteen: false,
+    hour: false,
+  });
 
   const [profile, setProfile] = useState({
     name: "",
     role: "",
     matchScore: "",
     image: "",
+    matchId: "", // added for API
   });
 
   const times = ["9:00 AM", "10:30 AM", "2:00 PM", "3:30 PM", "5:00 PM"];
@@ -33,12 +39,16 @@ export default function AppointmentScheduler() {
   };
 
   const handleSubmit = async () => {
+    //  UPDATED BODY as per requirement
     const appointment = {
-      date,
-      timezone,
-      selectedTime,
-      duration,
-      reminders,
+      matchId: profile.matchId,
+      appointmentDate: date,
+      callDuration: duration,
+      reminder: reminders.fifteen || reminders.hour,
+      zone: timezone,
+      selectedTime: selectedTime
+        ? selectedTime.replace(" AM", "").replace(" PM", "")
+        : "",
     };
 
     try {
@@ -65,7 +75,12 @@ export default function AppointmentScheduler() {
     setTimezone("");
     setSelectedTime(null);
     setDuration("");
-    setReminders(false);
+
+    //  FIXED reset
+    setReminders({
+      fifteen: false,
+      hour: false,
+    });
   };
 
   return (
@@ -159,10 +174,19 @@ export default function AppointmentScheduler() {
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={reminders}
-                onChange={() => toggleReminder()}
+                checked={reminders.fifteen}
+                onChange={() => toggleReminder("fifteen")}
               />
               15 minutes before the call
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={reminders.hour}
+                onChange={() => toggleReminder("hour")}
+              />
+              1 hour before the call
             </label>
           </div>
         </div>
