@@ -24,13 +24,23 @@ public class MatchServiceImpl implements MatchService {
     private final UserRepository userRepository;
 
     /**
-     * Generate matches for a case
+     * Generate matches for a case (NO DUPLICATES)
      */
     @Override
     public List<MatchResponse> generateMatches(Long caseId) {
 
         Case caseObj = caseRepository.findById(caseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found"));
+
+        // ✅ Prevent duplicate generation for same case
+        List<Match> existingMatches = matchRepository.findByCaseId(caseId);
+        if (!existingMatches.isEmpty()) {
+            return existingMatches.stream()
+                    .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
+                    .limit(5)
+                    .map(this::mapToResponse)
+                    .toList();
+        }
 
         List<User> users = userRepository.findByRoleIn(
                 List.of(Role.LAWYER, Role.NGO)
@@ -40,12 +50,14 @@ public class MatchServiceImpl implements MatchService {
 
         for (User user : users) {
 
+            // ❌ Skip unavailable lawyers
             if (user.getRole() == Role.LAWYER &&
                     (user.getLawyerProfile() == null ||
                      !Boolean.TRUE.equals(user.getLawyerProfile().getIsAvailable()))) {
                 continue;
             }
 
+            // ❌ Skip unavailable NGOs
             if (user.getRole() == Role.NGO &&
                     (user.getNgoProfile() == null ||
                      !Boolean.TRUE.equals(user.getNgoProfile().getIsAvailable()))) {
@@ -63,6 +75,7 @@ public class MatchServiceImpl implements MatchService {
             matches.add(matchRepository.save(match));
         }
 
+        // Sort by score (desc)
         matches.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
 
         return matches.stream()
@@ -72,7 +85,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * Get matches
+     * Get matches for current user
      */
     @Override
     public List<MatchResponse> getMyMatches(User user) {
@@ -82,7 +95,6 @@ public class MatchServiceImpl implements MatchService {
         if (user.getRole() == Role.CITIZEN) {
             matches = matchRepository.findByCaseEntity_User_Id(user.getId());
         } else {
-            // 🔥 Only visible matches
             matches = matchRepository.findVisibleMatchesForProvider(user.getId());
         }
 
@@ -92,13 +104,12 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * Accept match (CORE LOGIC)
+     * Accept match (only one allowed per case)
      */
     @Override
     @Transactional
     public MatchResponse acceptMatch(Long matchId, User currentUser) {
 
-        // ❌ Restrict roles
         if (currentUser.getRole() != Role.LAWYER &&
             currentUser.getRole() != Role.NGO) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only lawyer/NGO can accept");
@@ -107,7 +118,7 @@ public class MatchServiceImpl implements MatchService {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
 
-        // ❌ Prevent multiple acceptance
+        // ❌ Check if case already accepted
         boolean alreadyAccepted = matchRepository.existsByCaseIdAndStatus(
                 match.getCaseId(), MatchStatus.ACCEPTED
         );
@@ -116,11 +127,11 @@ public class MatchServiceImpl implements MatchService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Case already accepted");
         }
 
-        // ✅ Accept
+        // ✅ Accept this match
         match.setStatus(MatchStatus.ACCEPTED);
         matchRepository.save(match);
 
-        // 🔥 Reject all others (IMPORTANT)
+        // ❌ Reject all other matches
         matchRepository.rejectOtherMatches(match.getCaseId(), matchId);
 
         return mapToResponse(match);
@@ -147,7 +158,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * Matching Algorithm (unchanged)
+     * Matching Algorithm
      */
     private double calculateScore(Case caseObj, User user) {
 
@@ -194,7 +205,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * DTO Mapper
+     * Map entity → DTO
      */
     private MatchResponse mapToResponse(Match match) {
 
