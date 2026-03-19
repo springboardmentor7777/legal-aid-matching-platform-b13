@@ -81,14 +81,15 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
       </ul>
       <ul className="p-4 space-y-3 lg:space-y-0 lg:flex lg:flex-col lg:space-x-0">
         <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={() => {
-          localStorage.clear();
+          //localStorage.clear();
           navigate("/chatpage");
         }}>
           Secure Chat
         </li>
-        {/* <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={() => {
-          localStorage.clear();
-          navigate("/pages/AppointmentScheduler");
+        <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={() => {
+          //localStorage.clear();
+
+          navigate("/pages/AppointmentScheduler/4");
         }}>
           Appointment Scheduler
         </li>*/}

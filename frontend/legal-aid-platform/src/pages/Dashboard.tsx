@@ -42,7 +42,6 @@ const Dashboard: React.FC = () => {
   if (!user) return null;
 
   useEffect(() => {
-
     const token = localStorage.getItem("accessToken");
 
     const fetchCitizenCases = async () => {
@@ -145,29 +144,50 @@ const Dashboard: React.FC = () => {
       fetchResolved();
       fetchAppointments();
     }
-
   }, [user.role]);
 
-  const handleAccept = async (id: number) => {
+  
+  const handleAccept = async (matchId: number) => {
     const token = localStorage.getItem("accessToken");
 
-    await fetch(`http://localhost:8081/cases/${id}/accept`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const response = await fetch(`http://localhost:8081/matches/${matchId}/accept`, {
+        method: "PUT", // Changed from POST
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    setPendingCases((prev) => prev.filter((c) => c.id !== id));
+      if (response.ok) {
+        alert("Match accepted successfully!");
+        // Remove from pending list
+        setPendingCases((prev) => prev.filter((c) => c.id !== matchId)); 
+      } else {
+        alert("Failed to accept match.");
+      }
+    } catch (error) {
+      console.error("Error accepting match:", error);
+    }
   };
 
-  const handleDecline = async (id: number) => {
+  
+  const handleDecline = async (matchId: number) => {
     const token = localStorage.getItem("accessToken");
 
-    await fetch(`http://localhost:8081/cases/${id}/decline`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    try {
+      const response = await fetch(`http://localhost:8081/matches/${matchId}/reject`, {
+        method: "PUT", // Changed from POST
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    setPendingCases((prev) => prev.filter((c) => c.id !== id));
+      if (response.ok) {
+        alert("Match rejected.");
+        // Remove from pending list
+        setPendingCases((prev) => prev.filter((c) => c.id !== matchId));
+      } else {
+        alert("Failed to reject match.");
+      }
+    } catch (error) {
+      console.error("Error rejecting match:", error);
+    }
   };
 
   const totalCases = cases.length;
@@ -176,13 +196,11 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-blue-50">
-
       <div className="hidden lg:block w-64">
         <Sidebar role={user.role as Role} isOpen={true} toggleSidebar={() => {}} />
       </div>
 
       <div className="flex-1 flex flex-col">
-
         <Navbar
           title="Dashboard"
           name={user.username}
@@ -191,7 +209,6 @@ const Dashboard: React.FC = () => {
         />
 
         <main className="px-6 py-6 flex-1">
-
           <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 mb-6">
             <h1 className="text-2xl font-bold text-blue-900">
               Welcome, {user.username}
@@ -199,16 +216,12 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* CITIZEN DASHBOARD */}
-
           {user.role === "CITIZEN" && (
-
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-
               <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
                 <h3 className="text-sm font-semibold text-blue-900">
                   Total Cases
                 </h3>
-
                 <p className="text-3xl font-bold text-blue-700 mt-3">
                   {totalCases}
                 </p>
@@ -218,7 +231,6 @@ const Dashboard: React.FC = () => {
                 <h3 className="text-sm font-semibold text-blue-900">
                   Submitted Cases
                 </h3>
-
                 <p className="text-3xl font-bold text-blue-700 mt-3">
                   {submittedCases}
                 </p>
@@ -228,23 +240,17 @@ const Dashboard: React.FC = () => {
                 <h3 className="text-sm font-semibold text-blue-900">
                   Matched Cases
                 </h3>
-
                 <p className="text-3xl font-bold text-blue-700 mt-3">
                   {matchedCases}
                 </p>
               </div>
-
             </div>
-
           )}
 
           {/* LAWYER / NGO DASHBOARD */}
-
           {(user.role === "LAWYER" || user.role === "NGO") && (
-
             <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-
                 <div
                   onClick={() => setActiveSection("ASSIGNED")}
                   className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer"
@@ -252,7 +258,6 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-semibold text-blue-900">
                     Assigned Cases
                   </h3>
-
                   <p className="text-3xl font-bold text-blue-700 mt-3">
                     {assignedCases.length}
                   </p>
@@ -265,7 +270,6 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-semibold text-blue-900">
                     Pending Requests
                   </h3>
-
                   <p className="text-3xl font-bold text-blue-700 mt-3">
                     {pendingCases.length}
                   </p>
@@ -278,7 +282,6 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-semibold text-blue-900">
                     Resolved Cases
                   </h3>
-
                   <p className="text-3xl font-bold text-blue-700 mt-3">
                     {resolvedCases.length}
                   </p>
@@ -291,12 +294,10 @@ const Dashboard: React.FC = () => {
                   <h3 className="text-sm font-semibold text-blue-900">
                     Scheduled Appointments
                   </h3>
-
                   <p className="text-3xl font-bold text-blue-700 mt-3">
                     {appointments.length}
                   </p>
                 </div>
-
               </div>
 
               {activeSection === "ASSIGNED" &&
@@ -304,7 +305,6 @@ const Dashboard: React.FC = () => {
                   <div key={c.id} className="bg-white p-4 mb-3 rounded shadow">
                     <h3 className="font-semibold">{c.title}</h3>
                     <p>{c.description}</p>
-
                     <button
                       onClick={() => navigate(`/case/${c.id}`)}
                       className="mt-2 bg-blue-600 text-white px-3 py-1 rounded"
@@ -319,7 +319,6 @@ const Dashboard: React.FC = () => {
                   <div key={c.id} className="bg-white p-4 mb-3 rounded shadow">
                     <h3 className="font-semibold">{c.title}</h3>
                     <p>{c.description}</p>
-
                     <div className="flex gap-3 mt-2">
                       <button
                         onClick={() => handleAccept(c.id)}
@@ -327,7 +326,6 @@ const Dashboard: React.FC = () => {
                       >
                         Accept
                       </button>
-
                       <button
                         onClick={() => handleDecline(c.id)}
                         className="bg-red-600 text-white px-3 py-1 rounded"
@@ -351,13 +349,22 @@ const Dashboard: React.FC = () => {
         </>
           )}
            
+            </>
+          )}
 
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2">
+              <RecentMatches />
+            </div>
+            <div>
+              <MatchesOverTime />
+            </div>
+          </div>
         </main>
 
         <footer className="text-gray-500 flex justify-center items-center p-10 bg-blue-50">
           Legal Aid Matching Platform © 2026
         </footer>
-
       </div>
     </div>
   );

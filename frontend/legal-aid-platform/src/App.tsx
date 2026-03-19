@@ -103,7 +103,7 @@ function App() {
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/chatpage" element={<ChatPage />} />
       <Route path="/pages/MatchingResult" element={<MatchingResults />} />
-      <Route path="/pages/AppointmentScheduler" element={<AppointmentScheduler />} />
+      <Route path="/pages/AppointmentScheduler/:matchId" element={<ProtectedRoute><AppointmentScheduler /></ProtectedRoute>} />
       <Route path="/pages/SupportPage" element={<SupportPage />} />
 
 
