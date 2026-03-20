@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/profile")
+@RequestMapping("api/profile")
 @RequiredArgsConstructor
 public class ProfileController {
 

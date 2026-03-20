@@ -15,7 +15,7 @@ export default function CitizenDashboard() {
 
   const fetchCases = async () => {
     try {
-      const res = await axios.get(`${API_URL}/cases/my`);
+      const res = await API.get("/cases/my");
       setCases(res.data);
     } catch (err) {
       setError("Failed to load cases.");

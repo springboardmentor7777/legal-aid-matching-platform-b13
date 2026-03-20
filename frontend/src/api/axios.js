@@ -1,17 +1,47 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080",
+
+  
+  baseURL: "http://localhost:8080/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+
 });
 
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+// Attach JWT automatically
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    if (token && token !== "undefined") {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Handle expired tokens
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+
+    // Only logout if token is invalid
+    if (status === 401) {
+      console.log("Token expired → logging out");
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      window.location.href = "/login";
+    }
+
+    return Promise.reject(error);
   }
-
-  return config;
-});
+);
 
 export default API;

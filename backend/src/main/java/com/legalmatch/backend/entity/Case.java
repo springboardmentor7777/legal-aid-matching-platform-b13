@@ -23,13 +23,15 @@ public class Case {
     private User user;
 
     @Column(nullable = false)
-    private String title;
+    private String caseType;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @Column(nullable = false)
-    private String category;
+    private String urgency;
+
+    private String location;
 
     @Enumerated(EnumType.STRING)
     private CaseStatus status;

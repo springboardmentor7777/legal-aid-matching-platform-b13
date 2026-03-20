@@ -1,20 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>LegalMatch Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-
-    
+    <title>LegalMatch Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+                300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
+                600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+      .scrollbar-hide::-webkit-scrollbar { display: none; }
+      .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    </style>
   </head>
-
-  <body class="bg-gray-100">
+  <body>
     <div id="root"></div>
-
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

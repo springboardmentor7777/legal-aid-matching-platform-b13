@@ -15,7 +15,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`${API_URL}/admin/users`);
+      const res = await API.get("/admin/users");
       setUsers(res.data);
     } catch (err) {
       setError("Failed to load users.");

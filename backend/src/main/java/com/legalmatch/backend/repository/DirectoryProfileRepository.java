@@ -2,9 +2,13 @@ package com.legalmatch.backend.repository;
 
 import com.legalmatch.backend.entity.DirectoryProfile;
 import com.legalmatch.backend.entity.Role;
+import com.legalmatch.backend.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface DirectoryProfileRepository extends JpaRepository<DirectoryProfile, Long> {
 
@@ -21,4 +25,7 @@ public interface DirectoryProfileRepository extends JpaRepository<DirectoryProfi
             Pageable pageable
     );
 
+    List<DirectoryProfile> findByUser_Role(Role role);
+
+    Optional<DirectoryProfile> findByUser(User user);
 }

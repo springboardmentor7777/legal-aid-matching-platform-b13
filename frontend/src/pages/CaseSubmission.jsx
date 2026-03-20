@@ -1,9 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
-
-const API_URL = "http://localhost:8080/api";
+import API from "../api/axios";
 
 export default function CaseSubmission() {
+
   const [summary, setSummary] = useState("");
   const [type, setType] = useState("");
   const [tags, setTags] = useState([]);
@@ -30,24 +29,30 @@ export default function CaseSubmission() {
     setIsLoading(true);
 
     const payload = {
-      summary,
-      caseType: type,
-      expertiseTags: tags,
+      title: tags.join(", "),
+      description: summary,
+      category: type,
     };
 
-    await axios.post(`${API_URL}/cases`, payload);
+    try {
+      await API.post("/cases", payload);
 
-    setIsLoading(false);
+      alert("Case submitted successfully!");
+
+      setSummary("");
+      setType("");
+      setTags([]);
+    } catch (error) {
+      console.error("Error submitting case:", error.response?.data);
+      alert("Failed to submit case");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white p-6 rounded-lg shadow max-w-2xl"
-    >
-      <h2 className="text-xl font-semibold mb-4">
-        Case Details
-      </h2>
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow max-w-2xl">
+      <h2 className="text-xl font-semibold mb-4">Case Details</h2>
 
       <textarea
         required

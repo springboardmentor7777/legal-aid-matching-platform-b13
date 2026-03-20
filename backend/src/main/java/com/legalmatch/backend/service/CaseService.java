@@ -7,13 +7,10 @@ import com.legalmatch.backend.entity.User;
 import com.legalmatch.backend.repository.CaseRepository;
 import com.legalmatch.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +18,6 @@ public class CaseService {
 
     private final CaseRepository caseRepository;
     private final UserRepository userRepository;
-
-
 
     public CaseResponse createCase(CreateCaseRequest request, String username) {
 
@@ -35,52 +30,49 @@ public class CaseService {
 
         Case newCase = Case.builder()
                 .user(user)
-                .title(request.getTitle())
+                .caseType(request.getCaseType())
                 .description(request.getDescription())
-                .category(request.getCategory())
+                .urgency(request.getUrgency() != null ? request.getUrgency() : "MEDIUM")
+                .location(request.getLocation())
                 .build();
 
         Case saved = caseRepository.save(newCase);
 
-        return CaseResponse.builder()
-                .id(saved.getId())
-                .title(saved.getTitle())
-                .description(saved.getDescription())
-                .category(saved.getCategory())
-                .status(saved.getStatus().name())
-                .createdAt(saved.getCreatedAt())
-                .updatedAt(saved.getUpdatedAt())
-                .build();
+        return mapToResponse(saved);
     }
-    public Page<CaseResponse> getMyCases(String username, int page, int size) {
+
+    public List<CaseResponse> getMyCases(String username) {
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Pageable pageable = PageRequest.of(page, size);
+        List<Case> cases = caseRepository.findByUserOrderByCreatedAtDesc(user);
 
-        Page<Case> casePage = caseRepository.findByUser(user, pageable);
-
-        return casePage.map(c -> CaseResponse.builder()
-                .id(c.getId())
-                .title(c.getTitle())
-                .description(c.getDescription())
-                .category(c.getCategory())
-                .status(c.getStatus().name())
-                .createdAt(c.getCreatedAt())
-                .updatedAt(c.getUpdatedAt())
-                .build());
+        return cases.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
+
     public CaseResponse getCaseById(Long id) {
 
         Case c = caseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Case not found"));
 
+        return mapToResponse(c);
+    }
+
+    public Case getCaseEntityById(Long id) {
+        return caseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Case not found"));
+    }
+
+    private CaseResponse mapToResponse(Case c) {
         return CaseResponse.builder()
                 .id(c.getId())
-                .title(c.getTitle())
+                .caseType(c.getCaseType())
                 .description(c.getDescription())
-                .category(c.getCategory())
+                .urgency(c.getUrgency())
+                .location(c.getLocation())
                 .status(c.getStatus().name())
                 .createdAt(c.getCreatedAt())
                 .updatedAt(c.getUpdatedAt())

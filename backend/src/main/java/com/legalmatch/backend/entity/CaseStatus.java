@@ -2,6 +2,11 @@ package com.legalmatch.backend.entity;
 
 public enum CaseStatus {
     SUBMITTED,
+    PENDING,
     IN_REVIEW,
-    MATCHED
+    ACTIVE,
+    IN_PROGRESS,
+    MATCHED,
+    RESOLVED,
+    CLOSED
 }

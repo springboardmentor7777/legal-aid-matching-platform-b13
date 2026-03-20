@@ -1,44 +1,33 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import PrivateRoute from "./routes/PrivateRoute";
-import DashboardLayout from "./components/DashboardLayout";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import AdminDashboard from "./pages/AdminDashboard";
-import CitizenDashboard from "./pages/CitizenDashboard";
-import CaseSubmission from "./pages/CaseSubmission";
-import FilterableDirectory from "./pages/FilterableDirectory";
-import DirectoryIngestion from "./pages/DirectoryIngestion";
+import PrivateRoute from "./routes/PrivateRoute";
+import Sidebar from "./components/Sidebar";
+
+import Login from "./pages/auth/LoginPage";
+import Register from "./pages/auth/RegisterPage";
+import CitizenDashboard from "./pages/citizen/DashboardPage";
+import CaseSubmission from "./pages/citizen/CaseSubmissionPage";
+import Directory from "./pages/directory/DirectoryPage";
+import MatchingResults from "./pages/MatchingResults";
+import Chat from "./pages/Chat";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
     <Routes>
-      {/* Redirect root */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
 
-      {/* Public Routes */}
+      <Route path="/" element={<Navigate to="/login" />} />
+
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Protected Routes */}
       <Route
-        path="/dashboard/admin"
+        path="/dashboard"
         element={
           <PrivateRoute>
-            <DashboardLayout>
-              <AdminDashboard />
-            </DashboardLayout>
-          </PrivateRoute>
-        }
-      /> 
-
-      <Route
-        path="/dashboard/citizen"
-        element={
-          <PrivateRoute>
-            <DashboardLayout>
+            <Sidebar>
               <CitizenDashboard />
-            </DashboardLayout>
+            </Sidebar>
           </PrivateRoute>
         }
       />
@@ -47,9 +36,9 @@ export default function App() {
         path="/case-submission"
         element={
           <PrivateRoute>
-            <DashboardLayout>
+            <Sidebar>
               <CaseSubmission />
-            </DashboardLayout>
+            </Sidebar>
           </PrivateRoute>
         }
       />
@@ -58,26 +47,46 @@ export default function App() {
         path="/directory"
         element={
           <PrivateRoute>
-            <DashboardLayout>
-              <FilterableDirectory />
-            </DashboardLayout>
+            <Sidebar>
+              <Directory />
+            </Sidebar>
           </PrivateRoute>
         }
       />
 
       <Route
-        path="/directory-ingestion"
+        path="/matches"
         element={
           <PrivateRoute>
-            <DashboardLayout>
-              <DirectoryIngestion />
-            </DashboardLayout>
+            <Sidebar>
+              <MatchingResults />
+            </Sidebar>
           </PrivateRoute>
         }
       />
 
-      {/* Catch-all */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route
+        path="/chat/:matchId"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <Chat />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/profile/:id"
+        element={
+          <PrivateRoute>
+            <Sidebar>
+              <Profile />
+            </Sidebar>
+          </PrivateRoute>
+        }
+      />
+
     </Routes>
   );
 }

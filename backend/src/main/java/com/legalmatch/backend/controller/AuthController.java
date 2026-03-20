@@ -13,8 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import com.legalmatch.backend.dto.RefreshTokenRequest;
 
 @RestController
+<<<<<<< HEAD
 @RequestMapping("/auth")
 @CrossOrigin(origins = {"http://localhost:5173","http://localhost:5174"})
+=======
+@RequestMapping("api/auth")
+>>>>>>> c43b6ec660e4ac40d75ba60fd998006ba9f96575
 @RequiredArgsConstructor
 public class AuthController {
 

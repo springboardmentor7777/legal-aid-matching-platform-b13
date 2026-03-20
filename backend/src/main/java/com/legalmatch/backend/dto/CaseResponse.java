@@ -10,9 +10,10 @@ import java.time.LocalDateTime;
 public class CaseResponse {
 
     private Long id;
-    private String title;
+    private String caseType;
     private String description;
-    private String category;
+    private String urgency;
+    private String location;
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
