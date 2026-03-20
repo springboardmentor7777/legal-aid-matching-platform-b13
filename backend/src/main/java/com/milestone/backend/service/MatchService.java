@@ -14,4 +14,6 @@ public interface MatchService {
     MatchResponse acceptMatch(Long matchId, User currentUser);
 
     MatchResponse rejectMatch(Long matchId, User currentUser);
+
+    MatchResponse getMatchById(Long matchId, User currentUser);
 }

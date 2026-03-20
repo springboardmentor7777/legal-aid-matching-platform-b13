@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "schedules")
+@Table(name = "appointments")
 public class Schedule {
 
     @Id

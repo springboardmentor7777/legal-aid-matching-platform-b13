@@ -26,6 +26,12 @@ public class MatchController {
         return matchService.getMyMatches(currentUser);
     }
 
+    // THE FIX: Added the missing endpoint to fetch a single match!
+    @GetMapping("/{matchId}")
+    public MatchResponse getMatchById(@PathVariable Long matchId, @AuthenticationPrincipal User currentUser) {
+        return matchService.getMatchById(matchId, currentUser);
+    }
+
     @PutMapping("/{matchId}/accept")
     public MatchResponse acceptMatch(
             @PathVariable Long matchId,

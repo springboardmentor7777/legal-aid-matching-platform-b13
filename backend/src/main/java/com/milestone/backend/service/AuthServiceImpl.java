@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
-// import org.springframework.security.core.userdetails.UserDetails;
-// import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +23,6 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    // private final LocalDateTime time;
 
     @Override
     public AuthResponse refreshToken(RefreshTokenRequest request) {
@@ -41,12 +38,12 @@ public class AuthServiceImpl implements AuthService {
 
         String newAccessToken = jwtUtil.generateToken(user.getEmail());
 
-        // Fix: We use the Builder and ensure the role is converted correctly if needed
         return AuthResponse.builder()
+                .id(user.getId()) // ADDED ID HERE
                 .accessToken(newAccessToken)
                 .refreshToken(request.getRefreshToken())
-                .username(user.getEmail()) // Changed from userDetails to user.getEmail()
-                .role(user.getRole()) // Passing the Role object directly
+                .username(user.getEmail()) 
+                .role(user.getRole()) 
                 .message("Token refreshed successfully")
                 .build();
     }
@@ -85,25 +82,15 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtUtil.generateToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
-        // Return response with both tokens
-        // return new AuthResponse(
-        // accessToken,
-        // "Login successful",
-        // accessToken,
-        // refreshToken,
-        // user.getRole(),
-        // user.getUsername()
-        // );
         return AuthResponse.builder()
+                .id(user.getId()) //  THE MAGIC LINE! Now React knows who you are!
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .message("Login successful")
                 .role(user.getRole())
                 .username(user.getName())
-                .email(user.getEmail()) // <-- Explicitly added the email
+                .email(user.getEmail()) 
                 .isVerified(user.getIsVerified())
                 .build();
     }
-
-    // keep your existing register() and login() implementations here
 }

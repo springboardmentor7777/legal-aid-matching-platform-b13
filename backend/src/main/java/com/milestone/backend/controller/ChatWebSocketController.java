@@ -20,15 +20,21 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.send")
     public void sendMessage(@Payload ChatMessage chatMessage) {
 
-        // Sender ID is from server-side session/authentication in production
-        Chat message = chatService.sendMessage(
+        // 1. Save to Database )
+        Chat savedChat = chatService.sendMessage(
                 chatMessage.getMatchId(),
                 chatMessage.getSenderId(),
                 chatMessage.getContent());
 
-        // Broadcast to all subscribers of this match
+        // 2.  FIXED: Broadcast the clean DTO instead of the raw Database Entity
+        ChatMessage responseDto = new ChatMessage();
+        responseDto.setMatchId(chatMessage.getMatchId());
+        responseDto.setSenderId(chatMessage.getSenderId());
+        responseDto.setContent(chatMessage.getContent());
+
+        // 3. Send back to React
         messagingTemplate.convertAndSend(
                 "/topic/match/" + chatMessage.getMatchId(),
-                message);
+                responseDto);
     }
 }

@@ -24,7 +24,7 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
-    public AppointmentResponseDto bookAppointment(User citizen, AppointmentRequestDto request) {
+    public AppointmentResponseDto bookAppointment(User currentUser, AppointmentRequestDto request) {
 
         Match match = matchRepository.findById(request.getMatchId())
                 .orElseThrow(() -> new RuntimeException("Match not found"));
@@ -32,7 +32,11 @@ public class AppointmentService {
         Case caseObj = caseRepository.findById(match.getCaseId())
                 .orElseThrow(() -> new RuntimeException("Case not found"));
 
-        if (!caseObj.getUser().getId().equals(citizen.getId())) {
+        Long citizenId = caseObj.getUser().getId();
+        Long providerId = match.getUserId();
+
+        //  THE FIX: Allow BOTH the Citizen and the Lawyer/NGO to book appointments!
+        if (!citizenId.equals(currentUser.getId()) && !providerId.equals(currentUser.getId())) {
             throw new RuntimeException("Unauthorized: This match does not belong to your case.");
         }
 
@@ -40,7 +44,9 @@ public class AppointmentService {
             throw new RuntimeException("Cannot book appointment: The provider has not accepted this match yet.");
         }
 
-        User provider = userRepository.findById(match.getUserId())
+        //  Get the actual users for notifications
+        User actualCitizen = caseObj.getUser();
+        User actualProvider = userRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found"));
 
         Schedule schedule = new Schedule();
@@ -55,21 +61,18 @@ public class AppointmentService {
         schedule.setStatus("SCHEDULED");
         schedule.setScheduledTime(LocalDateTime.now()); 
 
-        // Must save the schedule first so we have an ID for the referenceId in notifications
         schedule = scheduleRepository.save(schedule);
 
-        // FIXED: Using 5 arguments matching NotificationService.java
         notificationService.createNotification(
-                citizen,
+                actualCitizen,
                 "Appointment Confirmed",
                 "You have successfully booked an appointment for " + request.getAppointmentDate() + " at " + request.getAppointmentTime(),
                 "APPOINTMENT",
                 schedule.getId()
         );
 
-        // FIXED: Using 5 arguments matching NotificationService.java
         notificationService.createNotification(
-                provider,
+                actualProvider,
                 "New Appointment Request",
                 "A new appointment has been scheduled for Case: " + caseObj.getTitle() + " on " + request.getAppointmentDate(),
                 "APPOINTMENT",
@@ -116,7 +119,6 @@ public class AppointmentService {
         
         User otherUser = caseObj.getUser().getId().equals(currentUser.getId()) ? provider : caseObj.getUser();
 
-        // FIXED: Using 5 arguments matching NotificationService.java
         notificationService.createNotification(
             otherUser,
             "Appointment Cancelled",
@@ -126,7 +128,6 @@ public class AppointmentService {
         );
     }
 
-    // --- HELPER METHODS ---
     private Schedule getScheduleAndVerifyOwnership(Long id, User currentUser) {
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
