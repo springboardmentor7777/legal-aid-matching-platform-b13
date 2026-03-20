@@ -37,7 +37,6 @@ const Dashboard: React.FC = () => {
   const [resolvedCases, setResolvedCases] = useState<Case[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   
-  //  ADDED: State to track matches for Citizens
   const [citizenMatchCount, setCitizenMatchCount] = useState(0);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
@@ -47,7 +46,6 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
 
-    // 1. Fetch for Citizens (Raw Cases + Match Count)
     const fetchCitizenCases = async () => {
       try {
         const res = await fetch("http://localhost:8081/cases/my", {
@@ -61,7 +59,6 @@ const Dashboard: React.FC = () => {
           setCases([]);
         }
 
-        // THE FIX: Fetch matches to count how many cases successfully generated matches
         const matchRes = await fetch("http://localhost:8081/matches/my", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -69,18 +66,14 @@ const Dashboard: React.FC = () => {
         if (matchRes.ok) {
           const matchData = await matchRes.json();
           const matchList = Array.isArray(matchData) ? matchData : [];
-          
-          // Use a Set to count unique cases that have at least one match!
           const uniqueMatchedCases = new Set(matchList.map((m: any) => m.caseId)).size;
           setCitizenMatchCount(uniqueMatchedCases);
         }
-
       } catch {
         setCases([]);
       }
     };
 
-    // 2. Fetch for Lawyers & NGOs (Matches)
     const fetchLawyerNgoMatches = async () => {
       try {
         const res = await fetch("http://localhost:8081/matches/my", {
@@ -114,7 +107,6 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    // 3. Fetch Appointments
     const fetchAppointments = async () => {
       try {
         const res = await fetch("http://localhost:8081/appointments/my", {
@@ -145,7 +137,6 @@ const Dashboard: React.FC = () => {
 
   const handleAccept = async (matchId: number) => {
     const token = localStorage.getItem("accessToken");
-
     try {
       const response = await fetch(`http://localhost:8081/matches/${matchId}/accept`, {
         method: "PUT",
@@ -154,7 +145,6 @@ const Dashboard: React.FC = () => {
 
       if (response.ok) {
         alert("Match accepted successfully!");
-        
         const acceptedMatch = pendingCases.find((c) => c.id === matchId);
         if (acceptedMatch) {
           setPendingCases((prev) => prev.filter((c) => c.id !== matchId));
@@ -170,7 +160,6 @@ const Dashboard: React.FC = () => {
 
   const handleDecline = async (matchId: number) => {
     const token = localStorage.getItem("accessToken");
-
     try {
       const response = await fetch(`http://localhost:8081/matches/${matchId}/reject`, {
         method: "PUT",
@@ -189,7 +178,6 @@ const Dashboard: React.FC = () => {
   };
 
   const totalCases = cases.length;
-  // This counts everything not marked as completely resolved/closed yet
   const submittedCases = cases.filter((c) => c.status === "SUBMITTED" || c.status === "PENDING" || !c.status).length;
 
   return (
@@ -217,30 +205,16 @@ const Dashboard: React.FC = () => {
           {user.role === "CITIZEN" && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-6">
               <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
-                <h3 className="text-sm font-semibold text-blue-900">
-                  Total Cases
-                </h3>
-                <p className="text-3xl font-bold text-blue-700 mt-3">
-                  {totalCases}
-                </p>
+                <h3 className="text-sm font-semibold text-blue-900">Total Cases</h3>
+                <p className="text-3xl font-bold text-blue-700 mt-3">{totalCases}</p>
               </div>
-
               <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
-                <h3 className="text-sm font-semibold text-blue-900">
-                  Submitted Cases
-                </h3>
-                <p className="text-3xl font-bold text-blue-700 mt-3">
-                  {submittedCases}
-                </p>
+                <h3 className="text-sm font-semibold text-blue-900">Submitted Cases</h3>
+                <p className="text-3xl font-bold text-blue-700 mt-3">{submittedCases}</p>
               </div>
-
               <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
-                <h3 className="text-sm font-semibold text-blue-900">
-                  Matched Cases
-                </h3>
-                <p className="text-3xl font-bold text-blue-700 mt-3">
-                  {citizenMatchCount} {/*  Now it displays the real number! */}
-                </p>
+                <h3 className="text-sm font-semibold text-blue-900">Matched Cases</h3>
+                <p className="text-3xl font-bold text-blue-700 mt-3">{citizenMatchCount}</p>
               </div>
             </div>
           )}
@@ -249,93 +223,47 @@ const Dashboard: React.FC = () => {
           {(user.role === "LAWYER" || user.role === "NGO") && (
             <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-                <div
-                  onClick={() => setActiveSection("ASSIGNED")}
-                  className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition"
-                >
-                  <h3 className="text-sm font-semibold text-blue-900">
-                    Assigned Cases
-                  </h3>
-                  <p className="text-3xl font-bold text-blue-700 mt-3">
-                    {assignedCases.length}
-                  </p>
+                <div onClick={() => setActiveSection("ASSIGNED")} className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition">
+                  <h3 className="text-sm font-semibold text-blue-900">Assigned Cases</h3>
+                  <p className="text-3xl font-bold text-blue-700 mt-3">{assignedCases.length}</p>
                 </div>
-
-                <div
-                  onClick={() => setActiveSection("PENDING")}
-                  className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition"
-                >
-                  <h3 className="text-sm font-semibold text-blue-900">
-                    Pending Requests
-                  </h3>
-                  <p className="text-3xl font-bold text-blue-700 mt-3">
-                    {pendingCases.length}
-                  </p>
+                <div onClick={() => setActiveSection("PENDING")} className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition">
+                  <h3 className="text-sm font-semibold text-blue-900">Pending Requests</h3>
+                  <p className="text-3xl font-bold text-blue-700 mt-3">{pendingCases.length}</p>
                 </div>
-
-                <div
-                  onClick={() => setActiveSection("RESOLVED")}
-                  className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition"
-                >
-                  <h3 className="text-sm font-semibold text-blue-900">
-                    Resolved Cases
-                  </h3>
-                  <p className="text-3xl font-bold text-blue-700 mt-3">
-                    {resolvedCases.length}
-                  </p>
+                <div onClick={() => setActiveSection("RESOLVED")} className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition">
+                  <h3 className="text-sm font-semibold text-blue-900">Resolved Cases</h3>
+                  <p className="text-3xl font-bold text-blue-700 mt-3">{resolvedCases.length}</p>
                 </div>
-
-                <div
-                  onClick={() => setActiveSection("APPOINTMENTS")}
-                  className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition"
-                >
-                  <h3 className="text-sm font-semibold text-blue-900">
-                    Scheduled Appointments
-                  </h3>
-                  <p className="text-3xl font-bold text-blue-700 mt-3">
-                    {appointments.length}
-                  </p>
+                <div onClick={() => setActiveSection("APPOINTMENTS")} className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 cursor-pointer hover:bg-blue-50 transition">
+                  <h3 className="text-sm font-semibold text-blue-900">Scheduled Appointments</h3>
+                  <p className="text-3xl font-bold text-blue-700 mt-3">{appointments.length}</p>
                 </div>
               </div>
 
-              {/* EXPANDABLE SECTIONS */}
-              {activeSection === "ASSIGNED" &&
-                assignedCases.map((c) => (
-                  <div key={c.id} className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50">
-                    <h3 className="font-semibold text-blue-900">{c.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">{c.description}</p>
-                    <button
-                      onClick={() => navigate(`/chatpage/${c.id}`)}
-                      className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm transition"
-                    >
-                      Secure Chat
-                    </button>
-                  </div>
-                ))}
+              {activeSection === "ASSIGNED" && assignedCases.map((c) => (
+                <div key={c.id} className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50">
+                  <h3 className="font-semibold text-blue-900">{c.title}</h3>
+                  <p className="text-gray-600 text-sm mt-1">{c.description}</p>
+                  <button onClick={() => navigate(`/chatpage/${c.id}`)} className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm transition">Secure Chat</button>
+                </div>
+              ))}
 
-              {activeSection === "PENDING" &&
-                pendingCases.map((c) => (
-                  <div key={c.id} className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50">
-                    <h3 className="font-semibold text-blue-900">{c.title}</h3>
-                    <p className="text-gray-600 text-sm mt-1">{c.description}</p>
-                    <div className="flex gap-3 mt-3">
-                      <button
-                        onClick={() => handleAccept(c.id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-md text-sm transition"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => handleDecline(c.id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md text-sm transition"
-                      >
-                        Decline
-                      </button>
-                    </div>
+              {activeSection === "PENDING" && pendingCases.map((c) => (
+                <div key={c.id} className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50">
+                  <h3 className="font-semibold text-blue-900">{c.title}</h3>
+                  <p className="text-gray-600 text-sm mt-1">{c.description}</p>
+                  <div className="flex gap-3 mt-3">
+                    <button onClick={() => handleAccept(c.id)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-md text-sm transition">Accept</button>
+                    <button onClick={() => handleDecline(c.id)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md text-sm transition">Decline</button>
                   </div>
-                ))}
-               {/* Citizens doesn't need to track the matches. Lawyers and NGOs need to track the matches as to track there progress */}
-          <div className="grid grid-cols-3 gap-6 mt-6">
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* UNIVERSAL DASHBOARD COMPONENTS - RESTORED! */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
             <div className="col-span-2">
               <RecentMatches />
             </div>
@@ -343,10 +271,6 @@ const Dashboard: React.FC = () => {
               <MatchesOverTime />
             </div>
           </div>
-            </>
-          )}
-
-         
         </main>
 
         <footer className="text-gray-500 flex justify-center items-center p-10 bg-blue-50">
