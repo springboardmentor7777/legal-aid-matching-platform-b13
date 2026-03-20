@@ -22,4 +22,8 @@ public class NGOController {
 public List<NGO> searchByLocation(@RequestParam String location) {
     return ngoService.getNGOsByLocation(location);
 }
+@GetMapping("/category")
+public List<NGO> searchByCategory(@RequestParam String category) {
+    return ngoService.getNGOsByCategory(category);
+}
 }
