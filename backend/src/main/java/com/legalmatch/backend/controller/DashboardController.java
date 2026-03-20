@@ -36,7 +36,7 @@ public class DashboardController {
             Map<String, Object> activity = new HashMap<>();
             activity.put("title", "Match " + match.getStatus().name().toLowerCase() +
                     " — " + match.getLegalCase().getCaseType());
-            activity.put("message", "Case from " + match.getCitizen().getName());
+            activity.put("message", "Case from " + match.getCitizen().getUsername());
             activity.put("createdAt", match.getCreatedAt().toString());
             recentActivity.add(activity);
         }
@@ -69,7 +69,7 @@ public class DashboardController {
             Map<String, Object> activity = new HashMap<>();
             activity.put("title", "Match " + match.getStatus().name().toLowerCase() +
                     " — " + match.getLegalCase().getCaseType());
-            activity.put("message", "Case from " + match.getCitizen().getName());
+            activity.put("message", "Case from " + match.getCitizen().getUsername());
             activity.put("createdAt", match.getCreatedAt().toString());
             recentActivity.add(activity);
         }
