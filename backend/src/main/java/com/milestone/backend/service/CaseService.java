@@ -89,6 +89,9 @@ public class CaseService {
     private CaseResponse mapToResponse(Case caseObj) {
         CaseResponse response = new CaseResponse();
         response.setId(caseObj.getId());
+
+        response.setSubmittedBy(caseObj.getUser().getName());
+        
         response.setTitle(caseObj.getTitle());
         response.setDescription(caseObj.getDescription());
         response.setCategory(caseObj.getCategory());
@@ -148,6 +151,17 @@ public class CaseService {
         caseRepository.delete(caseObj);
 
         return deletedCaseResponse;
+    }
+
+
+    public List<CaseResponse> getAllCases() {
+        // Fetch every case in the database
+        List<Case> cases = caseRepository.findAll();
+
+        // Map them to Response DTOs
+        return cases.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
 }

@@ -1,1 +1,1 @@
-SELECT * from lawyer_profile;
+SELECT * from cases;

@@ -2,6 +2,8 @@ package com.milestone.backend.controller;
 
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.milestone.backend.dto.CaseRequest;
@@ -28,6 +30,7 @@ public class CaseController {
 
     // GET /cases/my
     @GetMapping("/my")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<CaseResponse> getMyCases(@AuthenticationPrincipal User user) {
         return caseService.getMyCases(user);
     }
@@ -44,5 +47,11 @@ public class CaseController {
     public CaseResponse deleteCase(@PathVariable Long id, 
                                    @AuthenticationPrincipal User user){
         return caseService.deleteCaseById(id, user);
+    }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')") // Restricts access to ADMIN role only
+    public List<CaseResponse> getAllCases() {
+        return caseService.getAllCases();
     }
 }

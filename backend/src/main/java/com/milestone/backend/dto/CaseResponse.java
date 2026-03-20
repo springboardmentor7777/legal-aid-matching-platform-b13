@@ -12,6 +12,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CaseResponse {
 
+    private String submittedBy;
+    
     private Long id;
     private String title;
     private String description;
