@@ -6,7 +6,7 @@ import { User, Mail, MapPin, Phone, Briefcase, Save, Camera } from 'lucide-react
 const ProfilePage = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState({
-    name: '',
+    username: '',
     email: '',
     phone: '',
     location: '',
@@ -31,7 +31,7 @@ const ProfilePage = () => {
       const response = await API.get('/api/profile');
       const data = response.data || {};
       setProfile({
-        name: data.name || user?.name || '',
+        name: data.username || user?.username || '',
         email: data.email || user?.email || '',
         phone: data.phone || '',
         location: data.location || '',
@@ -45,7 +45,7 @@ const ProfilePage = () => {
       // Use local user data if profile endpoint fails
       setProfile((prev) => ({
         ...prev,
-        name: user?.name || '',
+        username: user?.username || '',
         email: user?.email || '',
       }));
     } finally {
@@ -112,7 +112,7 @@ const ProfilePage = () => {
               </button>
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900">{profile.name}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{profile.username}</h2>
               <p className="text-sm text-slate-500">{role} • {profile.email}</p>
             </div>
           </div>
@@ -129,8 +129,8 @@ const ProfilePage = () => {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
-                  name="name"
-                  value={profile.name}
+                  name="username"
+                  value={profile.username}
                   onChange={handleChange}
                   className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
