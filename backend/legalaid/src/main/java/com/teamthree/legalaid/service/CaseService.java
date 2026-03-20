@@ -122,6 +122,17 @@ public class CaseService {
                 .collect(Collectors.toList());
     }
 
+    // Admin: get every case in the system
+    public List<CaseDTO> getAllCases() {
+        return caseRepository.findAll().stream()
+                .map(c -> {
+                    User user = c.getClient() != null ? c.getClient()
+                              : (c.getUserId() != null ? userRepository.findById(c.getUserId()).orElse(null) : null);
+                    return mapToDTO(c, user);
+                })
+                .collect(Collectors.toList());
+    }
+
     public boolean isCaseOwner(User user, Long caseId) {
         return caseRepository.findById(caseId)
                 .map(c -> c.getClient() != null ? c.getClient().getId().equals(user.getId()) :

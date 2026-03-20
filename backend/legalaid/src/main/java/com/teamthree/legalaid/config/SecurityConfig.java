@@ -36,27 +36,33 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
+                // ── Public endpoints ──────────────────────────────────
                 .requestMatchers(HttpMethod.GET,  "/auth/test").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/chats/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
-                .requestMatchers("/notifications/**").permitAll()
-                // Role-restricted endpoints
-                
+
+                // WebSocket SockJS handshake must be permitAll so the browser
+                // can establish the connection (JWT is validated inside the handler)
+                .requestMatchers("/chat/**").permitAll()
+
+                // ── Role-restricted endpoints ─────────────────────────
                 .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
                 .requestMatchers("/lawyer/**").hasRole("LAWYER")
                 .requestMatchers("/ngo/**").hasRole("NGO")
                 .requestMatchers("/user/**").hasRole("USER")
 
-                // Authenticated-only endpoints (any role)
+                // ── Authenticated-only (any role) ─────────────────────
                 .requestMatchers("/profile/**").authenticated()
                 .requestMatchers("/directory/**").authenticated()
                 .requestMatchers("/api/cases/**").authenticated()
+                .requestMatchers("/chats/**").authenticated()
+                .requestMatchers("/notifications/**").authenticated()
+                .requestMatchers("/matches/**").authenticated()
+                .requestMatchers("/appointments/**").authenticated()
 
-                // Everything else requires authentication
+                // ── Everything else requires authentication ───────────
                 .anyRequest().authenticated()
             )
             .sessionManagement(session ->
@@ -70,9 +76,11 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Single source of truth for CORS — update this if your frontend port changes
-        // Vite default is 5173; CRA default is 3000
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174" , "http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:5174",
+                "http://localhost:3000"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

@@ -16,13 +16,18 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "match_id", nullable = false)
     private Long matchId;
 
+    @Column(name = "sender_id", nullable = false)
     private Long senderId;
 
+    @Column(name = "receiver_id")
     private Long receiverId;
 
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Column(name = "timestamp")
     private LocalDateTime timestamp;
 }

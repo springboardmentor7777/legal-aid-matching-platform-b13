@@ -36,15 +36,14 @@ public class NgoDashboardService {
         dashboard.setOrganizationName(ngo.getOrganizationName());
         dashboard.setRegistrationNumber(ngo.getRegistrationNumber());
         
-        // Case statistics
+       
         dashboard.setTotalCases(caseRepository.countByNgo(ngo));
         dashboard.setActiveCases(caseRepository.countByNgoAndStatus(ngo, "ACTIVE"));
         dashboard.setResolvedCases(caseRepository.countByNgoAndStatus(ngo, "RESOLVED"));
         
-        // Assigned lawyers count
         dashboard.setAssignedLawyers(caseRepository.countDistinctLawyersByNgo(ngo));
         
-        // Lists
+
         dashboard.setAssignedCases(getAssignedCases(ngo));
         dashboard.setAvailableLawyers(getAvailableLawyers());
         

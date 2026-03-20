@@ -24,7 +24,8 @@ public class CaseController {
     private final CaseService caseService;
     private final UserRepository userRepository;
 
-    // POST /api/cases — Submit a new case (USER role only)
+    // ── POST /api/cases ──────────────────────────────────────────────────────
+    // Submit a new case — USER role only
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> createCase(
@@ -34,13 +35,14 @@ public class CaseController {
         User user = resolveUser(principal);
         CaseDTO created = caseService.createCase(user, request);
         return ResponseEntity.ok(Map.of(
-            "status", "success",
+            "status",  "success",
             "message", "Case submitted successfully",
-            "case", created
+            "case",    created
         ));
     }
 
-    // GET /api/cases/my — Get all cases for the logged-in user (USER role only)
+    // ── GET /api/cases/my ────────────────────────────────────────────────────
+    // Get all cases belonging to the logged-in citizen — USER only
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<CaseDTO>> getMyCases(
@@ -50,13 +52,28 @@ public class CaseController {
         return ResponseEntity.ok(caseService.getUserCases(user));
     }
 
-    // GET /api/cases/{id} — Get a single case by ID (any authenticated user)
+    // ── GET /api/cases/{id} ──────────────────────────────────────────────────
+    // Get a single case by ID — accessible by:
+    //   USER    → only their own cases (enforced in service)
+    //   LAWYER  → any case matched to them (so they can view full details + docs)
+    //   NGO     → any case matched to them (same reason)
+    //   ADMIN   → any case
+    // The endpoint is open to any authenticated user; the service controls access.
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CaseDTO> getCaseById(@PathVariable Long id) {
         return ResponseEntity.ok(caseService.getCaseById(id));
     }
 
-    // Helper: resolve User entity from JWT principal
+    // ── GET /api/cases/all ───────────────────────────────────────────────────
+    // Admin: get all cases in the system
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<CaseDTO>> getAllCases() {
+        return ResponseEntity.ok(caseService.getAllCases());
+    }
+
+    // ── Helper ───────────────────────────────────────────────────────────────
     private User resolveUser(UserDetails principal) {
         return userRepository.findByEmail(principal.getUsername())
             .orElseThrow(() -> new RuntimeException("User not found: " + principal.getUsername()));

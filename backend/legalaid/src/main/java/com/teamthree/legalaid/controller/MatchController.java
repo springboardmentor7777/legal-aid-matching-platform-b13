@@ -2,6 +2,8 @@ package com.teamthree.legalaid.controller;
 
 import com.teamthree.legalaid.dto.MatchDTO;
 import com.teamthree.legalaid.entity.User;
+import com.teamthree.legalaid.repository.LawyerRepository;
+import com.teamthree.legalaid.repository.NgoProfileRepository;
 import com.teamthree.legalaid.repository.UserRepository;
 import com.teamthree.legalaid.service.MatchService;
 import lombok.RequiredArgsConstructor;
@@ -20,55 +22,82 @@ public class MatchController {
 
     private final MatchService matchService;
     private final UserRepository userRepository;
+    private final LawyerRepository lawyerRepository;
+    private final NgoProfileRepository ngoProfileRepository;
 
-    private User resolveUser(UserDetails userDetails) {
-        return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
-
-    // ADMIN — generate matches for a case
+    // ADMIN: generate matches for a case
     @PostMapping("/generate/{caseId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<MatchDTO>> generateMatches(@PathVariable Long caseId) {
         return ResponseEntity.ok(matchService.generateMatches(caseId));
     }
 
-    // ALL roles — get my matches
+    // USER: get matches for the citizen's own cases
     @GetMapping("/my")
-    @PreAuthorize("hasAnyRole('USER', 'LAWYER', 'NGO')")
-    public ResponseEntity<List<MatchDTO>> getMyMatches(@AuthenticationPrincipal UserDetails userDetails) {
-        User user = resolveUser(userDetails);
-        String role = user.getRole().name();
-        if (role.equals("LAWYER")) {
-            return ResponseEntity.ok(matchService.getMatchesForLawyerUser(user));
-        } else if (role.equals("NGO")) {
-            return ResponseEntity.ok(matchService.getMatchesForNgoUser(user));
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<MatchDTO>> getMyMatches(@AuthenticationPrincipal UserDetails principal) {
+        User user = resolveUser(principal);
+        return ResponseEntity.ok(matchService.getMyMatches(user));
+    }
+
+    // LAWYER + NGO: get matches assigned to them (uses JWT — no profileId in URL needed)
+    @GetMapping("/assigned")
+    @PreAuthorize("hasAnyRole('LAWYER', 'NGO')")
+    public ResponseEntity<List<MatchDTO>> getAssignedMatches(@AuthenticationPrincipal UserDetails principal) {
+        User user = resolveUser(principal);
+        if (user.getRole().name().equals("LAWYER")) {
+            return lawyerRepository.findByUser(user)
+                    .map(lp -> ResponseEntity.ok(matchService.getMatchesForLawyer(lp.getId())))
+                    .orElse(ResponseEntity.ok(List.of()));
         } else {
-            return ResponseEntity.ok(matchService.getMyMatches(user));
+            return ngoProfileRepository.findByUser(user)
+                    .map(np -> ResponseEntity.ok(matchService.getMatchesForNgo(np.getId())))
+                    .orElse(ResponseEntity.ok(List.of()));
         }
     }
 
-    // USER — send request to lawyer/NGO
+    // USER: send request to a lawyer/NGO — PENDING → REQUESTED
     @PutMapping("/{matchId}/request")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<MatchDTO> requestMatch(
-            @PathVariable Long matchId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        User user = resolveUser(userDetails);
+    public ResponseEntity<MatchDTO> requestMatch(@PathVariable Long matchId,
+            @AuthenticationPrincipal UserDetails principal) {
+        User user = resolveUser(principal);
         return ResponseEntity.ok(matchService.requestMatch(matchId, user));
     }
 
-    // LAWYER/NGO — accept a requested match
+    // LAWYER or NGO: accept a case — REQUESTED → ACCEPTED
     @PutMapping("/{matchId}/accept")
     @PreAuthorize("hasAnyRole('LAWYER', 'NGO')")
-    public ResponseEntity<MatchDTO> acceptMatch(@PathVariable Long matchId) {
-        return ResponseEntity.ok(matchService.acceptMatch(matchId));
+    public ResponseEntity<MatchDTO> acceptMatch(@PathVariable Long matchId,
+            @AuthenticationPrincipal UserDetails principal) {
+        User user = resolveUser(principal);
+        return ResponseEntity.ok(matchService.acceptMatch(matchId, user));
     }
 
-    // LAWYER/NGO — reject a requested match
+    // LAWYER or NGO: reject a case — REQUESTED → REJECTED
     @PutMapping("/{matchId}/reject")
     @PreAuthorize("hasAnyRole('LAWYER', 'NGO')")
-    public ResponseEntity<MatchDTO> rejectMatch(@PathVariable Long matchId) {
-        return ResponseEntity.ok(matchService.rejectMatch(matchId));
+    public ResponseEntity<MatchDTO> rejectMatch(@PathVariable Long matchId,
+            @AuthenticationPrincipal UserDetails principal) {
+        User user = resolveUser(principal);
+        return ResponseEntity.ok(matchService.rejectMatch(matchId, user));
+    }
+
+    // Old endpoints kept for backwards compatibility
+    @GetMapping("/lawyer/{lawyerProfileId}")
+    @PreAuthorize("hasRole('LAWYER')")
+    public ResponseEntity<List<MatchDTO>> getMatchesForLawyer(@PathVariable Long lawyerProfileId) {
+        return ResponseEntity.ok(matchService.getMatchesForLawyer(lawyerProfileId));
+    }
+
+    @GetMapping("/ngo/{ngoProfileId}")
+    @PreAuthorize("hasRole('NGO')")
+    public ResponseEntity<List<MatchDTO>> getMatchesForNgo(@PathVariable Long ngoProfileId) {
+        return ResponseEntity.ok(matchService.getMatchesForNgo(ngoProfileId));
+    }
+
+    private User resolveUser(UserDetails principal) {
+        return userRepository.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found: " + principal.getUsername()));
     }
 }
