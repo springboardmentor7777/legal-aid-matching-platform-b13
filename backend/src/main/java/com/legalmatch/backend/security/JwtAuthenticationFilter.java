@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     @Override
 protected boolean shouldNotFilter(HttpServletRequest request) {
-    return request.getRequestURI().startsWith("/auth");
+    return request.getRequestURI().startsWith("/api/auth");
 }
 
     @Override
