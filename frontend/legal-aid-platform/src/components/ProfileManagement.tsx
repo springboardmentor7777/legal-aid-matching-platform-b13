@@ -7,6 +7,7 @@ interface User {
   role: "NGO" | "LAWYER" | "CITIZEN";
   email: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
+  verified: boolean;
 }
 
 const USERS_PER_PAGE = 5;
@@ -21,13 +22,18 @@ export default function ProfileManagement() {
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>();
 
   // Fetch Users
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await api.get("http://localhost:8081/profile/profiles/all");
+      const res = await api.get("http://localhost:8081/profile/profiles/all",
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        }
+      });
       setUsers(res.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -172,14 +178,14 @@ export default function ProfileManagement() {
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded text-xs font-semibold ${
-                        u.status === "PENDING"
+                        u.verified === false
                           ? "bg-yellow-100 text-yellow-800"
-                          : u.status === "APPROVED"
+                          : u.verified === true
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {u.status}
+                      {u.verified?"verified":"not verified"}
                     </span>
                   </td>
                   <td className="p-3 text-center space-x-2">

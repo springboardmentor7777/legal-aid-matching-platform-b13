@@ -7,13 +7,16 @@ interface Case {
   description: string;
   submittedBy: string;
   role: "NGO" | "LAWYER" | "CITIZEN";
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "SUBMITTED" | "REJECTED";
   submittedDate: string;
+  incidentDate: string;
 }
 
-const api = axios.create({
-  baseURL: "http://localhost:8081/api/admin",
-});
+// const api = axios.get("http://localhost:8081/cases/all", { headers: {
+//   Authorization:`Bearer ${localStorage.accessToken}`
+// } });
+
+// console.log(api.data);
 
 const CASES_PER_PAGE = 5;
 
@@ -28,7 +31,11 @@ export default function CaseSubmission() {
   const fetchCases = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/cases");
+      const res = await axios.get("http://localhost:8081/cases/all",{
+        headers:{
+          Authorization: `Bearer ${localStorage.accessToken}`
+        }
+      });
       setCases(res.data);
     } catch (error) {
       console.error("Error fetching cases:", error);
@@ -42,29 +49,25 @@ export default function CaseSubmission() {
   }, []);
 
   // Update Status
-  const updateStatus = async (
-    id: number,
-    status: "APPROVED" | "REJECTED"
-  ) => {
-    try {
-      await api.put(`/cases/verify/${id}`, { status });
-      fetchCases();
-    } catch (error) {
-      console.error("Error updating case:", error);
-    }
+  const updateStatus = async (id: number, status: "APPROVED" | "REJECTED") => {
+    // try {
+    //   await api.put(`/cases/verify/${id}`, { status });
+    //   fetchCases();
+    // } catch (error) {
+    //   console.error("Error updating case:", error);
+    // }
   };
 
   // Delete Case
   const deleteCase = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this case?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this case?")) return;
 
-    try {
-      await api.delete(`/cases/delete/${id}`);
-      fetchCases();
-    } catch (error) {
-      console.error("Error deleting case:", error);
-    }
+    // try {
+    //   await api.delete(`/cases/delete/${id}`);
+    //   fetchCases();
+    // } catch (error) {
+    //   console.error("Error deleting case:", error);
+    // }
   };
 
   // Filtering
@@ -74,21 +77,18 @@ export default function CaseSubmission() {
         c.title.toLowerCase().includes(search.toLowerCase()) ||
         c.submittedBy.toLowerCase().includes(search.toLowerCase());
 
-      const matchStatus =
-        statusFilter === "ALL" || c.status === statusFilter;
+      const matchStatus = statusFilter === "ALL" || c.status === statusFilter;
 
       return matchSearch && matchStatus;
     });
   }, [cases, search, statusFilter]);
 
   // Pagination
-  const totalPages = Math.ceil(
-    filteredCases.length / CASES_PER_PAGE
-  );
+  const totalPages = Math.ceil(filteredCases.length / CASES_PER_PAGE);
 
   const paginatedCases = filteredCases.slice(
     (page - 1) * CASES_PER_PAGE,
-    page * CASES_PER_PAGE
+    page * CASES_PER_PAGE,
   );
 
   return (
@@ -124,9 +124,7 @@ export default function CaseSubmission() {
         </select>
       </div>
 
-      {loading && (
-        <p className="text-gray-500 mb-4">Loading cases...</p>
-      )}
+      {loading && <p className="text-gray-500 mb-4">Loading cases...</p>}
 
       {/* Table */}
       <div className="overflow-auto bg-white shadow rounded">
@@ -153,16 +151,16 @@ export default function CaseSubmission() {
                 <tr key={c.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">{c.title}</td>
                   <td className="p-3">{c.submittedBy}</td>
-                  <td className="p-3">{c.role}</td>
-                  <td className="p-3">{c.submittedDate}</td>
+                  <td className="p-3">CITIZEN</td>
+                  <td className="p-3">{c.incidentDate}</td>
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded text-xs font-semibold ${
                         c.status === "PENDING"
                           ? "bg-yellow-100 text-yellow-800"
-                          : c.status === "APPROVED"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          : c.status === "SUBMITTED"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
                       }`}
                     >
                       {c.status}
@@ -173,17 +171,13 @@ export default function CaseSubmission() {
                       <>
                         <button
                           className="text-green-600 hover:underline"
-                          onClick={() =>
-                            updateStatus(c.id, "APPROVED")
-                          }
+                          onClick={() => updateStatus(c.id, "APPROVED")}
                         >
                           Approve
                         </button>
                         <button
                           className="text-red-600 hover:underline"
-                          onClick={() =>
-                            updateStatus(c.id, "REJECTED")
-                          }
+                          onClick={() => updateStatus(c.id, "REJECTED")}
                         >
                           Reject
                         </button>
@@ -212,9 +206,7 @@ export default function CaseSubmission() {
               key={i}
               onClick={() => setPage(i + 1)}
               className={`px-3 py-1 rounded ${
-                page === i + 1
-                  ? "bg-blue-900 text-white"
-                  : "bg-gray-200"
+                page === i + 1 ? "bg-blue-900 text-white" : "bg-gray-200"
               }`}
             >
               {i + 1}
