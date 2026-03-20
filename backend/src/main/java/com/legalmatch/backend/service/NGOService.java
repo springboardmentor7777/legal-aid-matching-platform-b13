@@ -17,4 +17,7 @@ public class NGOService {
     public List<NGO> getAllNGOs() {
         return ngoRepository.findAll();
     }
+    public List<NGO> getNGOsByLocation(String location) {
+        return ngoRepository.findByLocationContainingIgnoreCase(location);
+    }
 }
