@@ -48,10 +48,18 @@ public class AdvocateDataLoader {
                 String contact = data[3];
                 boolean verified = Boolean.parseBoolean(data[4]);
 
-                jdbcTemplate.update(
-                        "INSERT INTO advocate_directory (name, specialization, location, contact_info, verified) VALUES (?, ?, ?, ?, ?)",
-                        name, specialization, location, contact, verified
-                );
+                Integer count = jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM advocate_directory WHERE name = ? AND location = ?",
+        Integer.class,
+        name, location
+);
+
+if (count != null && count == 0) {
+    jdbcTemplate.update(
+            "INSERT INTO advocate_directory (name, specialization, location, contact_info, verified) VALUES (?, ?, ?, ?, ?)",
+            name, specialization, location, contact, verified
+    );
+}
             }
 
             System.out.println("✅ Advocate data loaded successfully!");
