@@ -10,6 +10,7 @@ public interface NGORepository extends JpaRepository<NGO, Integer> {
     
 
     List<NGO> findByLocationContainingIgnoreCase(String location);
+    List<NGO> findByCategoryContainingIgnoreCase(String category);
 
 
 }
