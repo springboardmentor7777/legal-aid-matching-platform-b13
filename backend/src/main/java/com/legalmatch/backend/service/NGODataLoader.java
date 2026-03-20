@@ -53,7 +53,7 @@ public class NGODataLoader {
                 boolean verified = Boolean.parseBoolean(data[4].trim());
 
                 jdbcTemplate.update(
-                        "INSERT INTO ngo_directory (name, category, location, contact_info, verified) VALUES (?, ?, ?, ?, ?)",
+                        "INSERT INTO ngo_directory (organization_name,focus_area, location, contact_info, verified) VALUES (?, ?, ?, ?, ?)",
                         name, category, location, contact, verified
                 );
             }
