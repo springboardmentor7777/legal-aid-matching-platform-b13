@@ -18,4 +18,8 @@ public class NGOController {
     public List<NGO> getAllNGOs() {
         return ngoService.getAllNGOs();
     }
+    @GetMapping("/search")
+public List<NGO> searchByLocation(@RequestParam String location) {
+    return ngoService.getNGOsByLocation(location);
+}
 }
