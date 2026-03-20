@@ -1,9 +1,9 @@
 package com.legalmatch.backend.entity;
 
-
-
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "ngo_directory")
 public class NGO {
@@ -24,6 +24,4 @@ public class NGO {
     private String contactInfo;
 
     private Boolean verified;
-
-    // getters & setters
 }
