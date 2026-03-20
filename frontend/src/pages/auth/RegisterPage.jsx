@@ -5,7 +5,7 @@ import { Mail, Lock, Eye, EyeOff, User, Scale, ChevronDown } from 'lucide-react'
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -44,7 +44,7 @@ const RegisterPage = () => {
     setLoading(true);
     try {
 await register({
-  name: formData.name,
+  username: formData.username,
   email: formData.email,
   password: formData.password,
   role: formData.role
@@ -99,7 +99,7 @@ setSuccess('Registration successful! Redirecting to login...');
                 <User className="absolute top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" style={{ left: '14px' }} />
                 <input
                   type="text"
-                  name="name"
+                  name="username"
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your full name"
