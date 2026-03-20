@@ -160,7 +160,7 @@ public class MatchService {
         notificationService.createNotification(
                 toNotify,
                 "Match Accepted",
-                user.getName() + " accepted the match for case: " + match.getLegalCase().getCaseType(),
+                user.getUsername() + " accepted the match for case: " + match.getLegalCase().getCaseType(),
                 "MATCH_ACCEPTED"
         );
 
@@ -196,9 +196,9 @@ public class MatchService {
                 .caseDescription(match.getLegalCase().getDescription())
                 .caseLocation(match.getLegalCase().getLocation())
                 .citizenId(match.getCitizen().getId())
-                .citizenName(match.getCitizen().getName())
+                .citizenName(match.getCitizen().getUsername())
                 .providerId(match.getProvider().getId())
-                .providerName(match.getProvider().getName())
+                .providerName(match.getProvider().getUsername())
                 .providerExpertise(providerProfile != null ? providerProfile.getExpertise() : "")
                 .providerLocation(providerProfile != null ? providerProfile.getLocation() : "")
                 .matchScore(match.getMatchScore())
