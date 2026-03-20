@@ -53,7 +53,7 @@ public class ChatService {
         notificationService.createNotification(
                 receiver,
                 "New Message",
-                sender.getName() + " sent you a message",
+                sender.getUsername() + " sent you a message",
                 "NEW_MESSAGE"
         );
 
@@ -85,9 +85,9 @@ public class ChatService {
                 .id(msg.getId())
                 .matchId(msg.getMatch().getId())
                 .senderId(msg.getSender().getId())
-                .senderName(msg.getSender().getName())
+                .senderName(msg.getSender().getUsername())
                 .receiverId(msg.getReceiver().getId())
-                .receiverName(msg.getReceiver().getName())
+                .receiverName(msg.getReceiver().getUsername())
                 .content(msg.getContent())
                 .timestamp(msg.getTimestamp())
                 .build();
