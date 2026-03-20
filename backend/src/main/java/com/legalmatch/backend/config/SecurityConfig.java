@@ -48,7 +48,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/auth/**","/api/ngos/**").permitAll()
                 .anyRequest().authenticated()
         )
         .sessionManagement(session ->
