@@ -20,4 +20,7 @@ public class NGOService {
     public List<NGO> getNGOsByLocation(String location) {
         return ngoRepository.findByLocationContainingIgnoreCase(location);
     }
+    public List<NGO> getNGOsByCategory(String category) {
+    return ngoRepository.findByCategoryContainingIgnoreCase(category);
+}
 }
