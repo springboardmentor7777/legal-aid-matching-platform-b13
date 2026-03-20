@@ -25,14 +25,13 @@ public class MatchController {
     private final LawyerRepository lawyerRepository;
     private final NgoProfileRepository ngoProfileRepository;
 
-    // ADMIN: generate matches for a case
     @PostMapping("/generate/{caseId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<MatchDTO>> generateMatches(@PathVariable Long caseId) {
         return ResponseEntity.ok(matchService.generateMatches(caseId));
     }
 
-    // USER: get matches for the citizen's own cases
+
     @GetMapping("/my")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<MatchDTO>> getMyMatches(@AuthenticationPrincipal UserDetails principal) {
@@ -40,7 +39,7 @@ public class MatchController {
         return ResponseEntity.ok(matchService.getMyMatches(user));
     }
 
-    // LAWYER + NGO: get matches assigned to them (uses JWT — no profileId in URL needed)
+
     @GetMapping("/assigned")
     @PreAuthorize("hasAnyRole('LAWYER', 'NGO')")
     public ResponseEntity<List<MatchDTO>> getAssignedMatches(@AuthenticationPrincipal UserDetails principal) {
@@ -56,7 +55,6 @@ public class MatchController {
         }
     }
 
-    // USER: send request to a lawyer/NGO — PENDING → REQUESTED
     @PutMapping("/{matchId}/request")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<MatchDTO> requestMatch(@PathVariable Long matchId,
@@ -65,7 +63,6 @@ public class MatchController {
         return ResponseEntity.ok(matchService.requestMatch(matchId, user));
     }
 
-    // LAWYER or NGO: accept a case — REQUESTED → ACCEPTED
     @PutMapping("/{matchId}/accept")
     @PreAuthorize("hasAnyRole('LAWYER', 'NGO')")
     public ResponseEntity<MatchDTO> acceptMatch(@PathVariable Long matchId,
@@ -74,7 +71,6 @@ public class MatchController {
         return ResponseEntity.ok(matchService.acceptMatch(matchId, user));
     }
 
-    // LAWYER or NGO: reject a case — REQUESTED → REJECTED
     @PutMapping("/{matchId}/reject")
     @PreAuthorize("hasAnyRole('LAWYER', 'NGO')")
     public ResponseEntity<MatchDTO> rejectMatch(@PathVariable Long matchId,
@@ -83,7 +79,6 @@ public class MatchController {
         return ResponseEntity.ok(matchService.rejectMatch(matchId, user));
     }
 
-    // Old endpoints kept for backwards compatibility
     @GetMapping("/lawyer/{lawyerProfileId}")
     @PreAuthorize("hasRole('LAWYER')")
     public ResponseEntity<List<MatchDTO>> getMatchesForLawyer(@PathVariable Long lawyerProfileId) {
