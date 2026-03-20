@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { LoginResponse } from "../types/auth.type";
 
+//  Added the 'id' field so React remembers who you are!
 type User = {
+  id: number | string; 
   username: string;
   email: string;
   role: string;
@@ -24,17 +26,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [initializing, setInitializing] = useState(true);
 
-  // restore auth on refresh
-  // useEffect(() => {
-  //   const storedUser = localStorage.getItem("user");
-  //   const storedToken = localStorage.getItem("accessToken");
-
-  //   if (storedUser && storedToken) {
-  //     setUser(JSON.parse(storedUser));
-  //     setAccessToken(storedToken);
-  //   }
-  // }, []);
-
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('accessToken');
@@ -44,7 +35,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(JSON.parse(storedUser));
         setAccessToken(storedToken);
       } catch {
-        // corrupted data → clear
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
@@ -53,9 +43,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setInitializing(false);
   }, []);
 
-
   const login = (data: LoginResponse, email: string) => {
+    
+    //  Safely grab the ID. (Check data.id, data.userId, or data.user?.id)
+    const userId = (data as any).id || (data as any).userId || ((data as any).user && (data as any).user.id) || 0;
+
     const mappedUser: User = {
+      id: userId, // <-- Save the ID!
       email,
       username: data.username,
       role: data.role,
@@ -65,15 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(mappedUser);
     setAccessToken(data.accessToken);
 
-    // setUser(data.user);
-    // setAccessToken(data.access_token);
     localStorage.setItem('user', JSON.stringify(mappedUser));
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
-
-    // localStorage.setItem("user", JSON.stringify(data.user));
-    // localStorage.setItem("accessToken", data.access_token);
-    // localStorage.setItem("refreshToken", data.refresh_token);
   };
 
   const logout = () => {

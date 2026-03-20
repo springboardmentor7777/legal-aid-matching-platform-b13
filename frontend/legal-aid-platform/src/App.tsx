@@ -101,7 +101,22 @@ function App() {
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
-      <Route path="/chatpage" element={<ChatPage />} />
+      <Route 
+        path="/chatpage" 
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/chatpage/:matchId" 
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="/pages/MatchingResult" element={<MatchingResults />} />
       <Route path="/pages/AppointmentScheduler/:matchId" element={<ProtectedRoute><AppointmentScheduler /></ProtectedRoute>} />
       <Route path="/pages/SupportPage" element={<SupportPage />} />

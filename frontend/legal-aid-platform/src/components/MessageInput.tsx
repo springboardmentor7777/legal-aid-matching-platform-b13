@@ -4,7 +4,7 @@ import Stomp from "stompjs";
 import { useAuth } from "../auth/AuthContext";
 
 interface Props {
-  selectedUser: any; //  this holds the matchId
+  selectedUser: any; 
 }
 
 const MessageInput: React.FC<Props> = ({ selectedUser }) => {
@@ -12,34 +12,49 @@ const MessageInput: React.FC<Props> = ({ selectedUser }) => {
   const [inputText, setInputText] = useState("");
 
   const handleSendMessage = () => {
-    // Prevent sending empty messages or sending if user data isn't loaded
     if (!inputText.trim() || !user || !selectedUser) return;
 
     const token = localStorage.getItem("accessToken");
+    const currentMatchId = selectedUser.matchId || selectedUser.id;
+
+    if (!currentMatchId) return;
+
+    
+    console.log("🕵️ CURRENT USER OBJECT:", user);
+
+    //  THE FIX: Catch the ID no matter what it's named in your AuthContext
+    const actualSenderId = user.id || user.userId || user.sub; 
+
+    if (!actualSenderId) {
+      console.error("CRITICAL: Could not find the User ID!");
+      alert("Error: Missing User ID. Check the console.");
+      return;
+    }
+
     const socket = new SockJS("http://localhost:8081/ws-chat");
     const client = Stomp.over(socket);
-    
-    // Hide spammy console logs from STOMP
     client.debug = () => {}; 
 
     client.connect({ Authorization: `Bearer ${token}` }, () => {
-      
-      
       const chatMessage = {
-        matchId: selectedUser.id, 
-        senderId: user.id, 
+        matchId: currentMatchId, 
+        senderId: actualSenderId, // <-- Using the safe ID here!
         content: inputText,
       };
 
-      
+      console.log("🚀 SENDING MESSAGE TO BACKEND:", chatMessage);
+
       client.send("/app/chat.send", {}, JSON.stringify(chatMessage));
+      setInputText(""); 
       
-      setInputText(""); // Clear the input box immediately
-      client.disconnect(); // Close this temporary sending connection
+      setTimeout(() => {
+        if (client && client.connected) {
+          client.disconnect(() => console.log("👋 Disconnected cleanly"));
+        }
+      }, 2000); 
     });
   };
 
-  // Allows hitting "Enter" to send the message
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSendMessage();

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext"; //  Added Auth context
 
 export default function RecentMatches() {
   const [matches, setMatches] = useState([]);
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get the currently logged-in user
 
   useEffect(() => {
     fetchMatches();
@@ -23,14 +25,21 @@ export default function RecentMatches() {
   };
 
   const handleAction = async (matchId: number, action: 'accept' | 'reject') => {
+    if (!matchId) {
+      console.error("Match ID is missing! Cannot perform action.");
+      alert("Error: Missing Match ID. Please check the console.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("accessToken"); // FIXED: Changed from "token"
-      await axios.put(`http://localhost:8081/matches/${matchId}/${action}`, {}, {
+      const token = localStorage.getItem("accessToken"); 
+      await axios.put(`http://localhost:8081/matches/${matchId}/${action}`, null, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      fetchMatches();
+      fetchMatches(); // Refresh the list after success
     } catch (err) {
       console.error(`Error during ${action}`, err);
+      alert(`Failed to ${action} match.`);
     }
   };
 
@@ -39,36 +48,56 @@ export default function RecentMatches() {
       <h2 className="text-lg font-semibold mb-4">Recent Matches</h2>
       <div className="space-y-4">
         {matches.length === 0 ? <p className="text-gray-400">No matches found yet.</p> : 
-        matches.map((match: any) => (
-          <div key={match.matchId} className="border p-4 rounded-lg bg-slate-50">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <p className="font-bold text-purple-900">{match.providerName}</p>
-                <p className="text-xs text-gray-500 uppercase font-semibold">{match.providerType}</p>
-              </div>
-              <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
-                Score: {match.score}%
-              </span>
-            </div>
+        matches.map((match: any, index: number) => {
+          
+          const currentMatchId = match.matchId || match.id;
+          
+          //  Smart Display Logic: Flip names based on who is logged in!
+          const isCitizen = user?.role === "CITIZEN";
+          const displayName = isCitizen ? match.providerName : match.clientName;
+          const displayRole = isCitizen ? match.providerType : "CITIZEN (CLIENT)";
 
-            {/* Integration: Action Buttons */}
-            <div className="flex flex-wrap gap-2">
-              {match.status === "PENDING" ? (
-                <>
-                  <button onClick={() => handleAction(match.matchId, 'accept')} className="bg-purple-600 text-white px-3 py-1 rounded text-sm">Accept</button>
-                  <button onClick={() => handleAction(match.matchId, 'reject')} className="border border-gray-300 px-3 py-1 rounded text-sm">Reject</button>
-                </>
-              ) : match.status === "ACCEPTED" ? (
-                <>
-                  <button onClick={() => navigate(`/chatpage/${match.matchId}`)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Secure Chat</button>
-                  <button onClick={() => navigate(`/pages/AppointmentScheduler/${match.matchId}`)} className="bg-indigo-600 text-white px-3 py-1 rounded text-sm">Schedule Call</button>
-                </>
-              ) : (
-                <span className="text-red-500 text-sm font-medium italic">Match Rejected</span>
-              )}
+          return (
+            <div key={currentMatchId || index} className="border p-4 rounded-lg bg-slate-50">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <p className="font-bold text-purple-900">{displayName || "Unknown User"}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">{displayRole}</p>
+                </div>
+                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
+                  Score: {match.score || 0}%
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
+                {match.status === "PENDING" ? (
+                  <>
+                    <button 
+                      onClick={() => handleAction(currentMatchId, 'accept')} 
+                      className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition"
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      onClick={() => handleAction(currentMatchId, 'reject')} 
+                      className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-100 transition"
+                    >
+                      Reject
+                    </button>
+                  </>
+                ) : match.status === "ACCEPTED" ? (
+                  <>
+                    <button onClick={() => navigate(`/chatpage/${currentMatchId}`)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition">Secure Chat</button>
+                    <button onClick={() => navigate(`/pages/AppointmentScheduler/${currentMatchId}`)} className="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">Schedule Call</button>
+                  </>
+                ) : (
+                  <span className="text-red-500 text-sm font-medium italic">Match {match.status}</span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
