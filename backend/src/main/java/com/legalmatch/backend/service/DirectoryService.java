@@ -33,18 +33,11 @@ public class DirectoryService {
                         PageRequest.of(page, size)
                 );
 
-<<<<<<< HEAD
-        return profiles.map(p -> DirectoryProfileResponse.builder()
-                .id(p.getId())
-                .name(p.getUser().getUsername())
-                .organizationName(p.getOrganizationName())
-                .expertise(p.getExpertise())
-                .location(p.getLocation())
-                .verified(p.isVerified())
-                .build());
-=======
+
+       
+
         return profiles.map(this::mapToResponse);
->>>>>>> c43b6ec660e4ac40d75ba60fd998006ba9f96575
+
     }
 
     public Page<DirectoryProfileResponse> getNgos(
