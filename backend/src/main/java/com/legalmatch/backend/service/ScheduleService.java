@@ -54,7 +54,7 @@ public class ScheduleService {
         notificationService.createNotification(
                 otherParty,
                 "New Appointment",
-                creator.getName() + " scheduled an appointment: " + request.getTitle(),
+                creator.getUsername() + " scheduled an appointment: " + request.getTitle(),
                 "APPOINTMENT"
         );
 
@@ -117,9 +117,9 @@ public class ScheduleService {
                 .location(a.getLocation())
                 .status(a.getStatus().name())
                 .createdById(a.getCreatedBy().getId())
-                .createdByName(a.getCreatedBy().getName())
-                .citizenName(a.getMatch().getCitizen().getName())
-                .providerName(a.getMatch().getProvider().getName())
+                .createdByName(a.getCreatedBy().getUsername())
+                .citizenName(a.getMatch().getCitizen().getUsername())
+                .providerName(a.getMatch().getProvider().getUsername())
                 .createdAt(a.getCreatedAt())
                 .updatedAt(a.getUpdatedAt())
                 .build();
