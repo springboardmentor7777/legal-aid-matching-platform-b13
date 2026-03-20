@@ -303,10 +303,7 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
                 ))}
-            </>
-          )}
-
-          {/* UNIVERSAL DASHBOARD COMPONENTS */}
+               {/* Citizens doesn't need to track the matches. Lawyers and NGOs need to track the matches as to track there progress */}
           <div className="grid grid-cols-3 gap-6 mt-6">
             <div className="col-span-2">
               <RecentMatches />
@@ -315,6 +312,10 @@ const Dashboard: React.FC = () => {
               <MatchesOverTime />
             </div>
           </div>
+            </>
+          )}
+
+         
         </main>
 
         <footer className="text-gray-500 flex justify-center items-center p-10 bg-blue-50">
