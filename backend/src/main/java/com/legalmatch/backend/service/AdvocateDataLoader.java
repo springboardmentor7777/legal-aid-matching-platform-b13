@@ -27,6 +27,9 @@ public class AdvocateDataLoader {
             boolean firstLine = true;
 
             while ((line = reader.readLine()) != null) {
+                if(line.trim().isEmpty()){
+                    continue;
+                }
 
                 if (firstLine) {
                     firstLine = false;
@@ -34,6 +37,10 @@ public class AdvocateDataLoader {
                 }
 
                 String[] data = line.split(",");
+                if(data.length<5){
+                    System.out.println("Skipping invalid row:"+line);
+                    continue; 
+                }
 
                 String name = data[0];
                 String specialization = data[1];
