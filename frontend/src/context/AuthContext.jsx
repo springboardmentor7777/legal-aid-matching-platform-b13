@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
-    const response = await API.post("/auth/login", credentials);
+    const response = await API.post("/api/auth/login", credentials);
 
     const { accessToken } = response.data;
 
@@ -38,7 +38,7 @@ const userData = response.data.user || { email: credentials.email };
   };
 
   const register = async (data) => {
-    const response = await API.post("/auth/register", data);
+    const response = await API.post("/api/auth/register", data);
     return response.data;
   };
 
