@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../auth/AuthContext";
 import RecentMatches from "../components/RecentMatches";
-import MatchesOverTime from "../components/Rechart";
 
 type Role = "CITIZEN" | "LAWYER" | "NGO" | "ADMIN";
 
@@ -262,14 +261,9 @@ const Dashboard: React.FC = () => {
             </>
           )}
 
-          {/* UNIVERSAL DASHBOARD COMPONENTS - RESTORED! */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-            <div className="col-span-2">
-              <RecentMatches />
-            </div>
-            <div>
-              <MatchesOverTime />
-            </div>
+          {/* UNIVERSAL DASHBOARD COMPONENTS */}
+          <div className="mt-6 w-full">
+            <RecentMatches />
           </div>
         </main>
 
