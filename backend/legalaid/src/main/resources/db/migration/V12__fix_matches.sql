@@ -1,35 +1,46 @@
--- V12: Fix matches table and add messages table
--- Your database already has: profile_id, profile_type, match_date columns
--- Your database does NOT have: lawyer_id, ngo_id columns
--- So we skip data migration and only do the three things below.
+-- V12__fix_matches.sql
+-- Complete migration: fixes matches table + creates notifications + messages tables
 
--- Step 1: Fix match_score column type from DOUBLE PRECISION to INTEGER
--- (Match entity uses Integer but V10 created it as DOUBLE PRECISION)
-ALTER TABLE matches
-    ALTER COLUMN match_score TYPE INTEGER USING COALESCE(match_score::INTEGER, 0);
+-- ── MATCHES: add profile_id and profile_type columns ─────────────────────────
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS profile_id   BIGINT;
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS profile_type VARCHAR(20);
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS match_date   TIMESTAMP;
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS match_score  INTEGER;
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS status       VARCHAR(20) DEFAULT 'PENDING';
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS created_at   TIMESTAMP   DEFAULT NOW();
 
--- Step 2: Ensure indexes exist on profile columns
+-- Migrate existing lawyer_id → profile_id with type LAWYER
+UPDATE matches SET profile_id = lawyer_id, profile_type = 'LAWYER'
+WHERE lawyer_id IS NOT NULL AND profile_id IS NULL;
+
+-- Migrate existing ngo_id → profile_id with type NGO
+UPDATE matches SET profile_id = ngo_id, profile_type = 'NGO'
+WHERE ngo_id IS NOT NULL AND profile_id IS NULL AND lawyer_id IS NULL;
+
+-- Indexes on new profile columns
 CREATE INDEX IF NOT EXISTS idx_matches_profile_id   ON matches(profile_id);
 CREATE INDEX IF NOT EXISTS idx_matches_profile_type ON matches(profile_type);
 
--- Step 3: Add created_at to notifications
--- (was missing — frontend needs it to show "2 hours ago" timestamps)
-ALTER TABLE notifications
-    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+-- ── NOTIFICATIONS table ───────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS notifications (
+    id         BIGSERIAL    PRIMARY KEY,
+    user_id    BIGINT,
+    message    TEXT,
+    type       VARCHAR(50),
+    read       BOOLEAN      DEFAULT FALSE,
+    created_at TIMESTAMP    DEFAULT NOW()
+);
 
--- Step 4: Create the messages table
--- (completely missing from all previous migrations)
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+
+-- ── MESSAGES table (for chat) ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS messages (
     id          BIGSERIAL PRIMARY KEY,
     match_id    BIGINT    NOT NULL,
     sender_id   BIGINT    NOT NULL,
     receiver_id BIGINT,
     content     TEXT      NOT NULL,
-    timestamp   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_messages_match  FOREIGN KEY (match_id)  REFERENCES matches(id) ON DELETE CASCADE,
-    CONSTRAINT fk_messages_sender FOREIGN KEY (sender_id) REFERENCES users(id)   ON DELETE CASCADE
+    timestamp   TIMESTAMP DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_messages_match_id  ON messages(match_id);
-CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
-CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
+CREATE INDEX IF NOT EXISTS idx_messages_match_id ON messages(match_id);
