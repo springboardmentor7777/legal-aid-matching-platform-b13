@@ -10,7 +10,7 @@ import { useAuth } from "../auth/AuthContext";
 
 function ChatPage() {
   const { user } = useAuth();
-  const { matchId } = useParams(); // Grab the ID from the URL if coming from Dashboard
+  const { matchId } = useParams();
 
   const [users, setUsers] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
@@ -20,14 +20,13 @@ function ChatPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [user]); // Re-run if user object loads
 
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      if (!token) return;
+      if (!token || !user) return;
 
-      // Hitting the matches endpoint to get your chat contacts
       const response = await fetch("http://localhost:8081/matches/my", {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -38,13 +37,28 @@ function ChatPage() {
       }
 
       const data = await response.json();
-      const contacts = Array.isArray(data) ? data : [];
-      setUsers(contacts);
+      const rawContacts = Array.isArray(data) ? data : [];
 
-      // If we came from the Dashboard "Secure Chat" button, auto-select that user!
-      if (matchId && contacts.length > 0) {
-        // Look for matchId or id depending on how your backend sends it
-        const targetChat = contacts.find((c: any) => 
+      //  FIX 1: Filter out duplicates and inject a universal "displayName"
+      const uniqueContacts: any[] = [];
+      const seenNames = new Set();
+
+      rawContacts.forEach((contact: any) => {
+        const isCitizen = user.role === "CITIZEN";
+        const calculatedName = isCitizen ? contact.providerName : contact.clientName;
+        const displayName = calculatedName || `Match #${contact.matchId || contact.id}`;
+
+        // Only add them to the sidebar if we haven't seen this name yet!
+        if (!seenNames.has(displayName)) {
+          seenNames.add(displayName);
+          uniqueContacts.push({ ...contact, displayName }); // Injecting displayName for the Header!
+        }
+      });
+
+      setUsers(uniqueContacts);
+
+      if (matchId && uniqueContacts.length > 0) {
+        const targetChat = uniqueContacts.find((c: any) => 
           String(c.matchId) === String(matchId) || String(c.id) === String(matchId)
         );
         if (targetChat) {
@@ -60,7 +74,6 @@ function ChatPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Navbar */}
       <Navbar
         title="Secure Chat"
         name={user.username}
@@ -69,14 +82,12 @@ function ChatPage() {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
         <Sidebar
           role={user.role}
           isOpen={sidebarOpen}
           toggleSidebar={toggleSidebar}
         />
 
-        {/* ChatList */}
         <div className="border-t border-blue-200 my-4 lg:border-t-0 lg:border-r lg:my-0 lg:w-1/4">
           <ChatList
             users={users}
@@ -84,7 +95,6 @@ function ChatPage() {
           />
         </div>
 
-        {/* Chat Area */}
         <div className="flex flex-col flex-1">
           {!selectedUser ? (
             <div className="flex flex-1 items-center justify-center text-gray-500 text-xl">
@@ -94,6 +104,7 @@ function ChatPage() {
             </div>
           ) : (
             <>
+              {/*  Passes the selected user with the new displayName injected */}
               <ChatHeader selectedUser={selectedUser} />
               <div className="flex-1 overflow-y-auto">
                 <ChatMessages selectedUser={selectedUser} />

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext"; //  Added Auth context
+import { useAuth } from "../auth/AuthContext";
 
 export default function RecentMatches() {
   const [matches, setMatches] = useState([]);
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get the currently logged-in user
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchMatches();
@@ -52,7 +52,7 @@ export default function RecentMatches() {
           
           const currentMatchId = match.matchId || match.id;
           
-          //  Smart Display Logic: Flip names based on who is logged in!
+          // Smart Display Logic: Flip names based on who is logged in!
           const isCitizen = user?.role === "CITIZEN";
           const displayName = isCitizen ? match.providerName : match.clientName;
           const displayRole = isCitizen ? match.providerType : "CITIZEN (CLIENT)";
@@ -64,35 +64,48 @@ export default function RecentMatches() {
                   <p className="font-bold text-purple-900">{displayName || "Unknown User"}</p>
                   <p className="text-xs text-gray-500 uppercase font-semibold">{displayRole}</p>
                 </div>
-                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
+                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
                   Score: {match.score || 0}%
                 </span>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {match.status === "PENDING" ? (
-                  <>
-                    <button 
-                      onClick={() => handleAction(currentMatchId, 'accept')} 
-                      className="bg-purple-600 text-white px-3 py-1 rounded text-sm hover:bg-purple-700 transition"
-                    >
-                      Accept
-                    </button>
-                    <button 
-                      onClick={() => handleAction(currentMatchId, 'reject')} 
-                      className="border border-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-100 transition"
-                    >
-                      Reject
-                    </button>
-                  </>
+                  //  FIX: If Citizen, show waiting text. If Provider, show Accept/Reject.
+                  isCitizen ? (
+                    <span className="text-gray-500 text-sm font-medium italic">
+                      Waiting for provider to respond...
+                    </span>
+                  ) : (
+                    <>
+                      <button 
+                        onClick={() => handleAction(currentMatchId, 'accept')} 
+                        className="bg-purple-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-purple-700 transition"
+                      >
+                        Accept
+                      </button>
+                      <button 
+                        onClick={() => handleAction(currentMatchId, 'reject')} 
+                        className="bg-white border border-gray-300 text-gray-700 px-4 py-1.5 rounded-md text-sm font-medium hover:bg-gray-50 transition"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )
                 ) : match.status === "ACCEPTED" ? (
                   <>
-                    <button onClick={() => navigate(`/chatpage/${currentMatchId}`)} className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition">Secure Chat</button>
-                    <button onClick={() => navigate(`/pages/AppointmentScheduler/${currentMatchId}`)} className="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700 transition">Schedule Call</button>
+                    <button onClick={() => navigate(`/chatpage/${currentMatchId}`)} className="bg-blue-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-blue-700 transition">
+                      Secure Chat
+                    </button>
+                    <button onClick={() => navigate(`/pages/AppointmentScheduler/${currentMatchId}`)} className="bg-indigo-600 text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-indigo-700 transition">
+                      Schedule Call
+                    </button>
                   </>
                 ) : (
-                  <span className="text-red-500 text-sm font-medium italic">Match {match.status}</span>
+                  <span className="text-red-500 text-sm font-medium italic">
+                    Match {match.status}
+                  </span>
                 )}
               </div>
             </div>
