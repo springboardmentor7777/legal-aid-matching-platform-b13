@@ -5,9 +5,10 @@ interface User {
   id: number;
   name: string;
   email: string;
-  role: "NGO" | "LAWYER" | "CITIZEN";
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  role: "NGO" | "LAWYER";
+  status: boolean;
   registeredDate: string;
+  verified:boolean;
 }
 
 const api = axios.create({
@@ -25,13 +26,30 @@ export default function Directory() {
   const [loading, setLoading] = useState(false);
 
   // Fetch users
+  // const fetchUsers = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await api.get("/users");
+  //     setUsers(res.data);
+  //   } catch (error) {
+  //     console.error("Error fetching directory users:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/users");
+      const res = await api.get("http://localhost:8081/profile/profiles/all",
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+        }
+      });
       setUsers(res.data);
     } catch (error) {
-      console.error("Error fetching directory users:", error);
+      console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }
@@ -62,10 +80,10 @@ export default function Directory() {
         u.email.toLowerCase().includes(search.toLowerCase());
 
       const matchRole =
-        roleFilter === "ALL" || u.role === roleFilter;
+        u.role === roleFilter;
 
       const matchStatus =
-        statusFilter === "ALL" || u.status === statusFilter;
+        statusFilter === "ALL" || u.status === true;
 
       return matchSearch && matchRole && matchStatus;
     });
@@ -107,13 +125,13 @@ export default function Directory() {
             setPage(1);
           }}
         >
-          <option value="ALL">All Roles</option>
+          {/* <option value="ALL">All Roles</option> */}
           <option value="NGO">NGO</option>
           <option value="LAWYER">Lawyer</option>
-          <option value="CITIZEN">Citizen</option>
+          {/* <option value="CITIZEN">Citizen</option> */}
         </select>
 
-        <select
+        {/* <select
           className="border px-3 py-2 rounded"
           value={statusFilter}
           onChange={(e) => {
@@ -122,10 +140,10 @@ export default function Directory() {
           }}
         >
           <option value="ALL">All Status</option>
-          <option value="PENDING">Pending</option>
-          <option value="APPROVED">Approved</option>
+          <option value="verified">verified</option>
+          <option value="not verified">not verified</option>
           <option value="REJECTED">Rejected</option>
-        </select>
+        </select> */}
       </div>
 
       {loading && (
@@ -161,14 +179,14 @@ export default function Directory() {
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded text-xs font-semibold ${
-                        u.status === "PENDING"
+                        u.verified === false
                           ? "bg-yellow-100 text-yellow-800"
-                          : u.status === "APPROVED"
+                          : u.verified === true
                           ? "bg-green-100 text-green-800"
                           : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {u.status}
+                      {u.verified?"verified":"not verified"}
                     </span>
                   </td>
                   <td className="p-3">{u.registeredDate}</td>
