@@ -250,4 +250,35 @@ public CaseResponse requestLawyer(Long caseId, Long lawyerId, User user) {
 
     return mapToResponse(caseRepository.save(caseObj));
 }
+
+public CaseResponse updateCase(Long id, CaseRequest request, User user) {
+
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    // ✅ Only owner can update
+    if (!caseObj.getUser().getId().equals(user.getId())) {
+        throw new RuntimeException("Unauthorized access");
+    }
+
+    // ✅ Update fields
+    caseObj.setTitle(request.getTitle());
+    caseObj.setDescription(request.getDescription());
+    caseObj.setLocation(request.getLocation());
+    
+
+    // 🔥 IMPORTANT (your custom fields)
+    caseObj.setPersonName(request.getPersonName());
+    caseObj.setContactInfo(request.getContactInfo());
+    caseObj.setCurrentStatus(request.getCurrentStatus());
+    caseObj.setFirNumber(request.getFirNumber());
+    caseObj.setFirFile(request.getFirFile());
+
+    // ❗ DO NOT override system status unless needed
+    // caseObj.setStatus(...);
+
+    Case updated = caseRepository.save(caseObj);
+
+    return mapToResponse(updated);
+}
 }
