@@ -47,7 +47,7 @@ public class MatchService {
         for (DirectoryProfile profile : allProfiles) {
 
             // ✅ Skip unavailable providers
-            if (!profile.isAvailable()) continue;
+            if (profile.getAvailability() != null && !profile.getAvailability()) continue;
 
             double score = calculateMatchScore(legalCase, profile);
 
