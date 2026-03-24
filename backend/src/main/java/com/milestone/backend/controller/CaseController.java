@@ -88,4 +88,14 @@ public CaseResponse declineCase(@PathVariable Long id,
                                 @AuthenticationPrincipal User user) {
     return caseService.declineCase(id, request.getReason(), user);
 }
+
+@PutMapping("/{id}/update")
+@PreAuthorize("hasAnyRole('ADMIN','CITIZEN')")
+public CaseResponse updateCase(
+        @PathVariable Long id,
+        @RequestBody CaseRequest request,
+        @AuthenticationPrincipal User user) {
+
+    return caseService.updateCase(id, request, user);
+}
 }
