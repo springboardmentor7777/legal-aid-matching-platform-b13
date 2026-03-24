@@ -135,9 +135,13 @@ public class MatchService {
                 ? lp.getExpertise().toLowerCase()
                 : "";
 
-        if (expertise.contains(caseType) || caseType.contains(expertise)) {
-            score += 50;
+        if (expertise.contains("advocate")) {
+            score += 30;
         }
+        if (expertise.contains("criminal")) {
+            score += 20;
+        }
+
 
         if (legalCase.getLocation() != null &&
             lp.getLocation() != null &&
