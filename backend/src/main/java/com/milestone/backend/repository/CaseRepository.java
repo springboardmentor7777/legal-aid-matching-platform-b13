@@ -17,4 +17,6 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
     List<Case> findByLocation(String location);
 
     List<Case> findByStatus(CaseStatus status);
+
+    List<Case> findByAssignedLawyerIdAndStatus(Long lawyerId, CaseStatus status);
 }
