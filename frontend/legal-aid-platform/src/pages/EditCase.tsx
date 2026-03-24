@@ -44,7 +44,7 @@ const EditCase: React.FC = () => {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // ✅ Fetch data
+  // ✅ Fetch existing case
   useEffect(() => {
     axios
       .get(`http://localhost:8081/cases/${caseId}`, {
@@ -59,7 +59,7 @@ const EditCase: React.FC = () => {
           title: d.title || "",
           description: d.description || "",
           location: d.location || "",
-          currentStatus: d.status || "",
+          currentStatus: d.currentStatus || "", // ✅ FIXED
           personName: d.personName || "",
           contactInfo: d.contactInfo || "",
           firNumber: d.firNumber || "",
@@ -68,7 +68,10 @@ const EditCase: React.FC = () => {
 
         setPageLoading(false);
       })
-      .catch(() => alert("Failed to load case"));
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to load case");
+      });
   }, [caseId]);
 
   // ✅ Handle input
@@ -115,7 +118,7 @@ const EditCase: React.FC = () => {
     setStep((prev) => prev + 1);
   };
 
-  // ✅ Update API
+  // ✅ Update API (FIXED)
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -129,7 +132,7 @@ const EditCase: React.FC = () => {
         `http://localhost:8081/cases/${caseId}/update`,
         {
           ...formData,
-          status: formData.currentStatus,
+          currentStatus: formData.currentStatus, // ✅ FIXED
           firFile:
             typeof formData.firFile === "string"
               ? formData.firFile
@@ -143,37 +146,55 @@ const EditCase: React.FC = () => {
       );
 
       alert("Case updated successfully!");
-      navigate("/pages/Mycase");
-    } catch {
-      alert("Update failed");
+      navigate("/mycases");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Update failed"); // ✅ better debug
     }
 
     setLoading(false);
   };
 
-  if (pageLoading) return <p className="text-center mt-10">Loading...</p>;
+  if (pageLoading)
+    return <p className="text-center mt-10 text-gray-600">Loading...</p>;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <Navbar title="Edit Case" name={user.username} role={user.role} toggleSidebar={() => {}} />
+      <Navbar
+        title="Edit Case"
+        name={user.username}
+        role={user.role}
+        toggleSidebar={() => {}}
+      />
 
       <div className="flex justify-center mt-10">
         <div className="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-8">
 
-          {/* BACK */}
-          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-blue-700 mb-4">
+          {/* BACK BUTTON */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-blue-700 mb-4"
+          >
             <LuSquareArrowLeft /> Back
           </button>
 
-          {/* STEP BAR */}
+          {/* STEP INDICATOR */}
           <div className="flex justify-between mb-8">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex-1 flex items-center">
-                <div className={`w-10 h-10 flex items-center justify-center rounded-full text-white font-bold ${step >= s ? "bg-blue-600" : "bg-gray-300"}`}>
+                <div
+                  className={`w-10 h-10 flex items-center justify-center rounded-full text-white font-bold ${
+                    step >= s ? "bg-blue-600" : "bg-gray-300"
+                  }`}
+                >
                   {s}
                 </div>
                 {s !== 3 && (
-                  <div className={`flex-1 h-1 ${step > s ? "bg-blue-600" : "bg-gray-300"}`} />
+                  <div
+                    className={`flex-1 h-1 ${
+                      step > s ? "bg-blue-600" : "bg-gray-300"
+                    }`}
+                  />
                 )}
               </div>
             ))}
@@ -185,19 +206,37 @@ const EditCase: React.FC = () => {
             {step === 1 && (
               <>
                 <h3 className="text-xl font-semibold">Case Details</h3>
-                <h5>Case Title</h5>
-                <input name="title" value={formData.title} onChange={handleChange}
-                  placeholder="Title" className="w-full p-3 border rounded-lg" />
-                {errors.title && <p className="text-red-500">{errors.title}</p>}
-                <h5>Description</h5>
-                <textarea name="description" value={formData.description} onChange={handleChange}
-                  placeholder="Description" className="w-full p-3 border rounded-lg" />
-                {errors.description && <p className="text-red-500">{errors.description}</p>}
 
-                <h5>Location</h5>
-                <input name="location" value={formData.location} onChange={handleChange}
-                  placeholder="Location" className="w-full p-3 border rounded-lg" />
-                {errors.location && <p className="text-red-500">{errors.location}</p>}
+                <input
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="Case Title"
+                  className="w-full p-3 border rounded-lg"
+                />
+                {errors.title && <p className="text-red-500">{errors.title}</p>}
+
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Description"
+                  className="w-full p-3 border rounded-lg"
+                />
+                {errors.description && (
+                  <p className="text-red-500">{errors.description}</p>
+                )}
+
+                <input
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="Location"
+                  className="w-full p-3 border rounded-lg"
+                />
+                {errors.location && (
+                  <p className="text-red-500">{errors.location}</p>
+                )}
               </>
             )}
 
@@ -205,13 +244,25 @@ const EditCase: React.FC = () => {
             {step === 2 && (
               <>
                 <h3 className="text-xl font-semibold">Other Party Info</h3>
-                <h5>Person Name</h5>
-                <input name="personName" value={formData.personName} onChange={handleChange}
-                  placeholder="Person Name" className="w-full p-3 border rounded-lg" />
-                <h5>Contact Info</h5>
-                <input name="contactInfo" value={formData.contactInfo} onChange={handleChange}
-                  placeholder="Contact (optional)" className="w-full p-3 border rounded-lg" />
-                {errors.contactInfo && <p className="text-red-500">{errors.contactInfo}</p>}
+
+                <input
+                  name="personName"
+                  value={formData.personName}
+                  onChange={handleChange}
+                  placeholder="Person Name"
+                  className="w-full p-3 border rounded-lg"
+                />
+
+                <input
+                  name="contactInfo"
+                  value={formData.contactInfo}
+                  onChange={handleChange}
+                  placeholder="Contact Info"
+                  className="w-full p-3 border rounded-lg"
+                />
+                {errors.contactInfo && (
+                  <p className="text-red-500">{errors.contactInfo}</p>
+                )}
               </>
             )}
 
@@ -219,12 +270,19 @@ const EditCase: React.FC = () => {
             {step === 3 && (
               <>
                 <h3 className="text-xl font-semibold">Evidence</h3>
-                <h5> FIR number</h5>
-                <input name="firNumber" value={formData.firNumber} onChange={handleChange}
-                  placeholder="FIR Number" className="w-full p-3 border rounded-lg" />
-                {errors.firNumber && <p className="text-red-500">{errors.firNumber}</p>}
 
-                {/* ✅ GREY FILE INPUT */}
+                <input
+                  name="firNumber"
+                  value={formData.firNumber}
+                  onChange={handleChange}
+                  placeholder="FIR Number"
+                  className="w-full p-3 border rounded-lg"
+                />
+                {errors.firNumber && (
+                  <p className="text-red-500">{errors.firNumber}</p>
+                )}
+
+                {/* FILE INPUT */}
                 <div className="flex gap-2 items-center">
                   <div className="flex-1 border rounded px-3 py-2 bg-gray-100 text-gray-700">
                     {formData.firFile
@@ -250,20 +308,29 @@ const EditCase: React.FC = () => {
             {/* BUTTONS */}
             <div className="flex justify-between pt-4">
               {step > 1 && (
-                <button type="button" onClick={() => setStep(step - 1)}
-                  className="px-4 py-2 bg-gray-300 rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setStep(step - 1)}
+                  className="px-4 py-2 bg-gray-300 rounded-lg"
+                >
                   Previous
                 </button>
               )}
 
               {step < 3 ? (
-                <button type="button" onClick={handleNext}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg ml-auto hover:bg-blue-700">
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg ml-auto hover:bg-blue-700"
+                >
                   Next
                 </button>
               ) : (
-                <button type="submit" disabled={loading}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg ml-auto">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg ml-auto"
+                >
                   {loading ? "Updating..." : "Update Case"}
                 </button>
               )}
