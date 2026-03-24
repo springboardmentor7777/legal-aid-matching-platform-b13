@@ -164,4 +164,67 @@ public class CaseService {
                 .collect(Collectors.toList());
     }
 
+    public List<CaseResponse> getPendingCases(User user) {
+
+    List<Case> cases = caseRepository.findByStatus(CaseStatus.SUBMITTED);
+
+    return cases.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+}
+    public List<CaseResponse> getAssignedCases(User user) {
+
+    List<Case> cases = caseRepository
+            .findByAssignedLawyerIdAndStatus(user.getId(), CaseStatus.ASSIGNED);
+
+    return cases.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+}
+
+    public List<CaseResponse> getResolvedCases(User user) {
+
+    List<Case> cases = caseRepository
+            .findByAssignedLawyerIdAndStatus(user.getId(), CaseStatus.RESOLVED);
+
+    return cases.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+}
+
+
+    public CaseResponse acceptCase(Long id, User user) {
+
+    if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
+        throw new RuntimeException("Only lawyers/NGOs can accept cases");
+    }
+
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    // 🔥 Assign lawyer
+    caseObj.setAssignedLawyer(user);
+
+    // 🔥 Update status
+    caseObj.setStatus(CaseStatus.ASSIGNED);
+
+    return mapToResponse(caseRepository.save(caseObj));
+}
+
+    public CaseResponse declineCase(Long id, String reason, User user) {
+
+    if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
+        throw new RuntimeException("Only lawyers/NGOs can decline cases");
+    }
+
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    caseObj.setDeclineReason(reason);
+
+    // 🔥 IMPORTANT: Keep case open for other lawyers
+    caseObj.setStatus(CaseStatus.SUBMITTED);
+
+    return mapToResponse(caseRepository.save(caseObj));
+}
 }
