@@ -47,7 +47,7 @@ public class MatchService {
             if (lp.getVerified() != null && !lp.getVerified()) continue;
 
             double score = calculateLawyerScore(legalCase, lp);
-            if (score < 30) continue;
+            if (score < 10) continue;
 
             boolean alreadyExists = existingMatches.stream()
                     .anyMatch(m -> m.getProvider().getId().equals(lp.getUser().getId()));
@@ -84,7 +84,7 @@ public class MatchService {
             if (np.getVerified() != null && !np.getVerified()) continue;
 
             double score = calculateNGOScore(legalCase, np);
-            if (score < 20) continue;
+            if (score < 10) continue;
 
             boolean alreadyExists = existingMatches.stream()
                     .anyMatch(m -> m.getProvider().getId().equals(np.getUser().getId()));
