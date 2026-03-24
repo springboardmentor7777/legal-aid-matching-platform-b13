@@ -30,4 +30,12 @@ public class DirectoryProfile {
 
     @Column(length = 1000)
     private String bio;
+
+    // ✅ NEW FIELD
+    @Column(name = "availability")
+    private Boolean availability = true;
+
+    // ✅ NEW FIELD
+    @Column(name = "experience_years")
+    private Integer experienceYears = 0;
 }
