@@ -166,7 +166,8 @@ public class CaseService {
 
     public List<CaseResponse> getPendingCases(User user) {
 
-    List<Case> cases = caseRepository.findByStatus(CaseStatus.SUBMITTED);
+    List<Case> cases = caseRepository
+            .findByRequestedLawyerIdAndStatus(user.getId(), CaseStatus.SUBMITTED);
 
     return cases.stream()
             .map(this::mapToResponse)
@@ -223,6 +224,28 @@ public class CaseService {
     caseObj.setDeclineReason(reason);
 
     // 🔥 IMPORTANT: Keep case open for other lawyers
+    caseObj.setStatus(CaseStatus.SUBMITTED);
+
+    return mapToResponse(caseRepository.save(caseObj));
+}
+
+public CaseResponse requestLawyer(Long caseId, Long lawyerId, User user) {
+
+    if (user.getRole() != Role.CITIZEN) {
+        throw new RuntimeException("Only citizens can request lawyers");
+    }
+
+    Case caseObj = caseRepository.findById(caseId)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    if (!caseObj.getUser().getId().equals(user.getId())) {
+        throw new RuntimeException("Unauthorized");
+    }
+
+    User lawyer = new User();
+    lawyer.setId(lawyerId); // lightweight reference
+
+    caseObj.setRequestedLawyer(lawyer);
     caseObj.setStatus(CaseStatus.SUBMITTED);
 
     return mapToResponse(caseRepository.save(caseObj));
