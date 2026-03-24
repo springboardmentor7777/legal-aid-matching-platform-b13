@@ -75,4 +75,7 @@ public class Case {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
+ @ManyToOne
+@JoinColumn(name = "assigned_lawyer_id")
+private User assignedLawyer;
 }
