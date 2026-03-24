@@ -145,7 +145,7 @@ public class MatchService {
 
         if (legalCase.getLocation() != null &&
             lp.getLocation() != null &&
-            legalCase.getLocation().equalsIgnoreCase(lp.getLocation())) {
+            lp.getLocation().toLowerCase().contains(legalCase.getLocation().toLowerCase())) {
             score += 30;
         }
 
@@ -165,7 +165,7 @@ public class MatchService {
 
         if (legalCase.getLocation() != null &&
             np.getLocation() != null &&
-            legalCase.getLocation().equalsIgnoreCase(np.getLocation())) {
+            np.getLocation().toLowerCase().contains(legalCase.getLocation().toLowerCase())) {
             score += 40;
         }
 
