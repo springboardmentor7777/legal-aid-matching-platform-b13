@@ -19,4 +19,6 @@ public interface CaseRepository extends JpaRepository<Case, Long> {
     List<Case> findByStatus(CaseStatus status);
 
     List<Case> findByAssignedLawyerIdAndStatus(Long lawyerId, CaseStatus status);
+
+    List<Case> findByRequestedLawyerIdAndStatus(Long lawyerId, CaseStatus status);
 }
