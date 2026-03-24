@@ -65,6 +65,10 @@ public class CaseService {
         return caseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Case not found"));
     }
+    public Case save(Case legalCase){
+        return caseRepository.save(legalCase);
+
+    }
 
     private CaseResponse mapToResponse(Case c) {
         return CaseResponse.builder()
