@@ -2,9 +2,7 @@ package com.legalmatch.backend.service;
 
 import com.legalmatch.backend.dto.MatchResponse;
 import com.legalmatch.backend.entity.*;
-import com.legalmatch.backend.repository.DirectoryProfileRepository;
-import com.legalmatch.backend.repository.MatchRepository;
-import com.legalmatch.backend.repository.UserRepository;
+import com.legalmatch.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +16,11 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
     private final CaseService caseService;
-    private final DirectoryProfileRepository profileRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+
+    private final LawyerProfileRepository lawyerRepository;
+    private final NGOProfileRepository ngoRepository;
 
     /**
      * Generate matches for a case
@@ -34,46 +34,76 @@ public class MatchService {
             throw new RuntimeException("You can only generate matches for your own cases");
         }
 
-        // ✅ Fetch profiles
-        List<DirectoryProfile> allProfiles = new ArrayList<>();
-        allProfiles.addAll(profileRepository.findByUser_Role(Role.LAWYER));
-        allProfiles.addAll(profileRepository.findByUser_Role(Role.NGO));
-
-        // ✅ Fetch existing matches (optimization)
         List<MatchEntity> existingMatches = matchRepository.findByLegalCase(legalCase);
-
         List<MatchEntity> matches = new ArrayList<>();
 
-        for (DirectoryProfile profile : allProfiles) {
+        // =========================
+        // 🔹 LAWYER MATCHING
+        // =========================
+        List<LawyerProfile> lawyers = lawyerRepository.findAll();
 
-            // ✅ Skip unavailable providers
-            if (profile.getAvailability() != null && !profile.getAvailability()) continue;
+        for (LawyerProfile lp : lawyers) {
 
-            double score = calculateMatchScore(legalCase, profile);
+            if (lp.getVerified() != null && !lp.getVerified()) continue;
 
-            // ✅ Avoid weak matches
+            double score = calculateLawyerScore(legalCase, lp);
             if (score < 30) continue;
 
-            // ✅ Prevent duplicates
             boolean alreadyExists = existingMatches.stream()
-                    .anyMatch(m -> m.getProvider().getId().equals(profile.getUser().getId()));
+                    .anyMatch(m -> m.getProvider().getId().equals(lp.getUser().getId()));
 
             if (!alreadyExists) {
 
                 MatchEntity match = MatchEntity.builder()
                         .legalCase(legalCase)
                         .citizen(legalCase.getUser())
-                        .provider(profile.getUser())
+                        .provider(lp.getUser())
                         .matchScore(score)
                         .status(MatchStatus.PENDING)
                         .build();
 
-                MatchEntity savedMatch = matchRepository.save(match);
-                matches.add(savedMatch);
+                MatchEntity saved = matchRepository.save(match);
+                matches.add(saved);
 
-                // 🔔 Notification
                 notificationService.createNotification(
-                        profile.getUser(),
+                        lp.getUser(),
+                        "New Match",
+                        "You have a new case match: " + legalCase.getCaseType(),
+                        "NEW_MATCH"
+                );
+            }
+        }
+
+        // =========================
+        // 🔹 NGO MATCHING
+        // =========================
+        List<NGOProfile> ngos = ngoRepository.findAll();
+
+        for (NGOProfile np : ngos) {
+
+            if (np.getVerified() != null && !np.getVerified()) continue;
+
+            double score = calculateNGOScore(legalCase, np);
+            if (score < 20) continue;
+
+            boolean alreadyExists = existingMatches.stream()
+                    .anyMatch(m -> m.getProvider().getId().equals(np.getUser().getId()));
+
+            if (!alreadyExists) {
+
+                MatchEntity match = MatchEntity.builder()
+                        .legalCase(legalCase)
+                        .citizen(legalCase.getUser())
+                        .provider(np.getUser())
+                        .matchScore(score)
+                        .status(MatchStatus.PENDING)
+                        .build();
+
+                MatchEntity saved = matchRepository.save(match);
+                matches.add(saved);
+
+                notificationService.createNotification(
+                        np.getUser(),
                         "New Match",
                         "You have a new case match: " + legalCase.getCaseType(),
                         "NEW_MATCH"
@@ -91,9 +121,9 @@ public class MatchService {
     }
 
     /**
-     * Match scoring logic
+     * 🔹 Lawyer scoring
      */
-    private double calculateMatchScore(Case legalCase, DirectoryProfile profile) {
+    private double calculateLawyerScore(Case legalCase, LawyerProfile lp) {
 
         double score = 0;
 
@@ -101,50 +131,51 @@ public class MatchService {
                 ? legalCase.getCaseType().toLowerCase()
                 : "";
 
-        String expertise = profile.getExpertise() != null
-                ? profile.getExpertise().toLowerCase()
+        String expertise = lp.getExpertise() != null
+                ? lp.getExpertise().toLowerCase()
                 : "";
 
-        // 🔥 Category match (50)
-        if (!caseType.isEmpty() && !expertise.isEmpty()) {
-
-            if (expertise.contains(caseType) || caseType.contains(expertise)) {
-                score += 50;
-            } else {
-                String[] words = caseType.split("\\s+");
-                for (String word : words) {
-                    if (word.length() > 2 && expertise.contains(word)) {
-                        score += 25;
-                        break;
-                    }
-                }
-            }
+        if (expertise.contains(caseType) || caseType.contains(expertise)) {
+            score += 50;
         }
 
-        // 📍 Location match (30)
-        String caseLocation = legalCase.getLocation() != null
-                ? legalCase.getLocation().toLowerCase().trim()
-                : "";
-
-        String profileLocation = profile.getLocation() != null
-                ? profile.getLocation().toLowerCase().trim()
-                : "";
-
-        if (!caseLocation.isEmpty() && !profileLocation.isEmpty()) {
-
-            if (caseLocation.equals(profileLocation)) {
-                score += 30;
-            } else if (profileLocation.contains(caseLocation) || caseLocation.contains(profileLocation)) {
-                score += 15;
-            }
+        if (legalCase.getLocation() != null &&
+            lp.getLocation() != null &&
+            legalCase.getLocation().equalsIgnoreCase(lp.getLocation())) {
+            score += 30;
         }
 
-        // ✅ Verified bonus (20)
-        if (profile.isVerified()) {
+        if (Boolean.TRUE.equals(lp.getVerified())) {
             score += 20;
         }
 
-        return Math.min(score, 100);
+        return score;
+    }
+
+    /**
+     * 🔹 NGO scoring
+     */
+    private double calculateNGOScore(Case legalCase, NGOProfile np) {
+
+        double score = 0;
+
+        if (legalCase.getLocation() != null &&
+            np.getLocation() != null &&
+            legalCase.getLocation().equalsIgnoreCase(np.getLocation())) {
+            score += 40;
+        }
+
+        if (np.getFocusArea() != null &&
+            legalCase.getCaseType() != null &&
+            np.getFocusArea().toLowerCase().contains(legalCase.getCaseType().toLowerCase())) {
+            score += 30;
+        }
+
+        if (Boolean.TRUE.equals(np.getVerified())) {
+            score += 20;
+        }
+
+        return score;
     }
 
     /**
@@ -182,7 +213,6 @@ public class MatchService {
         match.setStatus(MatchStatus.ACCEPTED);
         matchRepository.save(match);
 
-        // 🔔 Notify other user
         User other = match.getProvider().getId().equals(user.getId())
                 ? match.getCitizen()
                 : match.getProvider();
@@ -220,12 +250,23 @@ public class MatchService {
     }
 
     /**
-     * Convert entity → DTO
+     * 🔹 Convert entity → DTO
      */
     private MatchResponse mapToResponse(MatchEntity match) {
 
-        DirectoryProfile profile =
-                profileRepository.findByUser(match.getProvider()).orElse(null);
+        String expertise = "";
+        String location = "";
+
+        LawyerProfile lp = lawyerRepository.findByUser(match.getProvider()).orElse(null);
+        NGOProfile np = ngoRepository.findByUser(match.getProvider()).orElse(null);
+
+        if (lp != null) {
+            expertise = lp.getExpertise();
+            location = lp.getLocation();
+        } else if (np != null) {
+            expertise = np.getFocusArea();
+            location = np.getLocation();
+        }
 
         return MatchResponse.builder()
                 .id(match.getId())
@@ -237,8 +278,8 @@ public class MatchService {
                 .citizenName(match.getCitizen().getUsername())
                 .providerId(match.getProvider().getId())
                 .providerName(match.getProvider().getUsername())
-                .providerExpertise(profile != null ? profile.getExpertise() : "")
-                .providerLocation(profile != null ? profile.getLocation() : "")
+                .providerExpertise(expertise)
+                .providerLocation(location)
                 .matchScore(match.getMatchScore())
                 .status(match.getStatus().name())
                 .createdAt(match.getCreatedAt())
