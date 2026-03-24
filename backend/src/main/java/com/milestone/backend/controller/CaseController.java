@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.milestone.backend.dto.CaseRequest;
 import com.milestone.backend.dto.CaseResponse;
+import com.milestone.backend.dto.DeclineRequest;
 import com.milestone.backend.entity.User;
 import com.milestone.backend.service.CaseService;
 
@@ -30,7 +31,7 @@ public class CaseController {
 
     // GET /cases/my
     @GetMapping("/my")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','CITIZEN','LAWYER')")
     public List<CaseResponse> getMyCases(@AuthenticationPrincipal User user) {
         return caseService.getMyCases(user);
     }
@@ -54,4 +55,37 @@ public class CaseController {
     public List<CaseResponse> getAllCases() {
         return caseService.getAllCases();
     }
+
+    @GetMapping("/pending")
+@PreAuthorize("hasAnyRole('LAWYER','NGO')")
+public List<CaseResponse> getPendingCases(@AuthenticationPrincipal User user) {
+    return caseService.getPendingCases(user);
+}
+
+@GetMapping("/assigned")
+@PreAuthorize("hasAnyRole('LAWYER','NGO')")
+public List<CaseResponse> getAssignedCases(@AuthenticationPrincipal User user) {
+    return caseService.getAssignedCases(user);
+}
+
+@GetMapping("/resolved")
+@PreAuthorize("hasAnyRole('LAWYER','NGO')")
+public List<CaseResponse> getResolvedCases(@AuthenticationPrincipal User user) {
+    return caseService.getResolvedCases(user);
+}
+
+@PostMapping("/{id}/accept")
+@PreAuthorize("hasAnyRole('LAWYER','NGO')")
+public CaseResponse acceptCase(@PathVariable Long id,
+                               @AuthenticationPrincipal User user) {
+    return caseService.acceptCase(id, user);
+}
+
+@PostMapping("/{id}/decline")
+@PreAuthorize("hasAnyRole('LAWYER','NGO')")
+public CaseResponse declineCase(@PathVariable Long id,
+                                @RequestBody DeclineRequest request,
+                                @AuthenticationPrincipal User user) {
+    return caseService.declineCase(id, request.getReason(), user);
+}
 }
