@@ -78,4 +78,8 @@ public class Case {
  @ManyToOne
 @JoinColumn(name = "assigned_lawyer_id")
 private User assignedLawyer;
+
+        @ManyToOne
+@JoinColumn(name = "requested_lawyer_id")
+private User requestedLawyer;
 }
