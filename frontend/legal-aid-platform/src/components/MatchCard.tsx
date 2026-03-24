@@ -1,10 +1,33 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function MatchCard({ profile, onAccept, onReject }) {
+export default function MatchCard({ profile, caseId, onAccept, onReject }) {
   const navigate = useNavigate();
 
   const isMatched = profile.status === "MATCHED";
+
+  // ✅ NEW: Request API
+  const handleRequest = async (lawyerId) => {
+    const token = localStorage.getItem("accessToken");
+
+    try {
+      await fetch(
+        `http://localhost:8081/cases/${caseId}/request/${lawyerId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Optional UI update
+      onAccept && onAccept(lawyerId);
+
+    } catch (error) {
+      console.error("Request failed", error);
+    }
+  };
 
   return (
     <div className="bg-white shadow-md rounded-xl p-5 text-center hover:shadow-lg transition">
@@ -45,8 +68,9 @@ export default function MatchCard({ profile, onAccept, onReject }) {
 
       <div className="flex flex-wrap justify-center gap-2 mt-4">
 
+        {/* ✅ UPDATED */}
         <button
-          onClick={() => onAccept(profile.id)}
+          onClick={() => handleRequest(profile.id)}
           disabled={isMatched}
           className="bg-green-500 text-white px-3 py-1 rounded disabled:opacity-50"
         >
