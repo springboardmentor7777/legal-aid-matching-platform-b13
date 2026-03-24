@@ -158,15 +158,21 @@ const Dashboard: React.FC = () => {
   };
 
   const handleDecline = async (id: number) => {
-    const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem("accessToken");
 
-    await fetch(`http://localhost:8081/cases/${id}/decline`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const reason = prompt("Enter reason for declining:");
 
-    setPendingCases((prev) => prev.filter((c) => c.id !== id));
-  };
+  if (!reason) return;
+
+  await fetch(`http://localhost:8081/cases/${id}/decline`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ reason }),
+  })
+};
 
   const totalCases = cases.length;
   const submittedCases = cases.filter((c) => c.status === "SUBMITTED").length;
