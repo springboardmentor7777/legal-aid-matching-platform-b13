@@ -4,7 +4,7 @@ public enum CaseStatus {
     SUBMITTED,
     IN_REVIEW,
     MATCHED,
-    IN_PROGRESS,
+    ASSIGNED,
     RESOLVED,
     CLOSED
 }
