@@ -44,7 +44,7 @@ public class MatchService {
 
         for (LawyerProfile lp : lawyers) {
 
-            if (lp.getVerified() != null && !lp.getVerified()) continue;
+            //if (lp.getVerified() != null && !lp.getVerified()) continue;
 
             double score = calculateLawyerScore(legalCase, lp);
             if (score < 10) continue;
@@ -81,7 +81,7 @@ public class MatchService {
 
         for (NGOProfile np : ngos) {
 
-            if (np.getVerified() != null && !np.getVerified()) continue;
+            //if (np.getVerified() != null && !np.getVerified()) continue;
 
             double score = calculateNGOScore(legalCase, np);
             if (score < 10) continue;
