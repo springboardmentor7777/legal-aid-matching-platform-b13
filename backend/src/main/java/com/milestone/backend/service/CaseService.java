@@ -167,7 +167,7 @@ public class CaseService {
     public List<CaseResponse> getPendingCases(User user) {
 
     List<Case> cases = caseRepository
-            .findByRequestedLawyerIdAndStatus(user.getId(), CaseStatus.SUBMITTED);
+            .findByRequestedLawyerIdAndStatus(user.getId(), CaseStatus.IN_REVIEW);
 
     return cases.stream()
             .map(this::mapToResponse)
