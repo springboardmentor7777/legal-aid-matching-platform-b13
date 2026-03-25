@@ -2,11 +2,10 @@ import { useFetcher, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
-<<<<<<< HEAD
+
 import axios from "axios";
-=======
 import PageTitle from "../components/PageTitle";
->>>>>>> 2f27aa7f3574d1809dd63b768e10583c1b725ef5
+
 
 export default function Profile() {
   const { user } = useAuth();
