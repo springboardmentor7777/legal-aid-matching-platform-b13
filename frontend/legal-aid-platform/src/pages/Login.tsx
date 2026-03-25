@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { signin } from "../api/auth.api";
 import { useAuth } from "../auth/AuthContext";
+import PageTitle from "../components/PageTitle";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -48,6 +49,7 @@ export default function Login() {
   };
 
   return (
+    <><PageTitle title="Login - Legal Aid Matching Platform" />
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
 
@@ -122,6 +124,6 @@ export default function Login() {
           </span>
         </p>
       </div>
-    </div>
+    </div></>
   );
 }

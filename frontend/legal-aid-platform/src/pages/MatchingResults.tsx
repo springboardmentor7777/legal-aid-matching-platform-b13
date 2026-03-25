@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { useAuth } from "../auth/AuthContext";
 import axios from "axios";
+import PageTitle from "../components/PageTitle";
 
 export default function MatchingResults() {
   const { user, loading } = useAuth();
@@ -85,6 +86,7 @@ export default function MatchingResults() {
   if (!user) return <p className="p-6">User not logged in</p>;
 
   return (
+    <><PageTitle title="Matching Results - Legal Aid Matching Platform" />
     <div className="flex min-h-screen bg-gray-100">
       
       {/* Sidebar */}
@@ -175,6 +177,6 @@ export default function MatchingResults() {
           </div>
         </main>
       </div>
-    </div>
+    </div></>
   );
 }

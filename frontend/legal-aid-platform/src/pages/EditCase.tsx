@@ -6,6 +6,7 @@ import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import { LuSquareArrowLeft } from "react-icons/lu";
+import PageTitle from "../components/PageTitle";
 
 interface CaseFormData {
   title: string;
@@ -159,6 +160,7 @@ const EditCase: React.FC = () => {
     return <p className="text-center mt-10 text-gray-600">Loading...</p>;
 
   return (
+    <><PageTitle title="Edit Case - Legal Aid Matching Platform" />
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <Navbar
         title="Edit Case"
@@ -339,7 +341,7 @@ const EditCase: React.FC = () => {
           </form>
         </div>
       </div>
-    </div>
+    </div></>
   );
 };
 

@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { LuSquareArrowLeft } from "react-icons/lu";
+import PageTitle from "../components/PageTitle";
 
 export default function EditProfile() {
   const { user } = useAuth();
@@ -121,6 +122,7 @@ export default function EditProfile() {
   // const [success, setSuccess] = useState(false);
 
   return (
+    <><PageTitle title="Edit Profile - Legal Aid Matching Platform" />
     <div>
       <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar
@@ -317,6 +319,6 @@ export default function EditProfile() {
           </div>
         </div>
       </div>
-    </div>
+    </div></>
   );
 }

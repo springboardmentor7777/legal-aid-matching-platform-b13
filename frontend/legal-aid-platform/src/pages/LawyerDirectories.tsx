@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
+import PageTitle from "../components/PageTitle";
 
 interface Lawyer {
   id: number;
@@ -65,6 +66,7 @@ export default function LawyerDirectories() {
       });
   }, []);
   return (
+    <><PageTitle title="Lawyer Directory - Legal Aid Matching Platform" />
     <div className="flex flex-col min-h-screen">
       <Navbar title="lawyer directory" name={user?.username || ""} role={user?.role || "guest"} toggleSidebar={()=>{}} />
       <div className="min-h-screen bg-blue-50 flex pt-20 justify-center">
@@ -173,6 +175,6 @@ export default function LawyerDirectories() {
       <footer className="text-gray-500 justify-center items-center flex p-10 bg-blue-50">
         Legal Aid Matching platform @2026
       </footer>
-    </div>
+    </div></>
   );
 }

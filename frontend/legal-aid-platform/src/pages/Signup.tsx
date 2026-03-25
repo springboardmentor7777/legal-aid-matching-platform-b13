@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { signup } from "../api/auth.api";
 import { type Role } from "../types/auth.type";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import PageTitle from "../components/PageTitle";
 
 const roles: Role[] = ["CITIZEN", "LAWYER", "NGO"];
 
@@ -62,6 +63,7 @@ export default function Signup() {
   };
 
   return (
+    <><PageTitle title="Signup - Legal Aid Matching Platform" />
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
         <h2 className="text-2xl text-blue-900 font-sans font-bold text-center mb-6">
@@ -206,6 +208,6 @@ export default function Signup() {
           </span>
         </p>
       </div>
-    </div>
+    </div></>
   );
 }

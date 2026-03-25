@@ -7,6 +7,7 @@ import ChatHeader from "../components/ChatHeader";
 import ChatMessages from "../components/ChatMessage";
 import MessageInput from "../components/MessageInput";
 import { useAuth } from "../auth/AuthContext";
+import PageTitle from "../components/PageTitle";
 
 function ChatPage() {
   const { user } = useAuth();
@@ -73,6 +74,7 @@ function ChatPage() {
   if (!user) return null;
 
   return (
+    <><PageTitle title="Chat - Legal Aid Matching Platform" />
     <div className="flex flex-col h-screen">
       <Navbar
         title="Secure Chat"
@@ -114,7 +116,7 @@ function ChatPage() {
           )}
         </div>
       </div>
-    </div>
+    </div></>
   );
 }
 

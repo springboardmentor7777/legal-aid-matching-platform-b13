@@ -14,6 +14,7 @@ import community from "../assets/images/community.jpg";
 import service from "../assets/images/ngoservice.jpg";
 import { TypeAnimation } from "react-type-animation";
 import { useAuth } from "../auth/AuthContext";
+import PageTitle from "../components/PageTitle";
 
 export default function LandingPage() {
   const { user } = useAuth();
@@ -54,6 +55,7 @@ export default function LandingPage() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
 
   return (
+    <><PageTitle title="Home - Legal Aid Matching Platform" />
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Header */}
       <header className="w-full bg-white shadow-md sticky top-0 z-50">
@@ -526,6 +528,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
+    </div></>
   );
 }

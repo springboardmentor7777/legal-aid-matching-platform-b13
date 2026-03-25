@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Phone, Mail } from "lucide-react";
+import PageTitle from "../components/PageTitle";
 
 const faqs = [
   {
@@ -31,6 +32,7 @@ export default function SupportPage() {
   };
 
   return (
+    <><PageTitle title="Support - Legal Aid Matching Platform" />
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-center">Support Center</h1>
@@ -81,6 +83,6 @@ export default function SupportPage() {
           </div>
         </div>
       </div>
-    </div>
+    </div></>
   );
 }

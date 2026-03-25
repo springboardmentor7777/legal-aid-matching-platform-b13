@@ -3,6 +3,7 @@ import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import PageTitle from "../components/PageTitle";
 
 interface Case {
   id?: number;
@@ -62,6 +63,7 @@ export default function Mycase() {
   };
 
   return (
+    <><PageTitle title="My Cases - Legal Aid Matching Platform" />
     <div className="min-h-screen bg-blue-50">
       <Navbar
         title="my cases"
@@ -110,6 +112,6 @@ export default function Mycase() {
 
         </div>
       </div>
-    </div>
+    </div></>
   );
 }
