@@ -111,9 +111,11 @@ public class MatchService {
         legalCase.setStatus(CaseStatus.MATCHED);
         caseService.save(legalCase);
 
-        return matches.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+       List<MatchEntity> allMatches = matchRepository.findByLegalCase(legalCase);
+
+return allMatches.stream()
+        .map(this::mapToResponse)
+        .collect(Collectors.toList());
     }
 
     /**
