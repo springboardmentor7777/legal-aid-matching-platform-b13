@@ -8,5 +8,8 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
 
-    List<MessageEntity> findByMatchOrderByTimestampAsc(MatchEntity match);
+    // ✅ Get all messages for a match (chat history)
+    List<MessageEntity> findByMatchOrderByCreatedAtAsc(MatchEntity match);
+
 }
+
