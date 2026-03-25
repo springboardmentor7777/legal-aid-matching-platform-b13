@@ -51,7 +51,7 @@ const CaseSubmissionPage = () => {
         category: formData.caseType
       };
 
-      await API.post('/cases', payload);
+      await API.post('/api/cases', payload);
 
       setSuccess('Case submitted successfully!');
       setTimeout(() => navigate('/matches'), 2000);
