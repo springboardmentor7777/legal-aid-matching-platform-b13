@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import PageTitle from "../components/PageTitle";
 
 interface AppointmentProps {
   initialScore?: number;
@@ -101,6 +102,7 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
   };
 
   return (
+    <><PageTitle title="Appointment Scheduler - Legal Aid Matching Platform" />
     <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-[500px]">
         <h2 className="text-2xl font-semibold mb-1">Schedule a Call</h2>
@@ -209,6 +211,6 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
           </button>
         </div>
       </div>
-    </div>
+    </div></>
   );
 }
