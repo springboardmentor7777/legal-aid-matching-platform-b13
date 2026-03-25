@@ -32,11 +32,11 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     // ⭐ Fetch match + case + citizen (used for chat)
     @Query("""
-        SELECT m FROM Match m
-        JOIN FETCH m.caseEntity c
-        JOIN FETCH c.user
-        WHERE m.id = :matchId
-    """)
+                SELECT m FROM Match m
+                JOIN FETCH m.caseEntity c
+                JOIN FETCH c.user
+                WHERE m.id = :matchId
+            """)
     Optional<Match> findMatchWithCase(@Param("matchId") Long matchId);
 
     // ================================
@@ -47,24 +47,40 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     boolean existsByCaseIdAndStatus(Long caseId, MatchStatus status);
 
     // ✅ Show only visible matches to provider
-    @Query("""
-        SELECT m FROM Match m
-        WHERE m.userId = :userId
-        AND (
-            m.status = 'PENDING'
-            OR (m.status = 'ACCEPTED' AND m.userId = :userId)
-        )
-    """)
-    List<Match> findVisibleMatchesForProvider(@Param("userId") Long userId);
+    // @Query("""
+    // SELECT m FROM Match m
+    // WHERE m.userId = :userId
+    // AND (
+    // m.status = 'PENDING'
+    // OR (m.status = 'ACCEPTED' AND m.userId = :userId)
+    // )
+    // """)
+    // List<Match> findVisibleMatchesForProvider(@Param("userId") Long userId);
 
     // ✅ Reject all other matches when one is accepted
+    // @Modifying
+    // @Transactional
+    // @Query("""
+    // UPDATE Match m
+    // SET m.status = 'REJECTED'
+    // WHERE m.caseId = :caseId AND m.id != :matchId
+    // """)
+    // void rejectOtherMatches(@Param("caseId") Long caseId,
+    // @Param("matchId") Long matchId);
+
+    @Query("""
+                SELECT m FROM Match m
+                WHERE m.userId = :userId
+                AND m.status IN ('PENDING', 'INTERESTED', 'ACCEPTED')
+            """)
+    List<Match> findVisibleMatchesForProvider(@Param("userId") Long userId);
+
     @Modifying
     @Transactional
     @Query("""
-        UPDATE Match m
-        SET m.status = 'REJECTED'
-        WHERE m.caseId = :caseId AND m.id != :matchId
-    """)
-    void rejectOtherMatches(@Param("caseId") Long caseId,
-                            @Param("matchId") Long matchId);
+                UPDATE Match m
+                SET m.status = 'REJECTED'
+                WHERE m.caseId = :caseId AND m.id != :matchId
+            """)
+    void rejectOtherMatches(@Param("caseId") Long caseId, @Param("matchId") Long matchId);
 }

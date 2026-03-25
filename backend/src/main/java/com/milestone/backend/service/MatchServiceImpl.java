@@ -109,31 +109,75 @@ public class MatchServiceImpl implements MatchService {
     @Transactional
     public MatchResponse acceptMatch(Long matchId, User currentUser) {
 
-        if (currentUser.getRole() != Role.LAWYER &&
-                currentUser.getRole() != Role.NGO) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only lawyer/NGO can accept");
-        }
+        // if (currentUser.getRole() != Role.LAWYER &&
+        //         currentUser.getRole() != Role.NGO) {
+        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only lawyer/NGO can accept");
+        // }
+
+        // Match match = matchRepository.findById(matchId)
+        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
+
+        // //  Check if case already accepted
+        // boolean alreadyAccepted = matchRepository.existsByCaseIdAndStatus(
+        //         match.getCaseId(), MatchStatus.ACCEPTED);
+
+        // if (alreadyAccepted) {
+        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Case already accepted");
+        // }
+
+        // //  Accept this match
+        // match.setStatus(MatchStatus.ACCEPTED);
+        // matchRepository.save(match);
+
+        // //  Reject all other matches
+        // matchRepository.rejectOtherMatches(match.getCaseId(), matchId);
+
+        // return mapToResponse(match);
 
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
 
-        //  Check if case already accepted
-        boolean alreadyAccepted = matchRepository.existsByCaseIdAndStatus(
-                match.getCaseId(), MatchStatus.ACCEPTED);
+        Case caseObj = caseRepository.findById(match.getCaseId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found"));
 
-        if (alreadyAccepted) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Case already accepted");
+        // Only the Citizen who owns the case can accept
+        if (!caseObj.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the citizen who created the case can accept a provider.");
         }
 
-        //  Accept this match
-        match.setStatus(MatchStatus.ACCEPTED);
-        matchRepository.save(match);
+        if (match.getStatus() != MatchStatus.INTERESTED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot accept: The provider has not expressed interest yet.");
+        }
 
-        //  Reject all other matches
-        matchRepository.rejectOtherMatches(match.getCaseId(), matchId);
+        match.setStatus(MatchStatus.ACCEPTED);
+        match = matchRepository.save(match);
+
+        // Reject all other matches (PENDING or INTERESTED) for this case
+        matchRepository.rejectOtherMatches(match.getCaseId(), match.getId());
 
         return mapToResponse(match);
     }
+
+
+    @Override
+    @Transactional
+    public MatchResponse expressInterest(Long matchId, User currentUser) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
+
+        // Only the assigned provider can express interest
+        if (!match.getUserId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the assigned provider can express interest.");
+        }
+
+        if (match.getStatus() != MatchStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Match is not in PENDING state.");
+        }
+
+        match.setStatus(MatchStatus.INTERESTED);
+        return mapToResponse(matchRepository.save(match));
+    }
+
 
     /**
      * Reject match
@@ -141,18 +185,33 @@ public class MatchServiceImpl implements MatchService {
     @Override
     public MatchResponse rejectMatch(Long matchId, User currentUser) {
 
-        if (currentUser.getRole() != Role.LAWYER &&
-                currentUser.getRole() != Role.NGO) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only lawyer/NGO can reject");
-        }
+        // if (currentUser.getRole() != Role.LAWYER &&
+        //         currentUser.getRole() != Role.NGO) {
+        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only lawyer/NGO can reject");
+        // }
+
+        // Match match = matchRepository.findById(matchId)
+        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
+
+        // match.setStatus(MatchStatus.REJECTED);
+        // matchRepository.save(match);
+
+        // return mapToResponse(match);
 
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
 
-        match.setStatus(MatchStatus.REJECTED);
-        matchRepository.save(match);
+        Case caseObj = caseRepository.findById(match.getCaseId()).orElse(null);
 
-        return mapToResponse(match);
+        boolean isProvider = match.getUserId().equals(currentUser.getId());
+        boolean isCitizen = caseObj != null && caseObj.getUser().getId().equals(currentUser.getId());
+
+        if (!isProvider && !isCitizen) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to reject this match.");
+        }
+
+        match.setStatus(MatchStatus.REJECTED);
+        return mapToResponse(matchRepository.save(match));
     }
 
    /**
@@ -236,14 +295,15 @@ public class MatchServiceImpl implements MatchService {
             // Get the Provider (Lawyer or NGO)
             User matchedProvider = userRepository.findById(match.getUserId()).orElse(null);
             if (matchedProvider != null) {
-                response.setProviderName(matchedProvider.getUsername());
+                response.setProviderName(matchedProvider.getName());
+                response.setProviderEmail(matchedProvider.getUsername());
                 response.setProviderType(matchedProvider.getRole().name());
             }
 
             // Get the Client (Citizen who created the case)
             Case caseEntity = caseRepository.findById(match.getCaseId()).orElse(null);
             if (caseEntity != null && caseEntity.getUser() != null) {
-                response.setClientName(caseEntity.getUser().getUsername());
+                response.setClientName(caseEntity.getUser().getName());
             }
         } catch (Exception e) {
             System.err.println("Error fetching user names for Match DTO: " + e.getMessage());

@@ -1,6 +1,6 @@
 package com.milestone.backend.controller;
 
-import java.util.List;
+// import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.milestone.backend.service.LawyerExcelService;
-import com.milestone.backend.dto.ExternalLawyerResponseDto;
+// import com.milestone.backend.dto.ExternalLawyerResponseDto;
 import com.milestone.backend.service.ExternalLawyersDataService;
 
 @RestController
@@ -24,25 +24,19 @@ public class ExternalLaywerController {
         this.lawyerDataService = lawyerDataService;
     }
 
-    // FIXED: Changed return type to ResponseEntity to properly return the Map as JSON
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')") // Restrict to Admin Panel only
     public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
         try {
-            var users = excelService.parseLawyerExcel(file.getInputStream());
-            Map<String, Object> result = lawyerDataService.saveUniqueLawyers(users);
+            // Parse using Apache POI
+            var parsedLawyers = excelService.parseLawyerExcel(file.getInputStream());
             
-            // Returns a 200 OK with the statistics Map
-            return ResponseEntity.ok(result); 
+            // Process and Save with de-duplication
+            Map<String, Object> result = lawyerDataService.saveUniqueLawyers(parsedLawyers);
+            
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            // Returns a 400 Bad Request if parsing or saving fails
-            return ResponseEntity.badRequest().body("Failed to upload: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Ingestion failed: " + e.getMessage());
         }
-    }
-
-    // NEW: Get all external lawyers
-    @GetMapping
-    public ResponseEntity<List<ExternalLawyerResponseDto>> getAllExternalLawyers() {
-        return ResponseEntity.ok(lawyerDataService.getAllLawyers());
     }
 }

@@ -21,30 +21,37 @@ public class MatchController {
         return matchService.generateMatches(caseId);
     }
 
-    @GetMapping("/my")
+    @GetMapping("/me")
     public List<MatchResponse> getMyMatches(@AuthenticationPrincipal User currentUser) {
         return matchService.getMyMatches(currentUser);
     }
 
-    // THE FIX: Added the missing endpoint to fetch a single match!
     @GetMapping("/{matchId}")
     public MatchResponse getMatchById(@PathVariable Long matchId, @AuthenticationPrincipal User currentUser) {
         return matchService.getMatchById(matchId, currentUser);
     }
 
+    // NEW: Provider calls this to say "I am interested in taking this case"
+    @PutMapping("/{matchId}/interest")
+    public MatchResponse expressInterest(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal User currentUser) {
+        return matchService.expressInterest(matchId, currentUser);
+    }
+
+    // UPDATED: Citizen calls this to finalize the lawyer they want
     @PutMapping("/{matchId}/accept")
     public MatchResponse acceptMatch(
             @PathVariable Long matchId,
             @AuthenticationPrincipal User currentUser) {
-
         return matchService.acceptMatch(matchId, currentUser);
     }
 
+    // Citizen or Provider calls this to reject/cancel
     @PutMapping("/{matchId}/reject")
     public MatchResponse rejectMatch(
             @PathVariable Long matchId,
             @AuthenticationPrincipal User currentUser) {
-
         return matchService.rejectMatch(matchId, currentUser);
     }
 }

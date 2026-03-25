@@ -1,7 +1,7 @@
 package com.milestone.backend.service;
 
 import org.springframework.stereotype.Service;
-import com.milestone.backend.dto.ExternalLawyerResponseDto;
+// import com.milestone.backend.dto.ExternalLawyerResponseDto;
 import com.milestone.backend.entity.ExternalLawyers;
 import com.milestone.backend.repository.ExternalLawyersRepository;
 
@@ -18,60 +18,39 @@ public class ExternalLawyersDataService {
     }
 
     public Map<String, Object> saveUniqueLawyers(List<ExternalLawyers> lawyers) {
+        int totalRows = lawyers.size();
 
-        int total = lawyers.size();
-
-        // Step 1: Remove duplicates inside Excel itself
-        Map<String, ExternalLawyers> uniqueMap = new HashMap<>();
+        // 1. Internal De-duplication: Remove duplicate emails inside the Excel file
+        Map<String, ExternalLawyers> uniqueInExcelMap = new HashMap<>();
         for (ExternalLawyers lawyer : lawyers) {
             if (lawyer.getEmail() != null) {
-                uniqueMap.put(lawyer.getEmail(), lawyer);
+                uniqueInExcelMap.put(lawyer.getEmail().toLowerCase().trim(), lawyer);
             }
         }
+        List<ExternalLawyers> uniqueInExcelList = new ArrayList<>(uniqueInExcelMap.values());
 
-        List<ExternalLawyers> uniqueLawyers = new ArrayList<>(uniqueMap.values());
-
-        // Step 2: Extract emails
-        List<String> emails = uniqueLawyers.stream()
+        // 2. Database Check: Find which of these already exist in our DB
+        List<String> emailsToCheck = uniqueInExcelList.stream()
                 .map(ExternalLawyers::getEmail)
                 .collect(Collectors.toList());
-
-        // Step 3: Fetch existing emails from DB
-        List<String> existingEmails = repo.findExistingEmails(emails);
+        
+        List<String> existingEmails = repo.findExistingEmails(emailsToCheck);
         Set<String> existingSet = new HashSet<>(existingEmails);
 
-        // Step 4: Filter new records only
-        List<ExternalLawyers> newLawyers = uniqueLawyers.stream()
+        // 3. Filtering: Keep only the truly new lawyers
+        List<ExternalLawyers> newLawyers = uniqueInExcelList.stream()
                 .filter(l -> !existingSet.contains(l.getEmail()))
                 .collect(Collectors.toList());
 
-        // Step 5: Save only new ones
+        // 4. Batch Save
         repo.saveAll(newLawyers);
 
-        // Step 6: Return stats
-        Map<String, Object> response = new HashMap<>();
-        response.put("totalRows", total);
-        response.put("uniqueInExcel", uniqueLawyers.size());
-        response.put("inserted", newLawyers.size());
-        response.put("duplicatesSkipped", total - newLawyers.size());
-
-        return response;
-    }
-
-    // --- NEW METHOD TO GET ALL LAWYERS ---
-    public List<ExternalLawyerResponseDto> getAllLawyers() {
-        List<ExternalLawyers> lawyers = repo.findAll();
-
-        return lawyers.stream()
-                .map(l -> new ExternalLawyerResponseDto(
-                        l.getId(),
-                        l.getName(),
-                        l.getEmail(),
-                        l.getExperience(),
-                        l.getIsVerified(),
-                        l.getExpertise(),
-                        l.getLocation()
-                ))
-                .collect(Collectors.toList());
+        // 5. Return Detailed Stats for the Admin Panel
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalRowsProcessed", totalRows);
+        stats.put("uniqueInExcel", uniqueInExcelList.size());
+        stats.put("newlyInserted", newLawyers.size());
+        stats.put("duplicatesSkipped", totalRows - newLawyers.size());
+        return stats;
     }
 }
