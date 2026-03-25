@@ -21,6 +21,7 @@ public class CaseService {
 
     // ✅ CREATE CASE
     public CaseResponse createCase(CreateCaseRequest request, String username) {
+        System.out.println("USERNAME FROM TOKEN:"+username);
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
