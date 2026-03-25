@@ -24,6 +24,20 @@ public class AppointmentService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CHANGED: bookAppointment
+    //
+    // BEFORE: Always set status = "SCHEDULED" regardless of who booked.
+    //         Sent the same two notifications every time.
+    //
+    // AFTER:  Detects whether the booker is the citizen or the provider.
+    //         • Citizen books  → status = "PENDING_CONFIRMATION"
+    //                          → notifies citizen ("request sent")
+    //                          → notifies provider ("action required")
+    //         • Provider books → status = "CONFIRMED" (auto-confirmed)
+    //                          → notifies citizen ("appointment confirmed")
+    //         Response message is also tailored to the booking party.
+    // ─────────────────────────────────────────────────────────────────────────────
     public AppointmentResponseDto bookAppointment(User currentUser, AppointmentRequestDto request) {
 
         Match match = matchRepository.findById(request.getMatchId())
@@ -35,20 +49,24 @@ public class AppointmentService {
         Long citizenId = caseObj.getUser().getId();
         Long providerId = match.getUserId();
 
-        //  THE FIX: Allow BOTH the Citizen and the Lawyer/NGO to book appointments!
+        // UNCHANGED: Both citizen and provider are allowed to book
         if (!citizenId.equals(currentUser.getId()) && !providerId.equals(currentUser.getId())) {
             throw new RuntimeException("Unauthorized: This match does not belong to your case.");
         }
 
+        // UNCHANGED: Match must be ACCEPTED before an appointment can be booked
         if (!"ACCEPTED".equalsIgnoreCase(match.getStatus().name())) {
             throw new RuntimeException("Cannot book appointment: The provider has not accepted this match yet.");
         }
 
-        //  Get the actual users for notifications
         User actualCitizen = caseObj.getUser();
         User actualProvider = userRepository.findById(providerId)
                 .orElseThrow(() -> new RuntimeException("Provider not found"));
 
+        // CHANGED: Determine the booker so we can branch status and notifications
+        boolean bookedByCitizen = citizenId.equals(currentUser.getId());
+
+        // UNCHANGED: Build the Schedule entity from the request
         Schedule schedule = new Schedule();
         schedule.setMatch(match);
         schedule.setAppointmentDate(request.getAppointmentDate());
@@ -58,46 +76,182 @@ public class AppointmentService {
         schedule.setZone(request.getZone());
         schedule.setReminder(request.getReminder());
         schedule.setSelectedTime(request.getSelectedTime());
-        schedule.setStatus("SCHEDULED");
-        schedule.setScheduledTime(LocalDateTime.now()); 
+        schedule.setScheduledTime(LocalDateTime.now());
+
+        // CHANGED: Status is no longer always "SCHEDULED"
+        if (bookedByCitizen) {
+            // Citizen-initiated booking must wait for provider to confirm
+            schedule.setStatus("PENDING_CONFIRMATION");
+        } else {
+            // Provider-initiated booking is immediately confirmed
+            schedule.setStatus("CONFIRMED");
+        }
 
         schedule = scheduleRepository.save(schedule);
 
-        notificationService.createNotification(
-                actualCitizen,
-                "Appointment Confirmed",
-                "You have successfully booked an appointment for " + request.getAppointmentDate() + " at " + request.getAppointmentTime(),
-                "APPOINTMENT",
-                schedule.getId()
-        );
+        // CHANGED: Notifications are now split based on who booked
+        if (bookedByCitizen) {
+            // Notify citizen that their request was submitted
+            notificationService.createNotification(
+                    actualCitizen,
+                    "Appointment Request Sent",
+                    "Your appointment request for " + request.getAppointmentDate() + " at " + request.getAppointmentTime()
+                            + " has been sent to " + actualProvider.getUsername() + ". Awaiting confirmation.",
+                    "APPOINTMENT",
+                    schedule.getId()
+            );
 
-        notificationService.createNotification(
-                actualProvider,
-                "New Appointment Request",
-                "A new appointment has been scheduled for Case: " + caseObj.getTitle() + " on " + request.getAppointmentDate(),
-                "APPOINTMENT",
-                schedule.getId()
-        );
+            // Notify provider that action is required
+            notificationService.createNotification(
+                    actualProvider,
+                    "New Appointment Request",
+                    "A citizen has requested an appointment for Case: " + caseObj.getTitle()
+                            + " on " + request.getAppointmentDate() + " at " + request.getAppointmentTime()
+                            + ". Please confirm or decline from your dashboard.",
+                    "APPOINTMENT",
+                    schedule.getId()
+            );
+        } else {
+            // Provider booked directly — citizen just gets a confirmation notice
+            notificationService.createNotification(
+                    actualCitizen,
+                    "Appointment Confirmed",
+                    "An appointment has been scheduled for Case: " + caseObj.getTitle()
+                            + " on " + request.getAppointmentDate() + " at " + request.getAppointmentTime(),
+                    "APPOINTMENT",
+                    schedule.getId()
+            );
+        }
 
+        // CHANGED: Response message reflects the actual status
         return new AppointmentResponseDto(
-                schedule.getId(), match.getId(), "SCHEDULED", "Appointment successfully booked and notifications sent.",
-                schedule.getAppointmentDate(), schedule.getAppointmentTime(), schedule.getNotes(), schedule.getCallDuration(), schedule.getZone(), schedule.getSelectedTime()
+                schedule.getId(), match.getId(), schedule.getStatus(),
+                bookedByCitizen
+                        ? "Appointment request sent. Awaiting provider confirmation."
+                        : "Appointment confirmed.",
+                schedule.getAppointmentDate(), schedule.getAppointmentTime(),
+                schedule.getNotes(), schedule.getCallDuration(),
+                schedule.getZone(), schedule.getSelectedTime()
         );
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NEW METHOD: confirmAppointment
+    //
+    // Called via: PATCH /appointments/{id}/confirm
+    // Who can call: Provider (Lawyer/NGO) only.
+    //
+    // Transitions status: PENDING_CONFIRMATION → CONFIRMED
+    // Notifies the citizen that their request was accepted.
+    // ─────────────────────────────────────────────────────────────────────────────
+    public AppointmentResponseDto confirmAppointment(Long id, User currentUser) {
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        Case caseObj = caseRepository.findById(schedule.getMatch().getCaseId())
+                .orElseThrow(() -> new RuntimeException("Case not found"));
+
+        Long providerId = schedule.getMatch().getUserId();
+
+        // Only the assigned provider may confirm
+        if (!providerId.equals(currentUser.getId())) {
+            throw new RuntimeException("Unauthorized: Only the assigned provider can confirm this appointment.");
+        }
+
+        // Guard: must still be in pending state
+        if (!"PENDING_CONFIRMATION".equalsIgnoreCase(schedule.getStatus())) {
+            throw new RuntimeException("Appointment is not pending confirmation.");
+        }
+
+        schedule.setStatus("CONFIRMED");
+        schedule = scheduleRepository.save(schedule);
+
+        // Notify the citizen that the provider accepted
+        notificationService.createNotification(
+                caseObj.getUser(),
+                "Appointment Confirmed",
+                "Your appointment on " + schedule.getAppointmentDate() + " at " + schedule.getAppointmentTime()
+                        + " has been confirmed by the provider.",
+                "APPOINTMENT",
+                schedule.getId()
+        );
+
+        return mapToDto(schedule);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NEW METHOD: cancelAppointmentWithReason
+    //
+    // Called via: PATCH /appointments/{id}/cancel
+    // Who can call: Provider (Lawyer/NGO) only.
+    // Request body: { "reason": "..." }
+    //
+    // Transitions status: PENDING_CONFIRMATION → CANCELLED
+    // Appends reason to notes field for audit trail.
+    // Notifies the citizen with the specific decline reason.
+    // ─────────────────────────────────────────────────────────────────────────────
+    public AppointmentResponseDto cancelAppointmentWithReason(Long id, String reason, User currentUser) {
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+
+        Case caseObj = caseRepository.findById(schedule.getMatch().getCaseId())
+                .orElseThrow(() -> new RuntimeException("Case not found"));
+
+        Long providerId = schedule.getMatch().getUserId();
+
+        // Only the assigned provider may decline a pending appointment
+        if (!providerId.equals(currentUser.getId())) {
+            throw new RuntimeException("Unauthorized: Only the assigned provider can decline this appointment.");
+        }
+
+        // Guard: only PENDING_CONFIRMATION appointments can be declined this way
+        if (!"PENDING_CONFIRMATION".equalsIgnoreCase(schedule.getStatus())) {
+            throw new RuntimeException("Only pending appointments can be declined this way.");
+        }
+
+        schedule.setStatus("CANCELLED");
+
+        // Append reason to notes for audit trail (preserves original notes if any)
+        schedule.setNotes(
+                (schedule.getNotes() != null ? schedule.getNotes() + " | " : "")
+                + "Declined by provider. Reason: " + reason
+        );
+        schedule = scheduleRepository.save(schedule);
+
+        // Notify the citizen with the specific reason for decline
+        notificationService.createNotification(
+                caseObj.getUser(),
+                "Appointment Declined",
+                "Your appointment request for " + schedule.getAppointmentDate() + " at " + schedule.getAppointmentTime()
+                        + " was declined. Reason: " + reason,
+                "APPOINTMENT",
+                schedule.getId()
+        );
+
+        return mapToDto(schedule);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // UNCHANGED: getAllAppointments
+    // ─────────────────────────────────────────────────────────────────────────────
     public List<AppointmentResponseDto> getAllAppointments(User currentUser) {
         List<Schedule> schedules = scheduleRepository.findAllUserAppointments(currentUser.getId());
-
         return schedules.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // UNCHANGED: getAppointmentById
+    // ─────────────────────────────────────────────────────────────────────────────
     public AppointmentResponseDto getAppointmentById(Long id, User currentUser) {
         Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
         return mapToDto(schedule);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // UNCHANGED: updateAppointment
+    // ─────────────────────────────────────────────────────────────────────────────
     public AppointmentResponseDto updateAppointment(Long id, AppointmentRequestDto request, User currentUser) {
         Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
 
@@ -109,25 +263,31 @@ public class AppointmentService {
         return mapToDto(schedule);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // UNCHANGED: deleteAppointment
+    // ─────────────────────────────────────────────────────────────────────────────
     public void deleteAppointment(Long id, User currentUser) {
         Schedule schedule = getScheduleAndVerifyOwnership(id, currentUser);
         schedule.setStatus("CANCELLED");
         scheduleRepository.save(schedule);
-        
+
         Case caseObj = caseRepository.findById(schedule.getMatch().getCaseId()).orElseThrow();
         User provider = userRepository.findById(schedule.getMatch().getUserId()).orElseThrow();
-        
+
         User otherUser = caseObj.getUser().getId().equals(currentUser.getId()) ? provider : caseObj.getUser();
 
         notificationService.createNotification(
-            otherUser,
-            "Appointment Cancelled",
-            "An appointment for Case: " + caseObj.getTitle() + " has been cancelled.",
-            "APPOINTMENT",
-            schedule.getId()
+                otherUser,
+                "Appointment Cancelled",
+                "An appointment for Case: " + caseObj.getTitle() + " has been cancelled.",
+                "APPOINTMENT",
+                schedule.getId()
         );
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // UNCHANGED: getScheduleAndVerifyOwnership
+    // ─────────────────────────────────────────────────────────────────────────────
     private Schedule getScheduleAndVerifyOwnership(Long id, User currentUser) {
         Schedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Appointment not found"));
@@ -145,6 +305,9 @@ public class AppointmentService {
         return schedule;
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────
+    // UNCHANGED: mapToDto
+    // ─────────────────────────────────────────────────────────────────────────────
     private AppointmentResponseDto mapToDto(Schedule schedule) {
         return new AppointmentResponseDto(
                 schedule.getId(),
