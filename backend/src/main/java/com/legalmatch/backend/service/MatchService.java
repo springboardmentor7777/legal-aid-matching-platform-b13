@@ -44,8 +44,6 @@ public class MatchService {
 
         for (LawyerProfile lp : lawyers) {
 
-            //if (lp.getVerified() != null && !lp.getVerified()) continue;
-
             double score = calculateLawyerScore(legalCase, lp);
             if (score < 10) continue;
 
@@ -80,8 +78,6 @@ public class MatchService {
         List<NGOProfile> ngos = ngoRepository.findAll();
 
         for (NGOProfile np : ngos) {
-
-            //if (np.getVerified() != null && !np.getVerified()) continue;
 
             double score = calculateNGOScore(legalCase, np);
             if (score < 10) continue;
@@ -121,7 +117,7 @@ public class MatchService {
     }
 
     /**
-     * 🔹 Lawyer scoring
+     * 🔹 Lawyer scoring (IMPROVED)
      */
     private double calculateLawyerScore(Case legalCase, LawyerProfile lp) {
 
@@ -135,20 +131,22 @@ public class MatchService {
                 ? lp.getExpertise().toLowerCase()
                 : "";
 
-        if (expertise.contains("advocate")) {
-            score += 30;
-        }
-        if (expertise.contains("criminal")) {
-            score += 20;
+        // ✅ Match expertise with case type
+        if (expertise.contains(caseType) || caseType.contains(expertise)) {
+            score += 40;
         }
 
+        // Location match (flexible)
+        if (legalCase.getLocation() != null && lp.getLocation() != null) {
+            String caseLoc = legalCase.getLocation().toLowerCase();
+            String lawyerLoc = lp.getLocation().toLowerCase();
 
-        if (legalCase.getLocation() != null &&
-            lp.getLocation() != null &&
-            lp.getLocation().toLowerCase().contains(legalCase.getLocation().toLowerCase())) {
-            score += 30;
+            if (lawyerLoc.contains(caseLoc) || caseLoc.contains(lawyerLoc)) {
+                score += 30;
+            }
         }
 
+        // Verified bonus
         if (Boolean.TRUE.equals(lp.getVerified())) {
             score += 20;
         }
@@ -157,24 +155,33 @@ public class MatchService {
     }
 
     /**
-     * 🔹 NGO scoring
+     * 🔹 NGO scoring (FIXED)
      */
     private double calculateNGOScore(Case legalCase, NGOProfile np) {
 
         double score = 0;
 
-        if (legalCase.getLocation() != null &&
-            np.getLocation() != null &&
-            np.getLocation().toLowerCase().contains(legalCase.getLocation().toLowerCase())) {
-            score += 40;
+        // ✅ Location matching (flexible)
+        if (legalCase.getLocation() != null && np.getLocation() != null) {
+            String caseLoc = legalCase.getLocation().toLowerCase();
+            String ngoLoc = np.getLocation().toLowerCase();
+
+            if (ngoLoc.contains(caseLoc) || caseLoc.contains(ngoLoc)) {
+                score += 40;
+            }
         }
 
-        if (np.getFocusArea() != null &&
-            legalCase.getCaseType() != null &&
-            np.getFocusArea().toLowerCase().contains(legalCase.getCaseType().toLowerCase())) {
-            score += 30;
+        // ✅ Focus area matching (FIXED LOGIC)
+        if (np.getFocusArea() != null && legalCase.getCaseType() != null) {
+            String caseType = legalCase.getCaseType().toLowerCase();
+            String focus = np.getFocusArea().toLowerCase();
+
+            if (caseType.contains(focus) || focus.contains(caseType)) {
+                score += 30;
+            }
         }
 
+        // Verified bonus
         if (Boolean.TRUE.equals(np.getVerified())) {
             score += 20;
         }
@@ -254,7 +261,7 @@ public class MatchService {
     }
 
     /**
-     * 🔹 Convert entity → DTO
+     * Convert entity → DTO
      */
     private MatchResponse mapToResponse(MatchEntity match) {
 
