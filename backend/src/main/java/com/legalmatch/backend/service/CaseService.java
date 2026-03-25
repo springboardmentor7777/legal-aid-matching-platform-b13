@@ -26,7 +26,7 @@ public class CaseService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // ✅ FIXED ROLE CHECK (IMPORTANT)
-        if (!user.getRole().name().equals("ROLE_CITIZEN")) {
+        if (!user.getRole().name().toUpperCase().contains("CITIZEN")) {
             throw new RuntimeException("Only citizens can create cases");
         }
 
