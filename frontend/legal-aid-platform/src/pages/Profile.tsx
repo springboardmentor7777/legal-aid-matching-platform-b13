@@ -2,6 +2,7 @@ import { useFetcher, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -9,7 +10,7 @@ export default function Profile() {
   const [data, setData] = useState<any>(null);
 
   //  Availability state
-  const [isAvailable, setIsAvailable] = useState<boolean>(false);
+  // const [isAvailable, setIsAvailable] = useState<boolean>(false);
 
   useEffect(() => {
     fetch("http://localhost:8081/profile/me", {
@@ -25,7 +26,7 @@ export default function Profile() {
         setData(userData);
 
         //  Sync from backend
-        setIsAvailable(userData?.isAvailable || false);
+        // setIsAvailable(userData?.isAvailable || false);
       });
   }, []);
 
@@ -75,8 +76,8 @@ export default function Profile() {
                     Personal Information
                   </h3>
                   <p className="text-gray-700">
-                    Name: {data?.name} (
-                    <span>{user?.role?.toLowerCase()}</span>)
+                    Name: {data?.name} (<span>{user?.role?.toLowerCase()}</span>
+                    )
                   </p>
                   <p className="text-gray-700">
                     Email: {user?.email || "Not available"}
@@ -109,24 +110,32 @@ export default function Profile() {
                         specialization: {data?.specialization || "N/A"}
                         <br />
                         experience:{" "}
-                        {data?.experience
-                          ? `${data.experience} years`
-                          : "N/A"}
+                        {data?.experience ? `${data.experience} years` : "N/A"}
                         <br />
                         location: {data?.location || "N/A"}
-
                         {/*Availability Toggle  */}
                         <div className="mt-4">
-                          <button
-                            onClick={() => setIsAvailable(!isAvailable)}
+                          {/* <button
+                            onClick={() => {}}
                             className={`px-4 py-2 rounded-lg text-white ${
-                              isAvailable
+                              data?.isAvailable
                                 ? "bg-green-500"
                                 : "bg-gray-500"
                             }`}
                           >
-                            {isAvailable ? "Available" : "Not Available"}
-                          </button>
+                            {data?.isAvailable ? "Available" : "Not Available"}
+                          </button> */}
+                          <div
+                            className={`px-4 py-2 items-center justify-center rounded-lg text-white ${
+                              data?.isAvailable ? "bg-green-500" : "bg-gray-500"
+                            }`}
+                          >
+                            {data?.isAvailable ? (
+                              <span>Available</span>
+                            ) : (
+                              <span>Not Available</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -135,25 +144,24 @@ export default function Profile() {
                       <div className="text-blue-900">
                         role: {data?.role}
                         <br />
-                        organization name:{" "}
-                        {data?.organizationName || "N/A"}
+                        organization name: {data?.organizationName || "N/A"}
                         <br />
                         service area: {data?.serviceArea || "N/A"}
                         <br />
                         location: {data?.location || "N/A"}
-
                         {/* Availability Toggle  */}
                         <div className="mt-4">
-                          <button
-                            onClick={() => setIsAvailable(!isAvailable)}
-                            className={`px-4 py-2 rounded-lg text-white ${
-                              isAvailable
-                                ? "bg-green-500"
-                                : "bg-gray-500"
+                          <div
+                            className={`px-4 py-2 items-center justify-center rounded-lg text-white ${
+                              data?.isAvailable ? "bg-green-500" : "bg-gray-500"
                             }`}
                           >
-                            {isAvailable ? "Available" : "Not Available"}
-                          </button>
+                            {data?.isAvailable ? (
+                              <span>Available</span>
+                            ) : (
+                              <span>Not Available</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}

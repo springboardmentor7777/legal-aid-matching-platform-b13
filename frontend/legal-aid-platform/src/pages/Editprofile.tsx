@@ -94,6 +94,7 @@ export default function EditProfile() {
         organizationName: d.organizationName,
         serviceArea: d.serviceArea,
         location: d.location,
+        isAvailable:d.isAvailable
       };
     }
 
@@ -273,7 +274,36 @@ export default function EditProfile() {
                   </div>
                 </>
               )}
-
+              {/* Availability Toggle Button */}
+              {(role === "LAWYER" || role === "NGO") && (
+                <div className="flex items-center mt-4 mb-4">
+                  <label className="text-gray-700 font-bold mr-4" htmlFor="isAvailable">
+                    Availability Status:
+                  </label>
+                  <button
+                    type="button"
+                    id="isAvailable"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isAvailable: !(prev as LawyerUpdate | NgoUpdate).isAvailable,
+                      }))
+                    }
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 ${
+                      (formData as LawyerUpdate | NgoUpdate).isAvailable ? "bg-blue-600" : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        (formData as LawyerUpdate | NgoUpdate).isAvailable ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className="ml-3 text-sm text-gray-600 font-medium">
+                    {(formData as LawyerUpdate | NgoUpdate).isAvailable ? "Available" : "Not Available"}
+                  </span>
+                </div>
+              )}
               <button
                 type="submit"
                 className="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"

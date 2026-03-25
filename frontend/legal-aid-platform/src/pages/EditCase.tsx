@@ -317,7 +317,7 @@ const EditCase: React.FC = () => {
                 </button>
               )}
 
-              {step < 3 ? (
+              {step <= 3 ? (
                 <button
                   type="button"
                   onClick={handleNext}
