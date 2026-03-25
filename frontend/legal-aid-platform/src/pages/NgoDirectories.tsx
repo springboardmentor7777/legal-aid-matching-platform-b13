@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
+import PageTitle from "../components/PageTitle";
 
 interface Ngo {
   id?: number;
@@ -94,6 +95,7 @@ export default function NgoDirectories() {
   }, []);
 
   return (
+    <><PageTitle title="NGO Directory - Legal Aid Matching Platform" />
     <div className="flex flex-col min-h-screen">
       <Navbar title="ngo directory" name={user?.username || ""} toggleSidebar={()=>{}} />
 
@@ -202,6 +204,6 @@ export default function NgoDirectories() {
       <footer className="text-gray-500 justify-center items-center flex p-10 bg-blue-50">
         Legal Aid Matching platform @2026
       </footer>
-    </div>
+    </div></>
   );
 }
