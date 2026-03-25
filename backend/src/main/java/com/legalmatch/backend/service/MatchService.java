@@ -35,7 +35,7 @@ public class MatchService {
         }
 
         List<MatchEntity> existingMatches = matchRepository.findByLegalCase(legalCase);
-        List<MatchEntity> matches = new ArrayList<>();
+        List<MatchEntity> newMatches = new ArrayList<>();
 
         // =========================
         // 🔹 LAWYER MATCHING
@@ -61,7 +61,7 @@ public class MatchService {
                         .build();
 
                 MatchEntity saved = matchRepository.save(match);
-                matches.add(saved);
+                newMatches.add(saved);
 
                 notificationService.createNotification(
                         lp.getUser(),
@@ -96,7 +96,7 @@ public class MatchService {
                         .build();
 
                 MatchEntity saved = matchRepository.save(match);
-                matches.add(saved);
+                newMatches.add(saved);
 
                 notificationService.createNotification(
                         np.getUser(),
@@ -107,48 +107,38 @@ public class MatchService {
             }
         }
 
-        // ✅ Update case status
-        legalCase.setStatus(CaseStatus.MATCHED);
-        caseService.save(legalCase);
+        // ✅ Update case status ONLY if matches found
+        if (!newMatches.isEmpty()) {
+            legalCase.setStatus(CaseStatus.MATCHED);
+            caseService.save(legalCase);
+        }
 
-       List<MatchEntity> allMatches = matchRepository.findByLegalCase(legalCase);
+        // ✅ Return all matches (existing + new)
+        List<MatchEntity> allMatches = matchRepository.findByLegalCase(legalCase);
 
-return allMatches.stream()
-        .map(this::mapToResponse)
-        .collect(Collectors.toList());
+        return allMatches.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     /**
-     * 🔹 Lawyer scoring (IMPROVED)
+     * 🔹 Lawyer scoring
      */
     private double calculateLawyerScore(Case legalCase, LawyerProfile lp) {
 
         double score = 0;
 
-        String caseType = legalCase.getCaseType() != null
-                ? legalCase.getCaseType().toLowerCase()
-                : "";
+        String caseType = safeLower(legalCase.getCaseType());
+        String expertise = safeLower(lp.getExpertise());
 
-        String expertise = lp.getExpertise() != null
-                ? lp.getExpertise().toLowerCase()
-                : "";
-
-        // ✅ Match expertise with case type
         if (expertise.contains(caseType) || caseType.contains(expertise)) {
             score += 40;
         }
 
-        // Location match (flexible)
-        if (legalCase.getLocation() != null && lp.getLocation() != null) {
-            String caseLoc = legalCase.getLocation().toLowerCase();
-            String lawyerLoc = lp.getLocation().toLowerCase();
-
-            if (lawyerLoc.contains(caseLoc) || caseLoc.contains(lawyerLoc)) {
-                score += 30;
-            }
+        if (matchLocation(legalCase.getLocation(), lp.getLocation())) {
+            score += 30;
         }
 
-        // Verified bonus
         if (Boolean.TRUE.equals(lp.getVerified())) {
             score += 20;
         }
@@ -157,38 +147,47 @@ return allMatches.stream()
     }
 
     /**
-     * 🔹 NGO scoring (FIXED)
+     * 🔹 NGO scoring
      */
     private double calculateNGOScore(Case legalCase, NGOProfile np) {
 
         double score = 0;
 
-        // ✅ Location matching (flexible)
-        if (legalCase.getLocation() != null && np.getLocation() != null) {
-            String caseLoc = legalCase.getLocation().toLowerCase();
-            String ngoLoc = np.getLocation().toLowerCase();
-
-            if (ngoLoc.contains(caseLoc) || caseLoc.contains(ngoLoc)) {
-                score += 40;
-            }
+        if (matchLocation(legalCase.getLocation(), np.getLocation())) {
+            score += 40;
         }
 
-        // ✅ Focus area matching (FIXED LOGIC)
-        if (np.getFocusArea() != null && legalCase.getCaseType() != null) {
-            String caseType = legalCase.getCaseType().toLowerCase();
-            String focus = np.getFocusArea().toLowerCase();
+        String caseType = safeLower(legalCase.getCaseType());
+        String focus = safeLower(np.getFocusArea());
 
-            if (caseType.contains(focus) || focus.contains(caseType)) {
-                score += 30;
-            }
+        if (caseType.contains(focus) || focus.contains(caseType)) {
+            score += 30;
         }
 
-        // Verified bonus
         if (Boolean.TRUE.equals(np.getVerified())) {
             score += 20;
         }
 
         return score;
+    }
+
+    /**
+     * 🔹 Utility: safe lowercase
+     */
+    private String safeLower(String value) {
+        return value != null ? value.toLowerCase() : "";
+    }
+
+    /**
+     * 🔹 Utility: location match
+     */
+    private boolean matchLocation(String loc1, String loc2) {
+        if (loc1 == null || loc2 == null) return false;
+
+        String a = loc1.toLowerCase();
+        String b = loc2.toLowerCase();
+
+        return a.contains(b) || b.contains(a);
     }
 
     /**
@@ -199,10 +198,9 @@ return allMatches.stream()
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<MatchEntity> matches =
-                matchRepository.findByCitizenOrProviderOrderByCreatedAtDesc(user, user);
-
-        return matches.stream()
+        return matchRepository
+                .findByCitizenOrProviderOrderByCreatedAtDesc(user, user)
+                .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -218,8 +216,7 @@ return allMatches.stream()
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!match.getProvider().getId().equals(user.getId()) &&
-            !match.getCitizen().getId().equals(user.getId())) {
+        if (!isAuthorized(match, user)) {
             throw new RuntimeException("Not authorized");
         }
 
@@ -251,8 +248,7 @@ return allMatches.stream()
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!match.getProvider().getId().equals(user.getId()) &&
-            !match.getCitizen().getId().equals(user.getId())) {
+        if (!isAuthorized(match, user)) {
             throw new RuntimeException("Not authorized");
         }
 
@@ -260,6 +256,14 @@ return allMatches.stream()
         matchRepository.save(match);
 
         return mapToResponse(match);
+    }
+
+    /**
+     * 🔹 Authorization helper
+     */
+    private boolean isAuthorized(MatchEntity match, User user) {
+        return match.getProvider().getId().equals(user.getId()) ||
+               match.getCitizen().getId().equals(user.getId());
     }
 
     /**

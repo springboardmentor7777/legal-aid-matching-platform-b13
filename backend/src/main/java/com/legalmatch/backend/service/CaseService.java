@@ -19,16 +19,23 @@ public class CaseService {
     private final CaseRepository caseRepository;
     private final UserRepository userRepository;
 
-    // ✅ CREATE CASE
     public CaseResponse createCase(CreateCaseRequest request, String username) {
-        System.out.println("USERNAME FROM TOKEN:"+username);
+
+        System.out.println("USERNAME FROM TOKEN: " + username);
+        System.out.println("REQUEST: " + request);
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // ✅ FIXED ROLE CHECK (IMPORTANT)
-        if (!user.getRole().name().toUpperCase().contains("CITIZEN")) {
+        System.out.println("USER ROLE: " + user.getRole());
+
+        // TEMP: comment role check if testing
+        if (!user.getRole().name().equals("CITIZEN")) {
             throw new RuntimeException("Only citizens can create cases");
+        }
+
+        if (request.getCaseType() == null || request.getCaseType().isEmpty()) {
+            throw new RuntimeException("Case type is required");
         }
 
         Case newCase = Case.builder()
@@ -44,39 +51,31 @@ public class CaseService {
         return mapToResponse(saved);
     }
 
-    // ✅ GET USER CASES
     public List<CaseResponse> getMyCases(String username) {
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Case> cases = caseRepository.findByUserOrderByCreatedAtDesc(user);
-
-        return cases.stream()
+        return caseRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
-    // ✅ GET CASE BY ID
     public CaseResponse getCaseById(Long id) {
-
         Case c = caseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Case not found"));
-
         return mapToResponse(c);
     }
-
-    // ✅ INTERNAL USE
-    public Case getCaseEntityById(Long id) {
-        return caseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Case not found"));
-    }
-
-    public Case save(Case legalCase) {
+    public Case save(Case legalCase){
         return caseRepository.save(legalCase);
-    }
 
-    // ✅ MAPPER
+    }
+    public Case getCaseEntityById(Long id) {
+    return caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+}
+
     private CaseResponse mapToResponse(Case c) {
         return CaseResponse.builder()
                 .id(c.getId())
