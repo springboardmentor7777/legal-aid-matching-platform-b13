@@ -75,4 +75,12 @@ public class Case {
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
     }
+private String declineReason;
+ @ManyToOne
+@JoinColumn(name = "assigned_lawyer_id")
+private User assignedLawyer;
+
+        @ManyToOne
+@JoinColumn(name = "requested_lawyer_id")
+private User requestedLawyer;
 }

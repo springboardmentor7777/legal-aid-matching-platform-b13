@@ -164,4 +164,121 @@ public class CaseService {
                 .collect(Collectors.toList());
     }
 
+    public List<CaseResponse> getPendingCases(User user) {
+
+    List<Case> cases = caseRepository
+            .findByRequestedLawyerIdAndStatus(user.getId(), CaseStatus.IN_REVIEW);
+
+    return cases.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+}
+    public List<CaseResponse> getAssignedCases(User user) {
+
+    List<Case> cases = caseRepository
+            .findByAssignedLawyerIdAndStatus(user.getId(), CaseStatus.ASSIGNED);
+
+    return cases.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+}
+
+    public List<CaseResponse> getResolvedCases(User user) {
+
+    List<Case> cases = caseRepository
+            .findByAssignedLawyerIdAndStatus(user.getId(), CaseStatus.RESOLVED);
+
+    return cases.stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
+}
+
+
+    public CaseResponse acceptCase(Long id, User user) {
+
+    if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
+        throw new RuntimeException("Only lawyers/NGOs can accept cases");
+    }
+
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    // 🔥 Assign lawyer
+    caseObj.setAssignedLawyer(user);
+
+    // 🔥 Update status
+    caseObj.setStatus(CaseStatus.ASSIGNED);
+
+    return mapToResponse(caseRepository.save(caseObj));
+}
+
+    public CaseResponse declineCase(Long id, String reason, User user) {
+
+    if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
+        throw new RuntimeException("Only lawyers/NGOs can decline cases");
+    }
+
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    caseObj.setDeclineReason(reason);
+
+    // 🔥 IMPORTANT: Keep case open for other lawyers
+    caseObj.setStatus(CaseStatus.SUBMITTED);
+
+    return mapToResponse(caseRepository.save(caseObj));
+}
+
+public CaseResponse requestLawyer(Long caseId, Long lawyerId, User user) {
+
+    if (user.getRole() != Role.CITIZEN) {
+        throw new RuntimeException("Only citizens can request lawyers");
+    }
+
+    Case caseObj = caseRepository.findById(caseId)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    if (!caseObj.getUser().getId().equals(user.getId())) {
+        throw new RuntimeException("Unauthorized");
+    }
+
+    User lawyer = new User();
+    lawyer.setId(lawyerId); // lightweight reference
+
+    caseObj.setRequestedLawyer(lawyer);
+    caseObj.setStatus(CaseStatus.SUBMITTED);
+
+    return mapToResponse(caseRepository.save(caseObj));
+}
+
+public CaseResponse updateCase(Long id, CaseRequest request, User user) {
+
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    // ✅ Only owner can update
+    if (!caseObj.getUser().getId().equals(user.getId())) {
+        throw new RuntimeException("Unauthorized access");
+    }
+
+    // ✅ Update fields
+    caseObj.setTitle(request.getTitle());
+    caseObj.setDescription(request.getDescription());
+    caseObj.setLocation(request.getLocation());
+    
+
+    // 🔥 IMPORTANT (your custom fields)
+    caseObj.setPersonName(request.getPersonName());
+    caseObj.setContactInfo(request.getContactInfo());
+    caseObj.setCurrentStatus(request.getCurrentStatus());
+    caseObj.setFirNumber(request.getFirNumber());
+    caseObj.setFirFile(request.getFirFile());
+
+    // ❗ DO NOT override system status unless needed
+    // caseObj.setStatus(...);
+
+    Case updated = caseRepository.save(caseObj);
+
+    return mapToResponse(updated);
+}
 }

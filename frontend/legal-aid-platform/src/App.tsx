@@ -17,6 +17,7 @@ import ChatPage from "./pages/ChatPage";
 import MatchingResults from "./pages/MatchingResults";
 import AppointmentScheduler from "./pages/AppointmentScheduler";
 import SupportPage from "./pages/SupportPage";
+import EditCase from "./pages/EditCase";
 
 function App() {
   return (
@@ -120,6 +121,7 @@ function App() {
       <Route path="/pages/MatchingResult" element={<MatchingResults />} />
       <Route path="/pages/AppointmentScheduler/:matchId" element={<ProtectedRoute><AppointmentScheduler /></ProtectedRoute>} />
       <Route path="/pages/SupportPage" element={<SupportPage />} />
+      <Route path="/pages/EditCase/:caseId" element={<ProtectedRoute><EditCase /></ProtectedRoute>} />
 
 
     </Routes>
