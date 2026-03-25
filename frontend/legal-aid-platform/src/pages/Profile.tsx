@@ -2,6 +2,7 @@ import { useFetcher, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
+import PageTitle from "../components/PageTitle";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -33,6 +34,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   return (
+    <><PageTitle title="Profile - Legal Aid Matching Platform" />
     <div>
       <div>
         <nav className="bg-white p-5 shadow-lg flex items-center justify-between border-blue-100 border-b fixed top-0 left-0 right-0 z-50">
@@ -233,6 +235,6 @@ export default function Profile() {
       <footer className="text-gray-500 justify-center items-center flex p-10 bg-gray-100">
         Legal Aid Matching platform @2026
       </footer>
-    </div>
+    </div></>
   );
 }
