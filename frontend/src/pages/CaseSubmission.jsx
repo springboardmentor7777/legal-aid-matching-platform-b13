@@ -35,7 +35,7 @@ export default function CaseSubmission() {
     };
 
     try {
-      await API.post("/cases", payload);
+      await API.post("/api/cases", payload);
 
       alert("Case submitted successfully!");
 
