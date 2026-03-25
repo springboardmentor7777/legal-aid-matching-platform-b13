@@ -29,7 +29,7 @@ public class ChatService {
             throw new RuntimeException("Chat allowed only for accepted matches");
         }
 
-        // ✅ Determine receiver automatically
+        // ✅ Determine receiver
         User receiver = match.getProvider().getId().equals(sender.getId())
                 ? match.getCitizen()
                 : match.getProvider();
@@ -44,8 +44,12 @@ public class ChatService {
         return messageRepository.save(message);
     }
 
-    // ✅ GET CHAT HISTORY
+    // ✅ GET CHAT HISTORY (FIXED)
     public List<MessageEntity> getMessages(Long matchId) {
-        return messageRepository.findByMatchIdOrderByCreatedAtAsc(matchId);
+
+        MatchEntity match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+
+        return messageRepository.findByMatchOrderByCreatedAtAsc(match);
     }
 }
