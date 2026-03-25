@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import { useAuth } from "../auth/AuthContext";
+import PageTitle from "../components/PageTitle";
 
 type Role = "CITIZEN" | "LAWYER" | "NGO" | "ADMIN";
 
@@ -179,6 +180,7 @@ const Dashboard: React.FC = () => {
   const matchedCases = cases.filter((c) => c.status === "MATCHED").length;
 
   return (
+    <><PageTitle title="Dashboard - Legal Aid Matching Platform" />
     <div className="flex min-h-screen bg-blue-50">
 
       <div className="hidden lg:block w-64">
@@ -352,7 +354,7 @@ const Dashboard: React.FC = () => {
         </footer>
 
       </div>
-    </div>
+    </div></>
   );
 };
 
