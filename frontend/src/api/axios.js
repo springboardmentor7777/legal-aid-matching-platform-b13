@@ -15,7 +15,7 @@ API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
 
-    if (token && token !== "undefined") {
+    if (token ) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -31,7 +31,7 @@ API.interceptors.response.use(
     const status = error.response?.status;
 
     // Only logout if token is invalid
-    if (status === 401) {
+    if (status === 401 && window.location.pathname!=='/login') {
       console.log("Token expired → logging out");
 
       localStorage.removeItem("token");
