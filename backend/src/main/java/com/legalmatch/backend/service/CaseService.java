@@ -19,12 +19,14 @@ public class CaseService {
     private final CaseRepository caseRepository;
     private final UserRepository userRepository;
 
+    // ✅ CREATE CASE
     public CaseResponse createCase(CreateCaseRequest request, String username) {
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!user.getRole().name().equals("CITIZEN")) {
+        // ✅ FIXED ROLE CHECK (IMPORTANT)
+        if (!user.getRole().name().equals("ROLE_CITIZEN")) {
             throw new RuntimeException("Only citizens can create cases");
         }
 
@@ -41,6 +43,7 @@ public class CaseService {
         return mapToResponse(saved);
     }
 
+    // ✅ GET USER CASES
     public List<CaseResponse> getMyCases(String username) {
 
         User user = userRepository.findByEmail(username)
@@ -53,6 +56,7 @@ public class CaseService {
                 .collect(Collectors.toList());
     }
 
+    // ✅ GET CASE BY ID
     public CaseResponse getCaseById(Long id) {
 
         Case c = caseRepository.findById(id)
@@ -61,15 +65,17 @@ public class CaseService {
         return mapToResponse(c);
     }
 
+    // ✅ INTERNAL USE
     public Case getCaseEntityById(Long id) {
         return caseRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Case not found"));
     }
-    public Case save(Case legalCase){
-        return caseRepository.save(legalCase);
 
+    public Case save(Case legalCase) {
+        return caseRepository.save(legalCase);
     }
 
+    // ✅ MAPPER
     private CaseResponse mapToResponse(Case c) {
         return CaseResponse.builder()
                 .id(c.getId())
