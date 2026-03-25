@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 import { LuSquareArrowLeft } from "react-icons/lu";
+import PageTitle from "../components/PageTitle";
 
 interface CaseFormData {
   // STEP 1 - CASE DETAILS
@@ -183,6 +184,7 @@ const CaseSubmissionForm: React.FC = () => {
   };
 
   return (
+    <><PageTitle title="Case Submission Form - Legal Aid Matching Platform" />
     <div className="min-h-screen bg-blue-50">
       <Navbar title="Submit Case" name={user.username} role={user.role} toggleSidebar={() => { }} />
 
@@ -478,7 +480,7 @@ const CaseSubmissionForm: React.FC = () => {
           </form>
         </div>
       </div>
-    </div>
+    </div></>
   );
 };
 
