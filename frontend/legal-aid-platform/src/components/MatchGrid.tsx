@@ -15,7 +15,7 @@ export default function MatchGrid({ refreshTrigger }) {
       setLoading(true);
 
       const res = await axios.get(
-        "http://localhost:8081/matches/my",
+        "http://localhost:8081/matches/me",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
