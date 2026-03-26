@@ -23,7 +23,7 @@ public class CaseService {
     private final CaseRepository caseRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private final SystemLogService logService;
     @Transactional
     public CaseDTO createCase(User user, CreateCaseRequest request) {
         Case newCase = new Case();
@@ -84,6 +84,13 @@ public class CaseService {
         }
 
         Case savedCase = caseRepository.save(newCase);
+        logService.log(
+        	    "CASE_CREATED",
+        	    user.getEmail(),
+        	    user.getRole().name(),
+        	    "Case created with ID: " + savedCase.getId(),
+        	    "SUCCESS"
+        	);
         return mapToDTO(savedCase, user);
     }
 

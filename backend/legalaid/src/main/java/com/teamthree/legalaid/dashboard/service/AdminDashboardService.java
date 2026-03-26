@@ -1,11 +1,14 @@
 package com.teamthree.legalaid.dashboard.service;
 
 import com.teamthree.legalaid.dto.RecentUserDTO;
+
 import com.teamthree.legalaid.dashboard.dto.DashboardStatsDTO;
 import com.teamthree.legalaid.dto.RecentCaseDTO;
 import com.teamthree.legalaid.entity.Role;
+import com.teamthree.legalaid.entity.User;
 import com.teamthree.legalaid.repository.UserRepository;
 import com.teamthree.legalaid.repository.CaseRepository;
+import com.teamthree.legalaid.service.SystemLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 public class AdminDashboardService {
 
     private final UserRepository userRepository;
     private final CaseRepository caseRepository;
-
+    private final SystemLogService logService;
+    
     public DashboardStatsDTO getDashboardStats() {
         DashboardStatsDTO stats = new DashboardStatsDTO();
         stats.setTotalUsers(userRepository.count());
@@ -94,5 +99,33 @@ public class AdminDashboardService {
                 return map;
             })
             .collect(Collectors.toList());
+    }
+    
+    public void approveUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        logService.log(
+            "VERIFICATION_APPROVED",
+            "admin@gmail.com",
+            "ADMIN",
+            "Approved user ID: " + userId,
+            "SUCCESS"
+        );
+    }
+    
+    public void rejectUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        logService.log(
+            "VERIFICATION_REJECTED",
+            "admin@gmail.com",
+            "ADMIN",
+            "Rejected user ID: " + userId,
+            "SUCCESS"
+        );
     }
 }

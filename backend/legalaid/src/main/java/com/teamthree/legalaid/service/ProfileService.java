@@ -15,7 +15,7 @@ public class ProfileService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final SystemLogService logService;
     public UserProfileResponse getProfile(User user) {
         return mapToProfileResponse(user);
     }
@@ -47,8 +47,18 @@ public class ProfileService {
                 });
             user.setEmail(request.getEmail());
         }
+       
+        User updatedUser = userRepository.save(user);
 
-        return mapToProfileResponse(userRepository.save(user));
+        logService.log(
+            "UPDATE",
+            updatedUser.getEmail(),
+            updatedUser.getRole().name(),
+            "User updated profile",
+            "SUCCESS"
+        );
+
+        return mapToProfileResponse(updatedUser);
     }
 
     @Transactional
@@ -58,10 +68,24 @@ public class ProfileService {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        logService.log(
+        	    "UPDATE",
+        	    user.getEmail(),
+        	    user.getRole().name(),
+        	    "User changed password",
+        	    "SUCCESS"
+        	);
     }
 
     @Transactional
     public void deleteAccount(User user) {
+    	logService.log(
+    		    "DELETE",
+    		    user.getEmail(),
+    		    user.getRole().name(),
+    		    "User deleted account",
+    		    "SUCCESS"
+    		);
         userRepository.delete(user);
     }
 

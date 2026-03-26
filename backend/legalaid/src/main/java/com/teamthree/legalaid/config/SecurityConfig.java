@@ -49,6 +49,7 @@ public class SecurityConfig {
 
                 // ── Role-restricted endpoints ─────────────────────────
                 .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
+                .requestMatchers("/admin/logs/**").hasRole("ADMIN")
                 .requestMatchers("/lawyer/**").hasRole("LAWYER")
                 .requestMatchers("/ngo/**").hasRole("NGO")
                 .requestMatchers("/user/**").hasRole("USER")

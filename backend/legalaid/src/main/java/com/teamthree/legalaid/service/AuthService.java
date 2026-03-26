@@ -23,10 +23,19 @@ public class AuthService {
     private final JwtService jwtService;
     private final LawyerRepository lawyerRepository;
     private final NgoProfileRepository ngoProfileRepository;
-
+    private final SystemLogService logService;
+    
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            return AuthResponse.builder()
+            
+        	 logService.log(
+        	            "REGISTER",
+        	            request.getEmail(),
+        	            request.getRole().name(),
+        	            "Registration failed - Email already exists",
+        	            "FAILED"
+        	        );
+           return AuthResponse.builder()
                     .status("error")
                     .message("Email already exists")
                     .build();
@@ -64,7 +73,13 @@ public class AuthService {
             profile.setIsActive(true);
             ngoProfileRepository.save(profile);
         }
-
+        logService.log(
+                "REGISTER",
+                user.getEmail(),
+                user.getRole().name(),
+                "User registered successfully",
+                "SUCCESS"
+            );
         return AuthResponse.builder()
                 .status("success")
                 .message("User registered successfully")
@@ -73,16 +88,39 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
     	String email = request.getEmail().trim().toLowerCase();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+    	User user = userRepository.findByEmail(email)
+    	        .orElseThrow(() -> {
+    	            logService.log(
+    	                    "LOGIN",
+    	                    request.getEmail(),
+    	                    "UNKNOWN",
+    	                    "Login failed - User not found",
+    	                    "FAILED"
+    	            );
+    	            return new RuntimeException("User not found");
+    	        });
+      
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid password");
+            
+        	 logService.log(
+                     "LOGIN",
+                     user.getEmail(),
+                     user.getRole().name(),
+                     "Login failed - Invalid password",
+                     "FAILED"
+             );
+        	throw new RuntimeException("Invalid password");
         }
 
         String accessToken = jwtService.generateToken(user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getEmail());
-
+        logService.log(
+                "LOGIN",
+                user.getEmail(),
+                user.getRole().name(),
+                "User logged in successfully",
+                "SUCCESS"
+        );
         return AuthResponse.builder()
                 .status("success")
                 .accessToken(accessToken)
