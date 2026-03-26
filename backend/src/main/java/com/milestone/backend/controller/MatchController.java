@@ -31,6 +31,23 @@ public class MatchController {
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // GET /matches/case/{caseId}
+    // Returns all non-REJECTED matches for a specific case.
+    // FIX: Added to support the dropdown-filtered view in MatchingResults.
+    // The old GET /matches/me endpoint returned all cases at once, which meant
+    // the dropdown selection was visually present but had no effect on what cards
+    // were shown. This endpoint scopes the results to exactly one case.
+    // Only the Citizen who owns the case can call this.
+    // ─────────────────────────────────────────────────────────────────────────────
+    @GetMapping("/case/{caseId}")
+    @PreAuthorize("hasRole('CITIZEN')")
+    public List<MatchResponse> getMatchesForCase(
+            @PathVariable Long caseId,
+            @AuthenticationPrincipal User currentUser) {
+        return matchService.getMatchesForCase(caseId, currentUser);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // GET /matches/me
     // Returns matches scoped to the calling user:
     //   Citizens   → all matches across their cases
