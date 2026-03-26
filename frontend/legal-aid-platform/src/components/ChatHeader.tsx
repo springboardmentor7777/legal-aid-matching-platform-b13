@@ -2,105 +2,146 @@ import React, { useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 
 interface Props {
-  selectedUser: any;
+  selectedUser: any; // ideally replace with proper MatchDTO later
 }
 
 const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
-  const { user } = useAuth(); //  Grab the logged-in user to check their role
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control the popup
+  const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const displayName = selectedUser.displayName || `Match #${selectedUser.matchId || selectedUser.id}`;
-  const initial = displayName ? displayName.charAt(0).toUpperCase() : "U";
-  const displayRole = selectedUser.providerType || "CITIZEN (CLIENT)";
-
-  //  SMART LOGIC: Flip the modal details based on who is logged in!
   const isCitizen = user?.role === "CITIZEN";
+
+  // ✅ SAME LOGIC AS APPOINTMENT SCHEDULER
+  const displayName = isCitizen
+    ? selectedUser?.providerName || selectedUser?.displayName
+    : selectedUser?.clientName || selectedUser?.displayName;
+
+  const displayRole = isCitizen
+    ? selectedUser?.providerType || "Lawyer"
+    : "Citizen";
+
+  const initial = displayName
+    ? displayName.charAt(0).toUpperCase()
+    : "U";
+
+  const matchId = selectedUser?.matchId || selectedUser?.id;
+
+  // Modal dynamic labels
   const modalTitle = isCitizen ? "Provider Profile" : "Client Profile";
-  const profileRole = isCitizen ? displayRole : "CITIZEN";
-  
-  // (These will gracefully hide if your backend doesn't send email/phone data yet)
-  const profileEmail = isCitizen ? selectedUser.providerEmail : selectedUser.clientEmail;
-  const profilePhone = isCitizen ? selectedUser.providerPhone : selectedUser.clientPhone;
+  const profileRole = displayRole;
+
+  // Optional fields (safe fallback)
+  const profileEmail = isCitizen
+    ? selectedUser?.providerEmail
+    : selectedUser?.clientEmail;
+
+  const profilePhone = isCitizen
+    ? selectedUser?.providerPhone
+    : selectedUser?.clientPhone;
 
   return (
     <div className="flex items-center justify-between p-4 border-b border-blue-200 bg-white relative">
+      
+      {/* LEFT SIDE */}
       <div className="flex items-center">
         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold mr-3 shrink-0">
           {initial}
         </div>
+
         <div>
           <div className="font-semibold text-blue-900">
-            {displayName}
+            {displayName || "Unknown User"}
           </div>
-          <div className="text-sm text-gray-500 capitalize">
-            {displayRole.toLowerCase()}
+          <div className="text-sm text-gray-500">
+            {displayRole}
           </div>
         </div>
       </div>
 
-      {/*  Added the onClick trigger here */}
-      <button 
+      {/* VIEW PROFILE BUTTON */}
+      <button
         onClick={() => setIsModalOpen(true)}
         className="px-4 py-1.5 border border-blue-300 text-blue-700 rounded-md hover:bg-blue-50 transition text-sm font-medium"
       >
         View Profile
       </button>
 
-      {/* THE PROFILE MODAL  */}
+      {/* PROFILE MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden animate-fade-in-up">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-sm">
+          
+          <div className="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden">
             
-            {/* Modal Header */}
+            {/* HEADER */}
             <div className="bg-blue-600 p-4 text-white flex justify-between items-center">
               <h2 className="text-lg font-bold">{modalTitle}</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-blue-200 hover:text-white font-bold text-2xl leading-none"
+                className="text-blue-200 hover:text-white text-2xl"
               >
                 &times;
               </button>
             </div>
 
-            {/* Modal Body */}
+            {/* BODY */}
             <div className="p-6">
+              
               <div className="flex flex-col items-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold text-4xl mb-3 shadow-inner">
+                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold text-4xl mb-3">
                   {initial}
                 </div>
-                <h3 className="text-xl font-bold text-blue-900 text-center">{displayName}</h3>
+
+                <h3 className="text-xl font-bold text-blue-900 text-center">
+                  {displayName}
+                </h3>
+
                 <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full mt-2 uppercase font-bold tracking-wider">
                   {profileRole}
                 </span>
               </div>
 
+              {/* DETAILS */}
               <div className="space-y-3 text-sm bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <div className="flex justify-between border-b border-gray-200 pb-2">
-                  <span className="text-gray-500 font-medium">Match ID:</span>
-                  <span className="font-bold text-blue-900">#{selectedUser.matchId || selectedUser.id}</span>
-                </div>
                 
-                {/* Dynamically show email/phone if they exist in the backend DTO */}
+                <div className="flex justify-between border-b border-gray-200 pb-2">
+                  <span className="text-gray-500 font-medium">
+                    Match ID:
+                  </span>
+                  <span className="font-bold text-blue-900">
+                    #{matchId}
+                  </span>
+                </div>
+
                 {profileEmail && (
                   <div className="flex justify-between border-b border-gray-200 pb-2">
-                    <span className="text-gray-500 font-medium">Email:</span>
-                    <span className="font-bold text-blue-900">{profileEmail}</span>
+                    <span className="text-gray-500 font-medium">
+                      Email:
+                    </span>
+                    <span className="font-bold text-blue-900">
+                      {profileEmail}
+                    </span>
                   </div>
                 )}
+
                 {profilePhone && (
-                  <div className="flex justify-between pb-1">
-                    <span className="text-gray-500 font-medium">Phone:</span>
-                    <span className="font-bold text-blue-900">{profilePhone}</span>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500 font-medium">
+                      Phone:
+                    </span>
+                    <span className="font-bold text-blue-900">
+                      {profilePhone}
+                    </span>
                   </div>
                 )}
+
               </div>
             </div>
 
-            {/* Modal Footer */}
+            {/* FOOTER */}
             <div className="bg-gray-50 p-4 flex justify-end border-t border-gray-100">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="bg-white border border-gray-300 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-100 transition text-sm font-bold shadow-sm"
+                className="bg-white border border-gray-300 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-100 transition text-sm font-bold"
               >
                 Close
               </button>
@@ -109,7 +150,6 @@ const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
           </div>
         </div>
       )}
-      
     </div>
   );
 };

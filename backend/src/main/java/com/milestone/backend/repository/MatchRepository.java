@@ -22,6 +22,10 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     // All matches generated for a given case
     List<Match> findByCaseId(Long caseId);
 
+    // All non-REJECTED matches for a case — used by getMatchesForCase()
+    // to show only active matches when the citizen selects a case from the dropdown
+    List<Match> findByCaseIdAndStatusNot(Long caseId, MatchStatus status);
+
     // All matches for cases owned by a given citizen (traverses case → user)
     List<Match> findByCaseEntity_User_Id(Long userId);
 
@@ -40,6 +44,20 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     // Used to find which cases are waiting for this Lawyer/NGO (PENDING matches).
     // ─────────────────────────────────────────────────────────────────────────────
     List<Match> findByUserIdAndStatus(Long userId, MatchStatus status);
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NEW: Per-provider duplicate guard used inside generateMatches().
+    // Returns true if a Match row already exists for this (caseId, providerId) pair,
+    // preventing duplicate match cards when the citizen clicks Generate more than once.
+    // ─────────────────────────────────────────────────────────────────────────────
+    boolean existsByCaseIdAndUserId(Long caseId, Long userId);
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NEW: Used in getMyMatches() to fetch a citizen's matches while excluding
+    // REJECTED rows. Without this filter, stale REJECTED matches from old generate
+    // runs would show up as extra cards on the citizen's matching results screen.
+    // ─────────────────────────────────────────────────────────────────────────────
+    List<Match> findByCaseEntity_User_IdAndStatusNot(Long userId, MatchStatus status);
 
     // ─────────────────────────────────────────────────────────────────────────────
     // NEW: Added for CaseService.getCaseById()

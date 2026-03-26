@@ -172,8 +172,12 @@ export default function MatchingResults() {
                 Generate Matches
               </button>
 
-              {/* Matches */}
-              <MatchGrid refreshTrigger={refreshTrigger} />
+              {/* Matches — FIX: pass selectedCase so MatchGrid only shows
+                  matches for the chosen case, not all cases at once */}
+              <MatchGrid
+                refreshTrigger={refreshTrigger}
+                selectedCaseId={selectedCase}
+              />
 
             </div>
           </div>

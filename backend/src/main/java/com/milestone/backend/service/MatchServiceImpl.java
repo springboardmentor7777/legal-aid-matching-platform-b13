@@ -67,6 +67,15 @@ public class MatchServiceImpl implements MatchService {
                 continue;
             }
 
+            // FIX: Per-provider duplicate guard.
+            // The top-level existingMatches check only catches a full re-generation
+            // attempt, but repeated "Generate" button clicks can still sneak through
+            // if the first batch was only partially saved. This per-row check ensures
+            // we never create two Match rows for the same (caseId, providerId) pair.
+            if (matchRepository.existsByCaseIdAndUserId(caseId, user.getId())) {
+                continue;
+            }
+
             double score = calculateScore(caseObj, user);
 
             Match match = new Match();
@@ -99,8 +108,12 @@ public class MatchServiceImpl implements MatchService {
         List<Match> matches;
 
         if (user.getRole() == Role.CITIZEN) {
-            // Look up matches by tracing case → user relationship
-            matches = matchRepository.findByCaseEntity_User_Id(user.getId());
+            // FIX: Fetch only non-REJECTED matches for the citizen.
+            // Previously this fetched ALL matches across ALL of the citizen's cases,
+            // including REJECTED rows left over from old generate runs, causing
+            // duplicate/stale cards to appear on every subsequent generate click.
+            matches = matchRepository.findByCaseEntity_User_IdAndStatusNot(
+                    user.getId(), MatchStatus.REJECTED);
         } else {
             // Lawyers/NGOs: only show PENDING and ACCEPTED matches so they can
             // see who has chosen them without exposing other citizens' data
@@ -108,6 +121,34 @@ public class MatchServiceImpl implements MatchService {
         }
 
         return matches.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Get matches for a specific case (Citizen only)
+    //
+    // FIX: Added to support the dropdown in MatchingResults.tsx.
+    // GET /matches/me was returning all matches across all of the citizen's cases,
+    // so switching the dropdown had no visible effect — the grid always showed
+    // everything. This method scopes results to one case and excludes REJECTED
+    // matches so stale cards from old runs don't pollute the view.
+    // ─────────────────────────────────────────────────────────────────────────────
+    @Override
+    public List<MatchResponse> getMatchesForCase(Long caseId, User currentUser) {
+
+        Case caseObj = caseRepository.findById(caseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found"));
+
+        // Only the Citizen who owns the case can view its matches
+        if (!caseObj.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access to this case's matches.");
+        }
+
+        // Return non-REJECTED matches sorted by score descending
+        return matchRepository.findByCaseIdAndStatusNot(caseId, MatchStatus.REJECTED)
+                .stream()
+                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
                 .map(this::mapToResponse)
                 .toList();
     }

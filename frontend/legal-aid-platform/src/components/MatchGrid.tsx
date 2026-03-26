@@ -2,28 +2,45 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import MatchCard from "./MatchCard";
 
-export default function MatchGrid({ refreshTrigger }) {
+// FIX: Added `selectedCaseId` prop.
+// Previously MatchGrid had no knowledge of which case was selected in the
+// dropdown — it always fetched ALL matches across ALL of the citizen's cases
+// via GET /matches/me, ignoring the dropdown selection entirely.
+// Now it receives the selected case ID and scopes the fetch to that case only.
+export default function MatchGrid({ refreshTrigger, selectedCaseId }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Re-fetch matches whenever the parent triggers a refresh
-  // (e.g. after the Citizen clicks "Generate Matches").
+  // Re-fetch whenever the parent triggers a refresh (Generate button clicked)
+  // OR whenever the citizen switches to a different case in the dropdown.
   useEffect(() => {
     fetchMatches();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, selectedCaseId]); // FIX: also re-fetch on case change
 
   const fetchMatches = async () => {
+    // FIX: If no case is selected yet, clear the grid and don't fetch.
+    // Previously this would fetch all matches on load before the citizen
+    // had even picked a case, flooding the grid with unrelated results.
+    if (!selectedCaseId) {
+      setMatches([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // GET /matches/me — returns matches scoped to the current user:
-      //   Citizens  → all matches across their cases
-      //   Lawyers/NGOs → matches where they are the assigned provider
-      const res = await axios.get("http://localhost:8081/matches/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
+      // FIX: Fetch matches scoped to the selected case via the case-specific
+      // endpoint instead of GET /matches/me (which returns all cases).
+      // GET /matches/case/{caseId} → only matches for this case
+      const res = await axios.get(
+        `http://localhost:8081/matches/case/${selectedCaseId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      );
 
       setMatches(res.data);
     } catch (err) {
@@ -58,10 +75,14 @@ export default function MatchGrid({ refreshTrigger }) {
     );
   };
 
+  // No case selected yet — prompt the citizen to pick one
+  if (!selectedCaseId)
+    return <p className="text-gray-500">Select a case above to view matches.</p>;
+
   if (loading) return <p className="text-gray-500">Loading matches...</p>;
 
   if (matches.length === 0)
-    return <p className="text-gray-500">No matches found. Generate matches first.</p>;
+    return <p className="text-gray-500">No matches found. Click "Generate Matches" to find providers.</p>;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
