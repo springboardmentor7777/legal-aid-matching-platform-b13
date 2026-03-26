@@ -22,6 +22,10 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     // All matches generated for a given case
     List<Match> findByCaseId(Long caseId);
 
+    // All non-REJECTED matches for a case — used by getMatchesForCase()
+    // to show only active matches when the citizen selects a case from the dropdown
+    List<Match> findByCaseIdAndStatusNot(Long caseId, MatchStatus status);
+
     // All matches for cases owned by a given citizen (traverses case → user)
     List<Match> findByCaseEntity_User_Id(Long userId);
 
