@@ -42,6 +42,20 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findByUserIdAndStatus(Long userId, MatchStatus status);
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // NEW: Per-provider duplicate guard used inside generateMatches().
+    // Returns true if a Match row already exists for this (caseId, providerId) pair,
+    // preventing duplicate match cards when the citizen clicks Generate more than once.
+    // ─────────────────────────────────────────────────────────────────────────────
+    boolean existsByCaseIdAndUserId(Long caseId, Long userId);
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NEW: Used in getMyMatches() to fetch a citizen's matches while excluding
+    // REJECTED rows. Without this filter, stale REJECTED matches from old generate
+    // runs would show up as extra cards on the citizen's matching results screen.
+    // ─────────────────────────────────────────────────────────────────────────────
+    List<Match> findByCaseEntity_User_IdAndStatusNot(Long userId, MatchStatus status);
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // NEW: Added for CaseService.getCaseById()
     // Returns true if a provider has any match for the given case whose status
     // is one of the supplied values (e.g. PENDING or ACCEPTED).
