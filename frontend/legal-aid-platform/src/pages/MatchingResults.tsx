@@ -8,7 +8,9 @@ import axios from "axios";
 import PageTitle from "../components/PageTitle";
 
 export default function MatchingResults() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
+
+  const [loading, setLoading] = useState<boolean>();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [cases, setCases] = useState<any[]>([]);
