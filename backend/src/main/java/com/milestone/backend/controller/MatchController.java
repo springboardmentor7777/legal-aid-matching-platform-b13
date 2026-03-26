@@ -101,7 +101,7 @@ public class MatchController {
     // the case owner or the matched provider (throws 403 otherwise).
     // ─────────────────────────────────────────────────────────────────────────────
     @PutMapping("/{matchId}/reject")
-    @PreAuthorize("hasAnyRole('CITIZEN','LAWYER','NGO')")
+    @PreAuthorize("hasAnyRole('CITIZEN')")
     public MatchResponse rejectMatch(
             @PathVariable Long matchId,
             @AuthenticationPrincipal User currentUser) {
