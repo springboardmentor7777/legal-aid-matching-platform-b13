@@ -17,5 +17,4 @@ public interface MatchService {
 
     MatchResponse getMatchById(Long matchId, User currentUser);
 
-    MatchResponse expressInterest(Long matchId, User currentUser);
 }
