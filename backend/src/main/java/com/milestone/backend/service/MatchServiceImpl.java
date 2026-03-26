@@ -126,6 +126,34 @@ public class MatchServiceImpl implements MatchService {
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
+    // Get matches for a specific case (Citizen only)
+    //
+    // FIX: Added to support the dropdown in MatchingResults.tsx.
+    // GET /matches/me was returning all matches across all of the citizen's cases,
+    // so switching the dropdown had no visible effect — the grid always showed
+    // everything. This method scopes results to one case and excludes REJECTED
+    // matches so stale cards from old runs don't pollute the view.
+    // ─────────────────────────────────────────────────────────────────────────────
+    @Override
+    public List<MatchResponse> getMatchesForCase(Long caseId, User currentUser) {
+
+        Case caseObj = caseRepository.findById(caseId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found"));
+
+        // Only the Citizen who owns the case can view its matches
+        if (!caseObj.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access to this case's matches.");
+        }
+
+        // Return non-REJECTED matches sorted by score descending
+        return matchRepository.findByCaseIdAndStatusNot(caseId, MatchStatus.REJECTED)
+                .stream()
+                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
     // Accept a match — called by the Citizen
     //
     // FIX: Removed the INTERESTED state requirement. The old flow required the
