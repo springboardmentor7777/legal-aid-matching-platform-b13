@@ -12,6 +12,9 @@ interface Case {
   title: string;
   description: string;
   status?: string;
+  // FIX: Added matchId so the pending section can call the correct match
+  // endpoint (PUT /matches/{matchId}/reject) instead of the case endpoint.
+  matchId?: number;
 }
 
 // CHANGED: Added `id` and `status` fields to the Appointment interface.
@@ -97,12 +100,32 @@ const Dashboard: React.FC = () => {
 
     const fetchPending = async () => {
       try {
-        const res = await fetch("http://localhost:8081/cases/pending", {
+        // FIX: Was calling GET /cases/pending which queries by requestedLawyerId
+        // and CaseStatus.IN_REVIEW — a status that is never set in this flow,
+        // so the list was always empty.
+        //
+        // Now calls GET /matches/me which returns all matches for this provider.
+        // We filter client-side to PENDING status so the lawyer only sees cases
+        // where the citizen has generated matches and is waiting for a response.
+        // Each result includes both caseId and matchId, which we need below to
+        // call the correct reject endpoint when the lawyer declines.
+        const res = await fetch("http://localhost:8081/matches/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) { setPendingCases([]); return; }
         const data = await res.json();
-        setPendingCases(Array.isArray(data) ? data : []);
+        const pending = Array.isArray(data)
+          ? data
+              .filter((m: any) => m.status === "PENDING")
+              .map((m: any) => ({
+                id: m.caseId,
+                matchId: m.matchId,        // needed for reject endpoint
+                title: m.caseTitle || `Case #${m.caseId}`,
+                description: m.clientName ? `Client: ${m.clientName}` : "",
+                status: m.status,
+              }))
+          : [];
+        setPendingCases(pending);
       } catch {
         setPendingCases([]);
       }
@@ -148,23 +171,50 @@ const Dashboard: React.FC = () => {
 
   // ─── Case action handlers (UNCHANGED) ────────────────────────────────────────
 
+  // FIX: Added res.ok check — previously a failed accept silently removed the
+  // card from state, making it look like success when the backend rejected it.
   const handleAccept = async (id: number) => {
-    await fetch(`http://localhost:8081/cases/${id}/accept`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setPendingCases((prev) => prev.filter((c) => c.id !== id));
+    try {
+      const res = await fetch(`http://localhost:8081/cases/${id}/accept`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { alert("Failed to accept case. Please try again."); return; }
+      setPendingCases((prev) => prev.filter((c) => c.id !== id));
+    } catch {
+      alert("Failed to accept case. Please try again.");
+    }
   };
 
-  const handleDecline = async (id: number) => {
+  // FIX: Was only calling POST /cases/{id}/decline which records the decline
+  // reason on the Case entity but never touched the Match record — so the match
+  // stayed PENDING and the case kept reappearing in the pending list on refresh.
+  //
+  // Now also calls PUT /matches/{matchId}/reject to set MatchStatus.REJECTED,
+  // which removes it from future GET /matches/me PENDING results.
+  // matchId comes from the pending case object populated by fetchPending().
+  const handleDecline = async (id: number, matchId?: number) => {
     const reason = prompt("Enter reason for declining:");
     if (!reason) return;
-    await fetch(`http://localhost:8081/cases/${id}/decline`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ reason }),
-    });
-    setPendingCases((prev) => prev.filter((c) => c.id !== id));
+    try {
+      // Step 1: Reject the match record so it no longer appears in pending list
+      if (matchId) {
+        await fetch(`http://localhost:8081/matches/${matchId}/reject`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+      // Step 2: Record the decline reason on the case entity
+      const res = await fetch(`http://localhost:8081/cases/${id}/decline`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) { alert("Failed to decline case. Please try again."); return; }
+      setPendingCases((prev) => prev.filter((c) => c.id !== id));
+    } catch {
+      alert("Failed to decline case. Please try again.");
+    }
   };
 
   // ─── Appointment action handlers (ALL NEW) ────────────────────────────────────
@@ -395,7 +445,7 @@ const Dashboard: React.FC = () => {
                           Accept
                         </button>
                         <button
-                          onClick={() => handleDecline(c.id)}
+                          onClick={() => handleDecline(c.id, c.matchId)}
                           className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
                         >
                           Decline
