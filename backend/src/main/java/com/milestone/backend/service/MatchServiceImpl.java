@@ -23,16 +23,20 @@ public class MatchServiceImpl implements MatchService {
     private final CaseRepository caseRepository;
     private final UserRepository userRepository;
 
-    /**
-     * Generate matches for a case (NO DUPLICATES)
-     */
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Generate matches for a case (idempotent — no duplicates)
+    //
+    // Scores all available Lawyers and NGOs against the case using calculateScore().
+    // Saves each scored Match with status PENDING, then returns the top 5 by score.
+    // If matches already exist for this case, they are returned without re-generating.
+    // ─────────────────────────────────────────────────────────────────────────────
     @Override
     public List<MatchResponse> generateMatches(Long caseId) {
 
         Case caseObj = caseRepository.findById(caseId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found"));
 
-        //  Prevent duplicate generation for same case
+        // Guard: if matches were already generated for this case, return them sorted
         List<Match> existingMatches = matchRepository.findByCaseId(caseId);
         if (!existingMatches.isEmpty()) {
             return existingMatches.stream()
@@ -42,21 +46,21 @@ public class MatchServiceImpl implements MatchService {
                     .toList();
         }
 
-        List<User> users = userRepository.findByRoleIn(
-                List.of(Role.LAWYER, Role.NGO));
+        // Fetch all Lawyers and NGOs to score against this case
+        List<User> users = userRepository.findByRoleIn(List.of(Role.LAWYER, Role.NGO));
 
         List<Match> matches = new ArrayList<>();
 
         for (User user : users) {
 
-            // Skip unavailable lawyers
+            // Skip Lawyers who have no profile or are marked unavailable
             if (user.getRole() == Role.LAWYER &&
                     (user.getLawyerProfile() == null ||
                             !Boolean.TRUE.equals(user.getLawyerProfile().getIsAvailable()))) {
                 continue;
             }
 
-            //  Skip unavailable NGOs
+            // Skip NGOs who have no profile or are marked unavailable
             if (user.getRole() == Role.NGO &&
                     (user.getNgoProfile() == null ||
                             !Boolean.TRUE.equals(user.getNgoProfile().getIsAvailable()))) {
@@ -69,12 +73,12 @@ public class MatchServiceImpl implements MatchService {
             match.setCaseId(caseId);
             match.setUserId(user.getId());
             match.setScore(score);
-            match.setStatus(MatchStatus.PENDING);
+            match.setStatus(MatchStatus.PENDING);   // All new matches start as PENDING
 
             matches.add(matchRepository.save(match));
         }
 
-        // Sort by score (desc)
+        // Sort descending by score and return top 5
         matches.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
 
         return matches.stream()
@@ -83,17 +87,23 @@ public class MatchServiceImpl implements MatchService {
                 .toList();
     }
 
-    /**
-     * Get matches for current user
-     */
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Get matches for the currently authenticated user
+    //
+    // Citizens   → all matches across their cases (via case ownership)
+    // Lawyers/NGOs → only matches where they are the assigned provider
+    // ─────────────────────────────────────────────────────────────────────────────
     @Override
     public List<MatchResponse> getMyMatches(User user) {
 
         List<Match> matches;
 
         if (user.getRole() == Role.CITIZEN) {
+            // Look up matches by tracing case → user relationship
             matches = matchRepository.findByCaseEntity_User_Id(user.getId());
         } else {
+            // Lawyers/NGOs: only show PENDING and ACCEPTED matches so they can
+            // see who has chosen them without exposing other citizens' data
             matches = matchRepository.findVisibleMatchesForProvider(user.getId());
         }
 
@@ -102,37 +112,19 @@ public class MatchServiceImpl implements MatchService {
                 .toList();
     }
 
-    /**
-     * Accept match (only one allowed per case)
-     */
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Accept a match — called by the Citizen
+    //
+    // FIX: Removed the INTERESTED state requirement. The old flow required the
+    // Lawyer to "express interest" before the Citizen could accept, but that step
+    // has been removed. Citizens can now accept any PENDING match directly.
+    //
+    // Flow: PENDING → ACCEPTED
+    // Side effect: all other PENDING matches for the same case → REJECTED
+    // ─────────────────────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public MatchResponse acceptMatch(Long matchId, User currentUser) {
-
-        // if (currentUser.getRole() != Role.LAWYER &&
-        //         currentUser.getRole() != Role.NGO) {
-        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only lawyer/NGO can accept");
-        // }
-
-        // Match match = matchRepository.findById(matchId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
-
-        // //  Check if case already accepted
-        // boolean alreadyAccepted = matchRepository.existsByCaseIdAndStatus(
-        //         match.getCaseId(), MatchStatus.ACCEPTED);
-
-        // if (alreadyAccepted) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Case already accepted");
-        // }
-
-        // //  Accept this match
-        // match.setStatus(MatchStatus.ACCEPTED);
-        // matchRepository.save(match);
-
-        // //  Reject all other matches
-        // matchRepository.rejectOtherMatches(match.getCaseId(), matchId);
-
-        // return mapToResponse(match);
 
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
@@ -140,139 +132,132 @@ public class MatchServiceImpl implements MatchService {
         Case caseObj = caseRepository.findById(match.getCaseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Case not found"));
 
-        // Only the Citizen who owns the case can accept
+        // Only the Citizen who owns the case can accept a provider
         if (!caseObj.getUser().getId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the citizen who created the case can accept a provider.");
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Only the citizen who created the case can accept a provider."
+            );
         }
 
-        if (match.getStatus() != MatchStatus.INTERESTED) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot accept: The provider has not expressed interest yet.");
+        // FIX: Previously this check required status == INTERESTED, which blocked
+        // acceptance because expressInterest has been removed from the flow.
+        // Now we only require that the match is still PENDING (not already
+        // accepted or rejected).
+        if (match.getStatus() != MatchStatus.PENDING) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Cannot accept: this match is already " + match.getStatus().name() + "."
+            );
         }
 
         match.setStatus(MatchStatus.ACCEPTED);
         match = matchRepository.save(match);
 
-        // Reject all other matches (PENDING or INTERESTED) for this case
+        // Automatically reject all remaining PENDING matches for this case
+        // so no other provider is left waiting
         matchRepository.rejectOtherMatches(match.getCaseId(), match.getId());
 
         return mapToResponse(match);
     }
 
+    // NOTE: expressInterest() has been removed.
+    // The INTERESTED status and the two-step accept flow (provider → citizen)
+    // are no longer part of this system. Citizens accept providers directly.
 
-    @Override
-    @Transactional
-    public MatchResponse expressInterest(Long matchId, User currentUser) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
-
-        // Only the assigned provider can express interest
-        if (!match.getUserId().equals(currentUser.getId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the assigned provider can express interest.");
-        }
-
-        if (match.getStatus() != MatchStatus.PENDING) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Match is not in PENDING state.");
-        }
-
-        match.setStatus(MatchStatus.INTERESTED);
-        return mapToResponse(matchRepository.save(match));
-    }
-
-
-    /**
-     * Reject match
-     */
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Reject a match — can be called by either the Citizen or the Provider
+    //
+    // Citizen    → dismisses a match they do not want (e.g. score is too low)
+    // Lawyer/NGO → declines the case before the Citizen accepts
+    //
+    // Flow: PENDING → REJECTED
+    // ─────────────────────────────────────────────────────────────────────────────
     @Override
     public MatchResponse rejectMatch(Long matchId, User currentUser) {
-
-        // if (currentUser.getRole() != Role.LAWYER &&
-        //         currentUser.getRole() != Role.NGO) {
-        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only lawyer/NGO can reject");
-        // }
-
-        // Match match = matchRepository.findById(matchId)
-        //         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
-
-        // match.setStatus(MatchStatus.REJECTED);
-        // matchRepository.save(match);
-
-        // return mapToResponse(match);
 
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
 
         Case caseObj = caseRepository.findById(match.getCaseId()).orElse(null);
 
+        // Determine if the caller is the matched provider or the case's citizen
         boolean isProvider = match.getUserId().equals(currentUser.getId());
-        boolean isCitizen = caseObj != null && caseObj.getUser().getId().equals(currentUser.getId());
+        boolean isCitizen  = caseObj != null && caseObj.getUser().getId().equals(currentUser.getId());
 
         if (!isProvider && !isCitizen) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to reject this match.");
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Unauthorized to reject this match."
+            );
         }
 
         match.setStatus(MatchStatus.REJECTED);
         return mapToResponse(matchRepository.save(match));
     }
 
-   /**
-     * Matching Algorithm
-     */
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Matching algorithm
+    //
+    // Returns a score out of 100 for a given (case, user) pair.
+    // Lawyers and NGOs are scored differently based on their profile fields.
+    // ─────────────────────────────────────────────────────────────────────────────
     private double calculateScore(Case caseObj, User user) {
 
         double score = 0.0;
         String caseCategory = Optional.ofNullable(caseObj.getCategory()).orElse("");
-        String caseLocation = Optional.ofNullable(caseObj.getLocation()).orElse("");
+        String caseLocation  = Optional.ofNullable(caseObj.getLocation()).orElse("");
 
-        // 1. SCORING FOR LAWYERS
+        // ── Lawyer scoring ────────────────────────────────────────────────────────
         if (user.getRole() == Role.LAWYER && user.getLawyerProfile() != null) {
 
             LawyerProfile profile = user.getLawyerProfile();
-            String specialization = Optional.ofNullable(profile.getSpecialization()).orElse("");
-            String lawyerLocation = Optional.ofNullable(profile.getLocation()).orElse("");
+            String specialization  = Optional.ofNullable(profile.getSpecialization()).orElse("");
+            String lawyerLocation  = Optional.ofNullable(profile.getLocation()).orElse("");
 
-            // Category Match
+            // +40 if the lawyer's specialization matches the case category
             if (specialization.equalsIgnoreCase(caseCategory)) {
                 score += 40;
             }
 
-            // Experience Match
+            // Experience bonus (tiered)
             if (profile.getExperience() != null) {
                 int exp = profile.getExperience();
-                if (exp >= 10) score += 25;
-                else if (exp >= 5) score += 18;
-                else if (exp >= 2) score += 10;
-                else score += 5;
+                if      (exp >= 10) score += 25;
+                else if (exp >= 5)  score += 18;
+                else if (exp >= 2)  score += 10;
+                else                score += 5;
             }
 
-            // Location Match
+            // +20 if the lawyer is in the same location as the case
             if (lawyerLocation.equalsIgnoreCase(caseLocation)) {
                 score += 20;
             }
 
-            // Availability Bonus
+            // +15 availability bonus
             if (Boolean.TRUE.equals(profile.getIsAvailable())) {
                 score += 15;
             }
         }
 
-        // 2. SCORING FOR NGOS ( FIXED LOGIC)
+        // ── NGO scoring ───────────────────────────────────────────────────────────
         if (user.getRole() == Role.NGO && user.getNgoProfile() != null) {
 
             NgoProfile profile = user.getNgoProfile();
-            String serviceArea = Optional.ofNullable(profile.getServiceArea()).orElse("");
-            String ngoLocation = Optional.ofNullable(profile.getLocation()).orElse("");
+            String serviceArea  = Optional.ofNullable(profile.getServiceArea()).orElse("");
+            String ngoLocation  = Optional.ofNullable(profile.getLocation()).orElse("");
 
-            // Category/Service Area Match ( Fixed: Service Area to Category)
+            // +40 if the NGO's service area matches the case category
             if (serviceArea.equalsIgnoreCase(caseCategory)) {
                 score += 40;
             }
 
-            // Location Match ( Fixed: Location to Location)
+            // +30 if the NGO is in the same location as the case
             if (ngoLocation.equalsIgnoreCase(caseLocation)) {
-                score += 30; 
+                score += 30;
             }
 
-            // Availability Bonus
+            // +10 availability bonus
             if (Boolean.TRUE.equals(profile.getIsAvailable())) {
                 score += 10;
             }
@@ -280,19 +265,25 @@ public class MatchServiceImpl implements MatchService {
 
         return score;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Map a Match entity to a MatchResponse DTO
+    //
+    // Enriches the response with provider name/email/type and the client's name
+    // so the frontend does not need to make separate API calls for display.
+    // ─────────────────────────────────────────────────────────────────────────────
     private MatchResponse mapToResponse(Match match) {
 
         MatchResponse response = new MatchResponse();
-
         response.setMatchId(match.getId());
         response.setCaseId(match.getCaseId());
         response.setUserId(match.getUserId());
         response.setScore(match.getScore());
         response.setStatus(match.getStatus().name());
 
-        // ADDED LOGIC TO FETCH NAMES FOR THE FRONTEND
+        // Fetch provider and client details for frontend display
         try {
-            // Get the Provider (Lawyer or NGO)
+            // Provider (Lawyer or NGO) details
             User matchedProvider = userRepository.findById(match.getUserId()).orElse(null);
             if (matchedProvider != null) {
                 response.setProviderName(matchedProvider.getName());
@@ -300,26 +291,35 @@ public class MatchServiceImpl implements MatchService {
                 response.setProviderType(matchedProvider.getRole().name());
             }
 
-            // Get the Client (Citizen who created the case)
+            // Client (Citizen who created the case) name
             Case caseEntity = caseRepository.findById(match.getCaseId()).orElse(null);
             if (caseEntity != null && caseEntity.getUser() != null) {
                 response.setClientName(caseEntity.getUser().getName());
             }
         } catch (Exception e) {
-            System.err.println("Error fetching user names for Match DTO: " + e.getMessage());
+            System.err.println("Error enriching MatchResponse with user names: " + e.getMessage());
         }
 
         return response;
     }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // Get a single match by ID
+    //
+    // Security: only the case's Citizen owner or the matched provider can read it.
+    // ─────────────────────────────────────────────────────────────────────────────
     @Override
     public MatchResponse getMatchById(Long matchId, User currentUser) {
+
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Match not found"));
 
         Case caseObj = caseRepository.findById(match.getCaseId()).orElse(null);
 
-        // Security check to make sure random users can't read matches
-        if (caseObj != null && !caseObj.getUser().getId().equals(currentUser.getId()) && !match.getUserId().equals(currentUser.getId())) {
+        boolean isCaseOwner  = caseObj != null && caseObj.getUser().getId().equals(currentUser.getId());
+        boolean isProvider   = match.getUserId().equals(currentUser.getId());
+
+        if (!isCaseOwner && !isProvider) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized access to this match.");
         }
 
