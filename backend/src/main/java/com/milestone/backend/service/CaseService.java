@@ -1,5 +1,6 @@
 package com.milestone.backend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,9 +15,14 @@ import com.milestone.backend.entity.Role;
 import com.milestone.backend.entity.User;
 import com.milestone.backend.repository.CaseRepository;
 import com.milestone.backend.repository.MatchRepository;
+import com.milestone.backend.repository.UserRepository;
+
 
 @Service
 public class CaseService {
+
+    @Autowired
+    private UserRepository userRepository;
 
     private final CaseRepository caseRepository;
 
@@ -256,20 +262,22 @@ public class CaseService {
     // ─────────────────────────────────────────────────────────────────────────────
     public CaseResponse acceptCase(Long id, User user) {
 
-        if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
-            throw new RuntimeException("Only lawyers/NGOs can accept cases");
-        }
+    // Reload full user from DB
+    User dbUser = userRepository.findByEmail(user.getUsername())
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Case caseObj = caseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Case not found"));
-
-        // Assign this lawyer/NGO to the case
-        caseObj.setAssignedLawyer(user);
-        // Mark the case as assigned
-        caseObj.setStatus(CaseStatus.ASSIGNED);
-
-        return mapToResponse(caseRepository.save(caseObj));
+    if (!(dbUser.getRole() == Role.LAWYER || dbUser.getRole() == Role.NGO)) {
+        throw new RuntimeException("Only lawyers/NGOs can accept cases");
     }
+
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    caseObj.setAssignedLawyer(dbUser);
+    caseObj.setStatus(CaseStatus.ASSIGNED);
+
+    return mapToResponse(caseRepository.save(caseObj));
+}
 
     // ─────────────────────────────────────────────────────────────────────────────
     // Decline a case (Lawyer/NGO)
