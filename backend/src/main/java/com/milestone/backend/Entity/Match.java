@@ -11,7 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "matches")
+@Table(name = "matches" , uniqueConstraints = @UniqueConstraint(columnNames = {"case_id", "user_id"}))
 public class Match {
 
     @Id
