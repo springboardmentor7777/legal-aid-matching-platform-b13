@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import MatchCard from "./MatchCard";
 
-export function MatchGrid({ refreshTrigger }) {
+export default function MatchGrid({ refreshTrigger }) {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
 
