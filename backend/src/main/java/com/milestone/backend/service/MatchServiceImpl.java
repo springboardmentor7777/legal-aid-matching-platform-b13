@@ -67,6 +67,15 @@ public class MatchServiceImpl implements MatchService {
                 continue;
             }
 
+            // FIX: Per-provider duplicate guard.
+            // The top-level existingMatches check only catches a full re-generation
+            // attempt, but repeated "Generate" button clicks can still sneak through
+            // if the first batch was only partially saved. This per-row check ensures
+            // we never create two Match rows for the same (caseId, providerId) pair.
+            if (matchRepository.existsByCaseIdAndUserId(caseId, user.getId())) {
+                continue;
+            }
+
             double score = calculateScore(caseObj, user);
 
             Match match = new Match();
@@ -99,8 +108,12 @@ public class MatchServiceImpl implements MatchService {
         List<Match> matches;
 
         if (user.getRole() == Role.CITIZEN) {
-            // Look up matches by tracing case → user relationship
-            matches = matchRepository.findByCaseEntity_User_Id(user.getId());
+            // FIX: Fetch only non-REJECTED matches for the citizen.
+            // Previously this fetched ALL matches across ALL of the citizen's cases,
+            // including REJECTED rows left over from old generate runs, causing
+            // duplicate/stale cards to appear on every subsequent generate click.
+            matches = matchRepository.findByCaseEntity_User_IdAndStatusNot(
+                    user.getId(), MatchStatus.REJECTED);
         } else {
             // Lawyers/NGOs: only show PENDING and ACCEPTED matches so they can
             // see who has chosen them without exposing other citizens' data
