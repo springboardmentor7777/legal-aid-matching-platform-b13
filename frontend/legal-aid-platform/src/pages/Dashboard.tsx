@@ -109,7 +109,7 @@ const Dashboard: React.FC = () => {
         // where the citizen has generated matches and is waiting for a response.
         // Each result includes both caseId and matchId, which we need below to
         // call the correct reject endpoint when the lawyer declines.
-        const res = await fetch("http://localhost:8081/matches/me", {
+        const res = await fetch("http://localhost:8081/cases/pending", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) { setPendingCases([]); return; }
@@ -177,7 +177,7 @@ const Dashboard: React.FC = () => {
     try {
       const res = await fetch(`http://localhost:8081/cases/${id}/accept`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
       if (!res.ok) { alert("Failed to accept case. Please try again."); return; }
       setPendingCases((prev) => prev.filter((c) => c.id !== id));
@@ -199,7 +199,7 @@ const Dashboard: React.FC = () => {
     try {
       // Step 1: Reject the match record so it no longer appears in pending list
       if (matchId) {
-        await fetch(`http://localhost:8081/matches/${matchId}/reject`, {
+        await fetch(`http://localhost:8081/cases/${id}/reject`, {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
         });
