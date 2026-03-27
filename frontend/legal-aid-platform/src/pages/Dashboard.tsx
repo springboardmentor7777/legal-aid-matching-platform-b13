@@ -109,14 +109,14 @@ const Dashboard: React.FC = () => {
         // where the citizen has generated matches and is waiting for a response.
         // Each result includes both caseId and matchId, which we need below to
         // call the correct reject endpoint when the lawyer declines.
-        const res = await fetch("http://localhost:8081/cases/pending", {
+        const res = await fetch("http://localhost:8081/matches/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) { setPendingCases([]); return; }
         const data = await res.json();
         const pending = Array.isArray(data)
           ? data
-              .filter((m: any) => m.status === "PENDING")
+              .filter((m: any) => m.status === "INTERESTED")
               .map((m: any) => ({
                 id: m.caseId,
                 matchId: m.matchId,        // needed for reject endpoint
