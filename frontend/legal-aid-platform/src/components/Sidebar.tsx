@@ -1,5 +1,5 @@
 import React from "react";
-import type { Role } from "../pages/Dashboard";
+import type { Role }  from "../pages/Dashboard";
 import { useNavigate } from "react-router";
 
 interface SidebarProps {
@@ -74,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
               <a href="/directories/ngos">NGOs Directory</a>
             </li>
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
-              <a href="/directories/ngos">External Directory</a>
+              <a href="/directories/external">External Directory</a>
             </li>
           </>
         )}

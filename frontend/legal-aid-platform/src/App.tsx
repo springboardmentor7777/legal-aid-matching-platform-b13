@@ -18,6 +18,7 @@ import MatchingResults from "./pages/MatchingResults";
 import AppointmentScheduler from "./pages/AppointmentScheduler";
 import SupportPage from "./pages/SupportPage";
 import EditCase from "./pages/EditCase";
+import ExternalDirectory from "./components/ExternalDirectory";
 
 function App() {
   return (
@@ -66,6 +67,15 @@ function App() {
         element={
           <ProtectedRoute>
             <NgoDirectory />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/directories/external"
+        element={
+          <ProtectedRoute>
+            < ExternalDirectory/>
           </ProtectedRoute>
         }
       />
