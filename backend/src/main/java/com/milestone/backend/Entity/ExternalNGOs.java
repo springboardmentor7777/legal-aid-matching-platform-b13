@@ -1,5 +1,6 @@
 package com.milestone.backend.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,11 +29,12 @@ public class ExternalNGOs {
 
     private String name;
 
+    @Column(unique = true, nullable = false)
     private String email;
 
     private String location;
 
-    private Boolean verified;
+    private String isVerified;
 
     private String organizationName;
 

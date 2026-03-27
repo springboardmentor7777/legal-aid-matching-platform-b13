@@ -1,6 +1,8 @@
 package com.milestone.backend.service;
 
 import org.springframework.stereotype.Service;
+
+import com.milestone.backend.dto.ExternalLawyerResponseDto;
 // import com.milestone.backend.dto.ExternalLawyerResponseDto;
 import com.milestone.backend.entity.ExternalLawyers;
 import com.milestone.backend.repository.ExternalLawyersRepository;
@@ -53,4 +55,21 @@ public class ExternalLawyersDataService {
         stats.put("duplicatesSkipped", totalRows - newLawyers.size());
         return stats;
     }
+
+    public List<ExternalLawyerResponseDto> getAllLawyers() {
+        List<ExternalLawyers> lawyers = repo.findAll();
+
+        return lawyers.stream()
+                .map(l -> new ExternalLawyerResponseDto(
+                        l.getId(),
+                        l.getName(),
+                        l.getEmail(),
+                        l.getExperience(),
+                        l.getIsVerified(),
+                        l.getExpertise(),
+                        l.getLocation()
+                ))
+                .collect(Collectors.toList());
+    }
+    
 }

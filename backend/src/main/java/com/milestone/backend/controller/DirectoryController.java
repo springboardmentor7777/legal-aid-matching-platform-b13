@@ -1,6 +1,6 @@
 package com.milestone.backend.controller;
 
-import com.milestone.backend.dto.ExternalLawyerDto;
+// import com.milestone.backend.dto.ExternalLawyerDto;
 import com.milestone.backend.dto.LawyerDto;
 import com.milestone.backend.dto.NgoDto;
 import com.milestone.backend.service.DirectoryService;
@@ -87,15 +87,15 @@ public class DirectoryController {
         return ResponseEntity.ok("NGO availability toggled successfully");
     }
 
-    @GetMapping("/external/lawyers")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ExternalLawyerDto>> externalLawyers(){
-        return null;
-    }
+    // @GetMapping("/external/lawyers")
+    // @PreAuthorize("isAuthenticated()")
+    // public ResponseEntity<List<ExternalLawyerDto>> externalLawyers(){
+    //     return null;
+    // }
 
-    @GetMapping("/external/ngos")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ExternalLawyerDto>> externalNgos(){
-        return null;
-    }
+    // @GetMapping("/external/ngos")
+    // @PreAuthorize("isAuthenticated()")
+    // public ResponseEntity<List<ExternalLawyerDto>> externalNgos(){
+    //     return null;
+    // }
 }

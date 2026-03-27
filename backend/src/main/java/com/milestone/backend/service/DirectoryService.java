@@ -1,31 +1,31 @@
 package com.milestone.backend.service;
 
-import com.milestone.backend.dto.ExternalLawyerDto;
-import com.milestone.backend.dto.ExternalNgoDto;
+// import com.milestone.backend.dto.ExternalLawyerDto;
+// import com.milestone.backend.dto.ExternalNgoDto;
 import com.milestone.backend.dto.LawyerDto;
 import com.milestone.backend.dto.NgoDto;
-import com.milestone.backend.entity.LawyerDirectory;
-import com.milestone.backend.entity.NgoDirectory;
+// import com.milestone.backend.entity.LawyerDirectory;
+// import com.milestone.backend.entity.NgoDirectory;
 import com.milestone.backend.entity.Role;
 import com.milestone.backend.entity.User;
-import com.milestone.backend.repository.LawyerDirectoryRepository;
-import com.milestone.backend.repository.NgoDirectoryRepository;
+// import com.milestone.backend.repository.LawyerDirectoryRepository;
+// import com.milestone.backend.repository.NgoDirectoryRepository;
 import com.milestone.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.core.io.ClassPathResource;
+// import org.apache.poi.ss.usermodel.*;
+// import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+// import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
+// import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+// import org.springframework.web.client.RestTemplate;
 
-import java.io.InputStream;
-import java.util.ArrayList;
+// import java.io.InputStream;
+// import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,9 +35,9 @@ import java.util.stream.Collectors;
 public class DirectoryService {
 
     private final UserRepository userRepository;
-    private final LawyerDirectoryRepository lawyerRepository;
-    private final NgoDirectoryRepository ngoRepository;
-    private final RestTemplate restTemplate;
+    // private final LawyerDirectoryRepository lawyerRepository;
+    // private final NgoDirectoryRepository ngoRepository;
+    // private final RestTemplate restTemplate;
 
     // ══════════════════════════════════════════════════════════════════════════
     //  LAWYER — Read
@@ -69,53 +69,53 @@ public class DirectoryService {
     //  LAWYER — External Import (merged from ExternalLawyerIntegrationService)
     // ══════════════════════════════════════════════════════════════════════════
 
-    public void importLawyersFromExternalApi() {
+    // public void importLawyersFromExternalApi() {
 
-        String url = "https://example.com/api/lawyers"; // Replace with real Bar Council endpoint
+    //     String url = "https://example.com/api/lawyers"; // Replace with real Bar Council endpoint
 
-        ResponseEntity<ExternalLawyerDto[]> response;
+    //     ResponseEntity<ExternalLawyerDto[]> response;
 
-        try {
-            response = restTemplate.getForEntity(url, ExternalLawyerDto[].class);
-        } catch (Exception e) {
-            log.error("Failed to reach external lawyer API: {}", e.getMessage(), e);
-            return;
-        }
+    //     try {
+    //         response = restTemplate.getForEntity(url, ExternalLawyerDto[].class);
+    //     } catch (Exception e) {
+    //         log.error("Failed to reach external lawyer API: {}", e.getMessage(), e);
+    //         return;
+    //     }
 
-        ExternalLawyerDto[] externalLawyers = response.getBody();
+    //     ExternalLawyerDto[] externalLawyers = response.getBody();
 
-        if (externalLawyers == null || externalLawyers.length == 0) {
-            log.warn("No lawyer data received from external source.");
-            return;
-        }
+    //     if (externalLawyers == null || externalLawyers.length == 0) {
+    //         log.warn("No lawyer data received from external source.");
+    //         return;
+    //     }
 
-        for (ExternalLawyerDto dto : externalLawyers) {
+    //     for (ExternalLawyerDto dto : externalLawyers) {
 
-            if (dto.getName() == null || dto.getCity() == null) {
-                log.warn("Skipping invalid lawyer record.");
-                continue;
-            }
+    //         if (dto.getName() == null || dto.getCity() == null) {
+    //             log.warn("Skipping invalid lawyer record.");
+    //             continue;
+    //         }
 
-            String normalizedLocation = dto.getCity().trim().toUpperCase();
+    //         String normalizedLocation = dto.getCity().trim().toUpperCase();
 
-            boolean exists = lawyerRepository.existsByNameAndLocation(
-                    dto.getName().trim(), normalizedLocation);
+    //         boolean exists = lawyerRepository.existsByNameAndLocation(
+    //                 dto.getName().trim(), normalizedLocation);
 
-            if (!exists) {
-                LawyerDirectory lawyer = new LawyerDirectory();
-                lawyer.setName(dto.getName().trim());
-                lawyer.setExpertise(dto.getPracticeArea());
-                lawyer.setLocation(normalizedLocation);
-                lawyer.setVerified("Verified".equalsIgnoreCase(dto.getVerificationStatus()));
-                lawyer.setOrganizationDetails("Imported from Bar Council");
+    //         if (!exists) {
+    //             LawyerDirectory lawyer = new LawyerDirectory();
+    //             lawyer.setName(dto.getName().trim());
+    //             lawyer.setExpertise(dto.getPracticeArea());
+    //             lawyer.setLocation(normalizedLocation);
+    //             lawyer.setVerified("Verified".equalsIgnoreCase(dto.getVerificationStatus()));
+    //             lawyer.setOrganizationDetails("Imported from Bar Council");
 
-                lawyerRepository.save(lawyer);
-                log.info("Saved lawyer: {}", lawyer.getName());
-            } else {
-                log.info("Duplicate lawyer skipped: {}", dto.getName());
-            }
-        }
-    }
+    //             lawyerRepository.save(lawyer);
+    //             log.info("Saved lawyer: {}", lawyer.getName());
+    //         } else {
+    //             log.info("Duplicate lawyer skipped: {}", dto.getName());
+    //         }
+    //     }
+    // }
 
     // ══════════════════════════════════════════════════════════════════════════
     //  NGO — Read
@@ -147,44 +147,44 @@ public class DirectoryService {
     //  NGO — External Import (merged from ExternalNgoIntegrationService)
     // ══════════════════════════════════════════════════════════════════════════
 
-    public void importNgosFromExcel() {
+    // public void importNgosFromExcel() {
 
-        log.info("importNgosFromExcel() called.");
+    //     log.info("importNgosFromExcel() called.");
 
-        List<ExternalNgoDto> externalNgos = readNgosFromExcel("ngo_data.xlsx");
+    //     List<ExternalNgoDto> externalNgos = readNgosFromExcel("ngo_data.xlsx");
 
-        if (externalNgos.isEmpty()) {
-            log.warn("No NGO data found in Excel file.");
-            return;
-        }
+    //     if (externalNgos.isEmpty()) {
+    //         log.warn("No NGO data found in Excel file.");
+    //         return;
+    //     }
 
-        for (ExternalNgoDto dto : externalNgos) {
+    //     for (ExternalNgoDto dto : externalNgos) {
 
-            if (dto.getOrg_name() == null || dto.getCity() == null) {
-                log.warn("Skipping invalid NGO record.");
-                continue;
-            }
+    //         if (dto.getOrg_name() == null || dto.getCity() == null) {
+    //             log.warn("Skipping invalid NGO record.");
+    //             continue;
+    //         }
 
-            String normalizedLocation = dto.getCity().trim().toUpperCase();
+    //         String normalizedLocation = dto.getCity().trim().toUpperCase();
 
-            boolean exists = ngoRepository.existsByNameAndLocation(
-                    dto.getOrg_name().trim(), normalizedLocation);
+    //         boolean exists = ngoRepository.existsByNameAndLocation(
+    //                 dto.getOrg_name().trim(), normalizedLocation);
 
-            if (!exists) {
-                NgoDirectory ngo = new NgoDirectory();
-                ngo.setName(dto.getOrg_name().trim());
-                ngo.setExpertise(dto.getFocus_area());
-                ngo.setLocation(normalizedLocation);
-                ngo.setVerified("Registered".equalsIgnoreCase(dto.getRegistration_status()));
-                ngo.setOrganizationDetails("Imported from NGO Darpan");
+    //         if (!exists) {
+    //             NgoDirectory ngo = new NgoDirectory();
+    //             ngo.setName(dto.getOrg_name().trim());
+    //             ngo.setExpertise(dto.getFocus_area());
+    //             ngo.setLocation(normalizedLocation);
+    //             ngo.setVerified("Registered".equalsIgnoreCase(dto.getRegistration_status()));
+    //             ngo.setOrganizationDetails("Imported from NGO Darpan");
 
-                ngoRepository.save(ngo);
-                log.info("Saved NGO: {}", ngo.getName());
-            } else {
-                log.info("Duplicate NGO skipped: {}", dto.getOrg_name());
-            }
-        }
-    }
+    //             ngoRepository.save(ngo);
+    //             log.info("Saved NGO: {}", ngo.getName());
+    //         } else {
+    //             log.info("Duplicate NGO skipped: {}", dto.getOrg_name());
+    //         }
+    //     }
+    // }
     public User toggleLawyerAvailability(Long lawyerId) {
         User user = userRepository.findById(lawyerId)
                 .orElseThrow(() -> new RuntimeException("Lawyer not found"));
@@ -218,48 +218,48 @@ public class DirectoryService {
     //  Private Helpers
     // ══════════════════════════════════════════════════════════════════════════
 
-    private List<ExternalNgoDto> readNgosFromExcel(String filename) {
+    // private List<ExternalNgoDto> readNgosFromExcel(String filename) {
 
-        List<ExternalNgoDto> result = new ArrayList<>();
+    //     List<ExternalNgoDto> result = new ArrayList<>();
 
-        try (InputStream is = new ClassPathResource(filename).getInputStream();
-             Workbook workbook = new XSSFWorkbook(is)) {
+    //     try (InputStream is = new ClassPathResource(filename).getInputStream();
+    //          Workbook workbook = new XSSFWorkbook(is)) {
 
-            Sheet sheet = workbook.getSheetAt(0);
+    //         Sheet sheet = workbook.getSheetAt(0);
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (row == null) continue;
+    //         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+    //             Row row = sheet.getRow(i);
+    //             if (row == null) continue;
 
-                ExternalNgoDto dto = new ExternalNgoDto();
-                dto.setOrg_name(getCellValue(row, 0));
-                dto.setCity(getCellValue(row, 1));
-                dto.setFocus_area(getCellValue(row, 2));
-                dto.setRegistration_status(getCellValue(row, 3));
+    //             ExternalNgoDto dto = new ExternalNgoDto();
+    //             dto.setOrg_name(getCellValue(row, 0));
+    //             dto.setCity(getCellValue(row, 1));
+    //             dto.setFocus_area(getCellValue(row, 2));
+    //             dto.setRegistration_status(getCellValue(row, 3));
 
-                result.add(dto);
-            }
+    //             result.add(dto);
+    //         }
 
-            log.info("Loaded {} NGO records from Excel.", result.size());
+    //         log.info("Loaded {} NGO records from Excel.", result.size());
 
-        } catch (Exception e) {
-            log.error("Failed to read Excel file: {}", e.getMessage(), e);
-        }
+    //     } catch (Exception e) {
+    //         log.error("Failed to read Excel file: {}", e.getMessage(), e);
+    //     }
 
-        return result;
-    }
+    //     return result;
+    // }
 
-    private String getCellValue(Row row, int colIndex) {
-        Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-        if (cell == null) return null;
+    // private String getCellValue(Row row, int colIndex) {
+    //     Cell cell = row.getCell(colIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+    //     if (cell == null) return null;
 
-        return switch (cell.getCellType()) {
-            case STRING  -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
-            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
-            default      -> null;
-        };
-    }
+    //     return switch (cell.getCellType()) {
+    //         case STRING  -> cell.getStringCellValue().trim();
+    //         case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
+    //         case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+    //         default      -> null;
+    //     };
+    // }
 
     private LawyerDto mapToLawyerDto(User user) {
         LawyerDto.LawyerDtoBuilder builder = LawyerDto.builder()
