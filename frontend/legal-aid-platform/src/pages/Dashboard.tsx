@@ -181,6 +181,13 @@ const Dashboard: React.FC = () => {
       });
       if (!res.ok) { alert("Failed to accept case. Please try again."); return; }
       setPendingCases((prev) => prev.filter((c) => c.id !== id));
+      const assignedRes = await fetch("http://localhost:8081/cases/assigned", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (assignedRes.ok) {
+        const data = await assignedRes.json();
+        setAssignedCases(Array.isArray(data) ? data : []);
+      }
     } catch {
       alert("Failed to accept case. Please try again.");
     }
@@ -280,7 +287,7 @@ const Dashboard: React.FC = () => {
 
   const totalCases = cases.length;
   const submittedCases = cases.filter((c) => c.status === "SUBMITTED").length;
-  const matchedCases = cases.filter((c) => c.status === "MATCHED").length;
+  const matchedCases = cases.filter((c) => c.status === "ASSIGNED").length;
 
   // CHANGED: Split appointments into two groups for the provider dashboard.
   // BEFORE:  Appointments were a flat list with no status-based grouping.
