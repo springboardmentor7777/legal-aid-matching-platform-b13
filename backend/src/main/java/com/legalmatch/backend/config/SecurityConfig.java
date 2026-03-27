@@ -59,6 +59,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/advocates/**").permitAll()
                         .requestMatchers("/api/cases/**").permitAll()
                         .requestMatchers("/ws-chat/**").permitAll()
+                        .requestMatchers("/directory/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
