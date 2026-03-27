@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API from "../api/axios";
-import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
 
   const { id } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [error, setError]= useState(null);
   const navigate = useNavigate();
+
+  const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (id) {
@@ -23,46 +24,72 @@ export default function Profile() {
     } catch (err) {
       console.error("Failed to fetch profile", err);
       setError("Profile not available yet.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // 🔹 Loading state
+  if (loading) {
+    return (
+      <div className="bg-white p-6 rounded-xl shadow">
+        <p className="text-gray-500">Loading profile...</p>
+      </div>
+    );
+  }
+
+  // 🔹 Error state
+  if (error) {
+    return (
+      <div className="bg-white p-6 rounded-xl shadow">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  // 🔹 Safety fallback
   if (!profile) {
-    if (error) {
-      return (
-        <div className="bg-white p-6 rounded-xl shadow">
-          <p className="text-red-500">{error}</p>
-        </div>
-      );
-    }
+    return (
+      <div className="bg-white p-6 rounded-xl shadow">
+        <p>No profile data found.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow max-w-xl">
+    <div className="bg-white p-6 rounded-xl shadow max-w-xl mx-auto">
 
+      {/* Avatar */}
       <img
         src={`https://i.pravatar.cc/150?img=${id}`}
+        alt="profile"
         className="w-20 h-20 rounded-full"
       />
 
+      {/* Name */}
       <h2 className="text-xl font-bold mt-4">
-        {profile.organization_name}
+        {profile.organization_name || profile.name || "Unnamed"}
       </h2>
 
+      {/* Expertise */}
       <p className="text-gray-500">
-        {profile.expertise}
+        {profile.expertise || "No expertise info"}
       </p>
 
+      {/* Location */}
       <p className="text-gray-400">
-        📍 {profile.location}
+        📍 {profile.location || "Location not provided"}
       </p>
 
+      {/* Bio */}
       <p className="mt-4">
-        {profile.bio}
+        {profile.bio || "No description available"}
       </p>
 
+      {/* Chat Button */}
       <button
         onClick={() => navigate(`/chat/${id}`)}
-        className="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg"
+        className="mt-6 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
       >
         Start Chat
       </button>
