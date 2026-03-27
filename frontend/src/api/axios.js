@@ -30,14 +30,19 @@ API.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
 
-    // Only logout if token is invalid
-    if (status === 401 && window.location.pathname!=='/login') {
+    if (status === 401 && window.location.pathname !== '/login') {
       console.log("Token expired → logging out");
 
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
       window.location.href = "/login";
+    }
+
+    // 🔥 Handle 403 (optional but useful)
+    if (status === 403) {
+      console.log("Access denied (403)");
+      alert("You are not allowed to perform this action");
     }
 
     return Promise.reject(error);
