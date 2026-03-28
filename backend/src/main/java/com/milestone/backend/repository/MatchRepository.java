@@ -37,6 +37,7 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     // Look up a match by ID, provider, and status combined
     Optional<Match> findByIdAndUserIdAndStatus(Long id, Long userId, MatchStatus status);
+    Optional<Match> findByCaseIdAndUserId(Long caseId, Long userId);
 
     // ─────────────────────────────────────────────────────────────────────────────
     // NEW: Added for CaseService.getPendingCases()

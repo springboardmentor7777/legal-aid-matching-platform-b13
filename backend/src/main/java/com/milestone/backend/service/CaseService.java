@@ -13,6 +13,7 @@ import com.milestone.backend.entity.CaseStatus;
 import com.milestone.backend.entity.MatchStatus;
 import com.milestone.backend.entity.Role;
 import com.milestone.backend.entity.User;
+import com.milestone.backend.entity.Match;
 import com.milestone.backend.repository.CaseRepository;
 import com.milestone.backend.repository.MatchRepository;
 import com.milestone.backend.repository.UserRepository;
@@ -262,21 +263,41 @@ public class CaseService {
     // ─────────────────────────────────────────────────────────────────────────────
     public CaseResponse acceptCase(Long id, User user) {
 
-    // Reload full user from DB
-    User dbUser = userRepository.findByEmail(user.getUsername())
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-    if (!(dbUser.getRole() == Role.LAWYER || dbUser.getRole() == Role.NGO)) {
+    // ✅ Role check
+    if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
         throw new RuntimeException("Only lawyers/NGOs can accept cases");
     }
 
+    // ✅ Get case
     Case caseObj = caseRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Case not found"));
 
-    caseObj.setAssignedLawyer(dbUser);
+    // ❌ Prevent double assignment
+    if (caseObj.getStatus() == CaseStatus.ASSIGNED) {
+        throw new RuntimeException("Case already assigned");
+    }
+
+    // ✅ Get match (IMPORTANT)
+    var match = matchRepository
+            .findByCaseIdAndUserId(id, user.getId())
+            .orElseThrow(() -> new RuntimeException("No match found for this case"));
+
+    // ❌ Already handled
+    if (match.getStatus() != MatchStatus.PENDING) {
+        throw new RuntimeException("This case is no longer available");
+    }
+
+    // ✅ Accept match
+    match.setStatus(MatchStatus.ACCEPTED);
+
+    // ✅ Assign case
+    caseObj.setAssignedLawyer(user);
     caseObj.setStatus(CaseStatus.ASSIGNED);
 
-    return mapToResponse(caseRepository.save(caseObj));
+    matchRepository.save(match);
+    caseRepository.save(caseObj);
+
+    return mapToResponse(caseObj);
 }
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -284,24 +305,40 @@ public class CaseService {
     // Records the decline reason and resets status to SUBMITTED so other
     // lawyers can still see and accept the case.
     // ─────────────────────────────────────────────────────────────────────────────
-    public CaseResponse declineCase(Long id, String reason, User user) {
+public CaseResponse declineCase(Long id, String reason, User user) {
 
-        if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
-            throw new RuntimeException("Only lawyers/NGOs can decline cases");
-        }
-
-        Case caseObj = caseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Case not found"));
-
-        caseObj.setDeclineReason(reason);
-
-        // IMPORTANT: Keep status as SUBMITTED so the case remains visible to
-        // other lawyers — do NOT set to REJECTED or CLOSED here.
-        caseObj.setStatus(CaseStatus.SUBMITTED);
-
-        return mapToResponse(caseRepository.save(caseObj));
+    // ✅ Role check
+    if (!(user.getRole() == Role.LAWYER || user.getRole() == Role.NGO)) {
+        throw new RuntimeException("Only lawyers/NGOs can decline cases");
     }
 
+    // ✅ Get case
+    Case caseObj = caseRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Case not found"));
+
+    // ✅ Get match
+    var match = matchRepository
+            .findByCaseIdAndUserId(id, user.getId())
+            .orElseThrow(() -> new RuntimeException("No match found for this case"));
+
+    // ❌ Already handled
+    if (match.getStatus() != MatchStatus.PENDING) {
+        throw new RuntimeException("Already handled");
+    }
+
+    // ✅ Reject match
+    match.setStatus(MatchStatus.REJECTED);
+
+    // ✅ Optional reason
+    caseObj.setDeclineReason(
+            reason != null ? reason : "No reason provided"
+    );
+
+    matchRepository.save(match);
+    caseRepository.save(caseObj);
+
+    return mapToResponse(caseObj);
+}
     // ─────────────────────────────────────────────────────────────────────────────
     // Request a specific lawyer for a case (Citizen-initiated direct request)
     // ─────────────────────────────────────────────────────────────────────────────
