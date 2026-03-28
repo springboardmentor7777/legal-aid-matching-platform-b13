@@ -1,88 +1,34 @@
-package com.milestone.backend.service;
+package com.milestone.backend.controller;
 
-import java.util.List;
+import org.springframework.messaging.handler.annotation.*;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.milestone.backend.entity.Chat;
-import com.milestone.backend.entity.Match;
-import com.milestone.backend.entity.MatchStatus;
-import com.milestone.backend.entity.User;
-import com.milestone.backend.repository.ChatRepository;
-import com.milestone.backend.repository.MatchRepository;
-import com.milestone.backend.repository.UserRepository;
+import com.milestone.backend.service.ChatService;
+import com.milestone.backend.dto.ChatMessage;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
+@Controller
 @RequiredArgsConstructor
-@Transactional
-public class ChatService {
+public class ChatWebSocketController {
 
-    private final ChatRepository chatRepo;
-    private final MatchRepository matchRepo;
-    private final UserRepository userRepo;
+    private final ChatService chatService;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public List<Chat> getChat(Long matchId, Long userId) {
+    @MessageMapping("/chat.send")
+    public void sendMessage(@Payload ChatMessage chatMessage) {
 
-        Match match = matchRepo.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("Match not found"));
+        // 1. Save to DB and get back the DTO (includes id + timestamp from DB)
+        ChatMessage savedDto = chatService.sendMessage(
+                chatMessage.getMatchId(),
+                chatMessage.getSenderId(),
+                chatMessage.getContent());
 
-        if (match.getStatus() != MatchStatus.ACCEPTED) {
-            throw new RuntimeException("Match is not accepted yet");
-        }
-
-        //  FIXED: Safer ID comparison
-        long citizenId = match.getCaseEntity().getUser().getId().longValue();
-        long providerId = match.getUserId().longValue();
-        long currentUserId = userId.longValue();
-
-        if (citizenId != currentUserId && providerId != currentUserId) {
-            throw new RuntimeException("User not allowed to access this chat");
-        }
-
-        return chatRepo.findByMatch_IdOrderByTimestampAsc(matchId);
-    }
-
-    public Chat sendMessage(Long matchId, Long senderId, String content) {
-        
-        System.out.println("🚀 --- INCOMING CHAT MESSAGE ---");
-        System.out.println("Match ID: " + matchId);
-        System.out.println("Sender ID Attempting to Send: " + senderId);
-
-        Match match = matchRepo.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("Match not found"));
-
-        if (match.getStatus() != MatchStatus.ACCEPTED) {
-            System.out.println("❌ FAILED: Match is not ACCEPTED. Current status: " + match.getStatus());
-            throw new RuntimeException("Match is not accepted yet");
-        }
-
-        long citizenId = match.getCaseEntity().getUser().getId().longValue();
-        long providerId = match.getUserId().longValue();
-        long currentSenderId = senderId.longValue();
-
-        System.out.println("Citizen ID for this Match: " + citizenId);
-        System.out.println("Provider ID for this Match: " + providerId);
-
-        //  FIXED: Safer ID comparison
-        if (citizenId != currentSenderId && providerId != currentSenderId) {
-            System.out.println("❌ FAILED: Sender ID does not match Citizen or Provider!");
-            throw new RuntimeException("User not allowed to send messages");
-        }
-
-        User sender = userRepo.findById(senderId)
-                .orElseThrow(() -> new RuntimeException("Sender not found"));
-
-        Chat chat = new Chat();
-        chat.setMatch(match);
-        chat.setSender(sender);
-        chat.setMessage(content);
-
-        Chat savedChat = chatRepo.save(chat);
-        System.out.println("✅ SUCCESS: Message saved to database!");
-        
-        return savedChat;
+        // 2. Broadcast the saved DTO — use the one returned from the service
+        //    so the frontend gets the real DB-generated id and timestamp
+        messagingTemplate.convertAndSend(
+                "/topic/match/" + savedDto.getMatchId(),
+                savedDto);
     }
 }
