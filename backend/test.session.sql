@@ -1,1 +1,0 @@
-SELECT * FROM external_lawyer_directory;
