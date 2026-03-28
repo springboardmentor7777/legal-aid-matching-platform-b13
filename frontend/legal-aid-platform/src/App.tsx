@@ -19,6 +19,7 @@ import AppointmentScheduler from "./pages/AppointmentScheduler";
 import SupportPage from "./pages/SupportPage";
 import EditCase from "./pages/EditCase";
 import ExternalDirectory from "./components/ExternalDirectory";
+import CaseDetails from "./pages/CaseDetails";
 
 function App() {
   return (
@@ -75,7 +76,7 @@ function App() {
         path="/directories/external"
         element={
           <ProtectedRoute>
-            < ExternalDirectory/>
+            <ExternalDirectory />
           </ProtectedRoute>
         }
       />
@@ -85,6 +86,15 @@ function App() {
         element={
           <ProtectedRoute>
             <EditProfile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/case/:id"
+        element={
+          <ProtectedRoute>
+            <CaseDetails/>
           </ProtectedRoute>
         }
       />
@@ -112,28 +122,40 @@ function App() {
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
-      <Route 
-        path="/chatpage" 
+      <Route
+        path="/chatpage"
         element={
           <ProtectedRoute>
             <ChatPage />
           </ProtectedRoute>
-        } 
+        }
       />
-      <Route 
-        path="/chatpage/:matchId" 
+      <Route
+        path="/chatpage/:matchId"
         element={
           <ProtectedRoute>
             <ChatPage />
           </ProtectedRoute>
-        } 
+        }
       />
       <Route path="/pages/MatchingResult" element={<MatchingResults />} />
-      <Route path="/pages/AppointmentScheduler/:matchId" element={<ProtectedRoute><AppointmentScheduler /></ProtectedRoute>} />
+      <Route
+        path="/pages/AppointmentScheduler/:matchId"
+        element={
+          <ProtectedRoute>
+            <AppointmentScheduler />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/pages/SupportPage" element={<SupportPage />} />
-      <Route path="/pages/EditCase/:caseId" element={<ProtectedRoute><EditCase /></ProtectedRoute>} />
-
-
+      <Route
+        path="/pages/EditCase/:caseId"
+        element={
+          <ProtectedRoute>
+            <EditCase />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
