@@ -1,3 +1,5 @@
+package com.milestone.backend.dto;
+
 public class DeclineRequest {
     private String reason;          // must match key "reason" from frontend
     public String getReason() { return reason; }
