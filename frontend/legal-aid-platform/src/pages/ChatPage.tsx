@@ -42,7 +42,7 @@ function ChatPage() {
       const token = localStorage.getItem("accessToken");
       if (!token || !user) return;
 
-      const response = await fetch("http://localhost:8081/matches/my", {
+      const response = await fetch("http://localhost:8081/matches/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
