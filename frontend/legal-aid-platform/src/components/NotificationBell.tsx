@@ -62,7 +62,10 @@ const NotificationBell = () => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
-        }
+        },
+        body: JSON.stringify({
+          "isRead":true
+        })
       });
     } catch (error) {
       console.error("Error updating notification:", error);
