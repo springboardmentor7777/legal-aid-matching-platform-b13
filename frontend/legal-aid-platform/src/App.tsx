@@ -138,7 +138,16 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route 
+        path="/chatpage/:c.id" 
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="/pages/MatchingResult" element={<MatchingResults />} />
+<<<<<<< HEAD
       <Route
         path="/pages/AppointmentScheduler/:matchId"
         element={
@@ -156,6 +165,13 @@ function App() {
           </ProtectedRoute>
         }
       />
+=======
+      <Route path="/pages/AppointmentScheduler/:matchId" element={<ProtectedRoute><AppointmentScheduler /></ProtectedRoute>} />
+      <Route path="/pages/appointments/:c.id" element={<ProtectedRoute><AppointmentScheduler /></ProtectedRoute>} />
+      <Route path="/pages/SupportPage" element={<SupportPage />} />
+      <Route path="/pages/EditCase/:caseId" element={<ProtectedRoute><EditCase /></ProtectedRoute>} />
+
+>>>>>>> 13074c62b0c07f7f0db54ae180538cd7945cd884
     </Routes>
   );
 }
