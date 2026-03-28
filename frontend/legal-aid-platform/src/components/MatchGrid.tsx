@@ -58,7 +58,7 @@ export default function MatchGrid({ refreshTrigger, selectedCaseId }) {
   const handleAccept = (matchId) => {
     setMatches((prev) =>
       prev.map((m) =>
-        m.matchId === matchId ? { ...m, status: "ACCEPTED" } : m
+        m.matchId === matchId ? { ...m, status: "INTERESTED" } : m
       )
     );
   };

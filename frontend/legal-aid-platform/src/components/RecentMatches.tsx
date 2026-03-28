@@ -15,7 +15,7 @@ export default function RecentMatches() {
   const fetchMatches = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const res = await axios.get("http://localhost:8081/matches/my", {
+      const res = await axios.get("http://localhost:8081/matches/me", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMatches(res.data);
@@ -71,7 +71,7 @@ export default function RecentMatches() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-2 mt-2">
-                {match.status === "PENDING" ? (
+                {match.status === "INTERESTED" ? (
                   //  FIX: If Citizen, show waiting text. If Provider, show Accept/Reject.
                   isCitizen ? (
                     <span className="text-gray-500 text-sm font-medium italic">

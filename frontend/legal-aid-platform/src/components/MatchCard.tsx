@@ -15,6 +15,7 @@ export default function MatchCard({ profile, onAccept, onReject }) {
   // The "express interest" step has been removed from the flow, so citizens
   // can accept any PENDING match directly.
   const isPending  = status === "PENDING";
+  const isInterested = status === "INTERESTED";
   const isAccepted = status === "ACCEPTED";  // FIX: was `isAccepted` undefined — now properly declared
   const isRejected = status === "REJECTED";
 
@@ -41,7 +42,7 @@ export default function MatchCard({ profile, onAccept, onReject }) {
 
       // FIX: Use the exact status string returned by the backend.
       // Previously this fell back to "REQUESTED" which is not a valid MatchStatus.
-      setStatus(res.data.status || "ACCEPTED");
+      setStatus(res.data.status || "INTERESTED");
       onAccept && onAccept(profile.matchId);
     } catch (e) {
       console.error(e);
@@ -126,7 +127,7 @@ export default function MatchCard({ profile, onAccept, onReject }) {
             disabled={!isPending || loading}
             className="bg-green-500 text-white px-3 py-1 rounded disabled:opacity-50"
           >
-            {loading ? "Processing..." : "Accept"}
+            {loading ? "Processing..." :isInterested ? "Accepted" : "Accept"}
           </button>
 
           <button

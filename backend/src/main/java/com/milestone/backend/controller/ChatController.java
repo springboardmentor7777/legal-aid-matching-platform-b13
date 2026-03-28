@@ -3,10 +3,11 @@ package com.milestone.backend.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import com.milestone.backend.entity.Chat;
+import com.milestone.backend.dto.ChatMessage;
 import com.milestone.backend.entity.User;
 import com.milestone.backend.service.ChatService;
 
@@ -19,25 +20,33 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    // Get chat history
+    // Get chat history — returns DTO, not raw entity
     @GetMapping("/{matchId}")
-    public List<Chat> getChats(@PathVariable Long matchId, @AuthenticationPrincipal User user) {
-        Long userId = user.getId();
-        return chatService.getChat(matchId, userId);
+    public List<ChatMessage> getChats(
+            @PathVariable Long matchId,
+            @AuthenticationPrincipal User user) {
+        return chatService.getChat(matchId, user.getId());
     }
 
-    // Send message
+    // Send message — returns DTO, not raw entity
     @PostMapping("/send")
-    public Chat sendMessage(@RequestBody Map<String, String> body, @AuthenticationPrincipal User user) {
-        Long userId = user.getId();
+    public ResponseEntity<ChatMessage> sendMessage(
+            @RequestBody Map<String, String> body,
+            @AuthenticationPrincipal User user) {
 
-        Long matchId = Long.parseLong(body.get("matchId"));
         String content = body.get("content");
+        String matchIdStr = body.get("matchId");
 
-        if (content == null || content.isEmpty()) {
-            throw new IllegalArgumentException("Message content cannot be empty");
+        if (content == null || content.isBlank()) {
+            return ResponseEntity.badRequest().build();
         }
 
-        return chatService.sendMessage(matchId, userId, content);
+        if (matchIdStr == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Long matchId = Long.parseLong(matchIdStr);
+        ChatMessage saved = chatService.sendMessage(matchId, user.getId(), content);
+        return ResponseEntity.ok(saved);
     }
 }

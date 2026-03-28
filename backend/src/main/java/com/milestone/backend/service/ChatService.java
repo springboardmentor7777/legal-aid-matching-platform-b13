@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.milestone.backend.dto.ChatMessage;
 import com.milestone.backend.entity.Chat;
 import com.milestone.backend.entity.Match;
 import com.milestone.backend.entity.MatchStatus;
@@ -24,7 +25,7 @@ public class ChatService {
     private final MatchRepository matchRepo;
     private final UserRepository userRepo;
 
-    public List<Chat> getChat(Long matchId, Long userId) {
+    public List<ChatMessage> getChat(Long matchId, Long userId) {
 
         Match match = matchRepo.findById(matchId)
                 .orElseThrow(() -> new RuntimeException("Match not found"));
@@ -33,7 +34,6 @@ public class ChatService {
             throw new RuntimeException("Match is not accepted yet");
         }
 
-        //  FIXED: Safer ID comparison
         long citizenId = match.getCaseEntity().getUser().getId().longValue();
         long providerId = match.getUserId().longValue();
         long currentUserId = userId.longValue();
@@ -42,20 +42,18 @@ public class ChatService {
             throw new RuntimeException("User not allowed to access this chat");
         }
 
-        return chatRepo.findByMatch_IdOrderByTimestampAsc(matchId);
+        return chatRepo.findByMatch_IdOrderByTimestampAsc(matchId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 
-    public Chat sendMessage(Long matchId, Long senderId, String content) {
-        
-        System.out.println("🚀 --- INCOMING CHAT MESSAGE ---");
-        System.out.println("Match ID: " + matchId);
-        System.out.println("Sender ID Attempting to Send: " + senderId);
+    public ChatMessage sendMessage(Long matchId, Long senderId, String content) {
 
         Match match = matchRepo.findById(matchId)
                 .orElseThrow(() -> new RuntimeException("Match not found"));
 
         if (match.getStatus() != MatchStatus.ACCEPTED) {
-            System.out.println("❌ FAILED: Match is not ACCEPTED. Current status: " + match.getStatus());
             throw new RuntimeException("Match is not accepted yet");
         }
 
@@ -63,12 +61,7 @@ public class ChatService {
         long providerId = match.getUserId().longValue();
         long currentSenderId = senderId.longValue();
 
-        System.out.println("Citizen ID for this Match: " + citizenId);
-        System.out.println("Provider ID for this Match: " + providerId);
-
-        //  FIXED: Safer ID comparison
         if (citizenId != currentSenderId && providerId != currentSenderId) {
-            System.out.println("❌ FAILED: Sender ID does not match Citizen or Provider!");
             throw new RuntimeException("User not allowed to send messages");
         }
 
@@ -81,8 +74,17 @@ public class ChatService {
         chat.setMessage(content);
 
         Chat savedChat = chatRepo.save(chat);
-        System.out.println("✅ SUCCESS: Message saved to database!");
-        
-        return savedChat;
+
+        return toDTO(savedChat);
+    }
+
+    private ChatMessage toDTO(Chat chat) {
+        return new ChatMessage(
+                chat.getId(),
+                chat.getMatch().getId(),
+                chat.getSender().getId(),
+                chat.getMessage(),
+                chat.getTimestamp()
+        );
     }
 }

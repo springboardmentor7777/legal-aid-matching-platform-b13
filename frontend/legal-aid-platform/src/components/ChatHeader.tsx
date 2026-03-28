@@ -1,8 +1,20 @@
 import React, { useState } from "react";
 import { useAuth } from "../auth/AuthContext";
 
+interface MatchDTO {
+  matchId: number;
+  displayName: string;
+  providerName?: string;
+  clientName?: string;
+  providerEmail?: string;
+  clientEmail?: string;
+  providerPhone?: string;
+  clientPhone?: string;
+  providerType?: string;
+}
+
 interface Props {
-  selectedUser: any; // ideally replace with proper MatchDTO later
+  selectedUser: MatchDTO;
 }
 
 const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
@@ -11,7 +23,6 @@ const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
 
   const isCitizen = user?.role === "CITIZEN";
 
-  // ✅ SAME LOGIC AS APPOINTMENT SCHEDULER
   const displayName = isCitizen
     ? selectedUser?.providerName || selectedUser?.displayName
     : selectedUser?.clientName || selectedUser?.displayName;
@@ -20,17 +31,8 @@ const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
     ? selectedUser?.providerType || "Lawyer"
     : "Citizen";
 
-  const initial = displayName
-    ? displayName.charAt(0).toUpperCase()
-    : "U";
+  const initial = displayName ? displayName.charAt(0).toUpperCase() : "U";
 
-  const matchId = selectedUser?.matchId || selectedUser?.id;
-
-  // Modal dynamic labels
-  const modalTitle = isCitizen ? "Provider Profile" : "Client Profile";
-  const profileRole = displayRole;
-
-  // Optional fields (safe fallback)
   const profileEmail = isCitizen
     ? selectedUser?.providerEmail
     : selectedUser?.clientEmail;
@@ -41,20 +43,17 @@ const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
 
   return (
     <div className="flex items-center justify-between p-4 border-b border-blue-200 bg-white relative">
-      
+
       {/* LEFT SIDE */}
       <div className="flex items-center">
         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold mr-3 shrink-0">
           {initial}
         </div>
-
         <div>
           <div className="font-semibold text-blue-900">
             {displayName || "Unknown User"}
           </div>
-          <div className="text-sm text-gray-500">
-            {displayRole}
-          </div>
+          <div className="text-sm text-gray-500">{displayRole}</div>
         </div>
       </div>
 
@@ -69,12 +68,13 @@ const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
       {/* PROFILE MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 backdrop-blur-sm">
-          
           <div className="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden">
-            
+
             {/* HEADER */}
             <div className="bg-blue-600 p-4 text-white flex justify-between items-center">
-              <h2 className="text-lg font-bold">{modalTitle}</h2>
+              <h2 className="text-lg font-bold">
+                {isCitizen ? "Provider Profile" : "Client Profile"}
+              </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-blue-200 hover:text-white text-2xl"
@@ -85,55 +85,40 @@ const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
 
             {/* BODY */}
             <div className="p-6">
-              
               <div className="flex flex-col items-center mb-6">
                 <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-bold text-4xl mb-3">
                   {initial}
                 </div>
-
                 <h3 className="text-xl font-bold text-blue-900 text-center">
                   {displayName}
                 </h3>
-
                 <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full mt-2 uppercase font-bold tracking-wider">
-                  {profileRole}
+                  {displayRole}
                 </span>
               </div>
 
               {/* DETAILS */}
               <div className="space-y-3 text-sm bg-gray-50 p-4 rounded-xl border border-gray-100">
-                
                 <div className="flex justify-between border-b border-gray-200 pb-2">
-                  <span className="text-gray-500 font-medium">
-                    Match ID:
-                  </span>
+                  <span className="text-gray-500 font-medium">Match ID:</span>
                   <span className="font-bold text-blue-900">
-                    #{matchId}
+                    #{selectedUser.matchId}
                   </span>
                 </div>
 
                 {profileEmail && (
                   <div className="flex justify-between border-b border-gray-200 pb-2">
-                    <span className="text-gray-500 font-medium">
-                      Email:
-                    </span>
-                    <span className="font-bold text-blue-900">
-                      {profileEmail}
-                    </span>
+                    <span className="text-gray-500 font-medium">Email:</span>
+                    <span className="font-bold text-blue-900">{profileEmail}</span>
                   </div>
                 )}
 
                 {profilePhone && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500 font-medium">
-                      Phone:
-                    </span>
-                    <span className="font-bold text-blue-900">
-                      {profilePhone}
-                    </span>
+                    <span className="text-gray-500 font-medium">Phone:</span>
+                    <span className="font-bold text-blue-900">{profilePhone}</span>
                   </div>
                 )}
-
               </div>
             </div>
 
@@ -146,7 +131,6 @@ const ChatHeader: React.FC<Props> = ({ selectedUser }) => {
                 Close
               </button>
             </div>
-
           </div>
         </div>
       )}
