@@ -214,7 +214,7 @@ export default function LandingPage() {
             <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Why Choose Us?
             </h3>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-gray-50 max-w-2xl mx-auto">
               Our platform offers comprehensive tools to streamline legal
               assistance and ensure transparency.
             </p>
@@ -233,7 +233,7 @@ export default function LandingPage() {
               <h4 className="text-xl font-bold text-white mb-3">
                 Smart Matching
               </h4>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Our AI-driven algorithm connects citizens with the most suitable
                 lawyers and NGOs based on case type, location, and expertise.
               </p>
@@ -251,7 +251,7 @@ export default function LandingPage() {
               <h4 className="text-xl font-bold text-white mb-3">
                 Verified Directory
               </h4>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Access a trusted network of verified legal professionals and
                 registered NGOs. Every profile is vetted for authenticity.
               </p>
@@ -269,7 +269,7 @@ export default function LandingPage() {
               <h4 className="text-xl font-bold text-white mb-3">
                 Secure & Confidential
               </h4>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Communicate safely with end-to-end encryption. Your case details
                 and personal information remain strictly confidential.
               </p>
@@ -286,7 +286,7 @@ export default function LandingPage() {
               <h4 className="text-xl font-bold text-white mb-3">
                 Case Management
               </h4>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Organize your legal documents, track case progress, and manage
                 appointments all in one secure dashboard.
               </p>
@@ -303,7 +303,7 @@ export default function LandingPage() {
               <h4 className="text-xl font-bold text-white mb-3">
                 Legal Resources
               </h4>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Access a library of legal guides, FAQs, and templates to help
                 you understand your rights and legal procedures.
               </p>
@@ -320,7 +320,7 @@ export default function LandingPage() {
               <h4 className="text-xl font-bold text-white mb-3">
                 Community Support
               </h4>
-              <p className="text-gray-400 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed">
                 Connect with support groups and community organizations for
                 additional assistance beyond legal representation.
               </p>
