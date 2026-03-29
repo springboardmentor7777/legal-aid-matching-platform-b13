@@ -1,19 +1,12 @@
-import { useFetcher, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
-import Navbar from "../components/Navbar";
 import { useEffect, useState } from "react";
-
-import axios from "axios";
 import PageTitle from "../components/PageTitle";
-
 
 export default function Profile() {
   const { user } = useAuth();
-
   const [data, setData] = useState<any>(null);
-
-  //  Availability state
-  // const [isAvailable, setIsAvailable] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("http://localhost:8081/profile/me", {
@@ -24,169 +17,140 @@ export default function Profile() {
       },
     })
       .then((res) => res.json())
-      .then((data) => {
-        const userData = data;
-        setData(userData);
-
-        //  Sync from backend
-        // setIsAvailable(userData?.isAvailable || false);
-      });
+      .then((data) => setData(data));
   }, []);
 
-  console.log(data);
-  const navigate = useNavigate();
-
   return (
-    <><PageTitle title="Profile - Legal Aid Matching Platform" />
-    <div>
-      <div>
-        <nav className="bg-white p-5 shadow-lg flex items-center justify-between border-blue-100 border-b fixed top-0 left-0 right-0 z-50">
-          <div className="text-blue-900 font-bold text-2xl">
-            Profile | <span>Legal Aid Matching Platform</span>
-          </div>
-          <div className="flex gap-5">
-            <a
-              href={user?.role !== "ADMIN" ? "/dashboard" : "/admin"}
-              className="p-2 text-blue-900 rounded-lg border border-blue-900 hover:bg-blue-900 hover:text-white transition"
-            >
-              Dashboard
-            </a>
-            <a
-              href="/"
-              className="bg-red-500 p-2 text-white rounded-lg"
-              onClick={() => {
-                localStorage.clear();
-                navigate("/");
-              }}
-            >
-              Logout
-            </a>
-          </div>
-        </nav>
-      </div>
+    <>
+      <PageTitle title="Profile - Legal Aid Matching Platform" />
 
-      <div className="min-h-screen bg-gray-100 pt-20">
-        <div className="flex justify-center items-start gap-1">
-          <section className="flex-1">
-            <div className="ml-[5rem]">
-              <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg mt-10">
-                <h1 className="text-[50px] font-bold text-blue-900 mb-4">
-                  Welcome, <br />
-                  <span>{data?.name}!</span>
-                </h1>
+      {/* Navbar */}
+      <nav className="bg-white px-8 py-4 shadow-md flex items-center justify-between fixed w-full top-0 z-50">
+        <h1 className="text-xl md:text-2xl font-bold text-blue-900">
+          Profile | Legal Aid Matching Platform
+        </h1>
 
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="text-xl font-semibold text-blue-900 mb-2">
-                    Personal Information
-                  </h3>
-                  <p className="text-gray-700">
-                    Name: {data?.name} (<span>{user?.role?.toLowerCase()}</span>
-                    )
-                  </p>
-                  <p className="text-gray-700">
-                    Email: {user?.email || "Not available"}
-                  </p>
-                  <p className="text-gray-700">
-                    Profile Status:{" "}
+        <div className="flex gap-3">
+          <a
+            href={user?.role !== "ADMIN" ? "/dashboard" : "/admin"}
+            className="px-4 py-2 border border-blue-900 text-blue-900 rounded-lg hover:bg-blue-900 hover:text-white transition"
+          >
+            Dashboard
+          </a>
+
+          <button
+            onClick={() => {
+              localStorage.clear();
+              navigate("/");
+            }}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      {/* Main Layout */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-50 pt-24 px-4 md:px-10">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* Profile Card */}
+          <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6 md:p-10">
+            <h1 className="text-3xl md:text-4xl font-bold text-blue-900 mb-6">
+              Welcome, {data?.name} !
+            </h1>
+
+            {/* Personal Info */}
+            <div className="bg-blue-50 rounded-xl p-5 mb-6">
+              <h2 className="text-xl font-semibold text-blue-900 mb-2">
+                Personal Information
+              </h2>
+              <p className="text-gray-700 text-lg">
+                <strong>Name:</strong> {data?.name}
+              </p>
+              <p className="text-gray-700 text-lg">
+                <strong>Role:</strong> {user?.role || "Not available"}
+              </p>
+              <p className="text-gray-700 text-lg">
+                <strong>Email:</strong> {user?.email || "Not available"}
+              </p>
+
+              {(data?.role === "LAWYER" || data?.role === "NGO") && (
+                <p className="text-gray-700">
+                  <strong>Status:</strong>{" "}
+                  <span
+                    className={`px-2 py-1 rounded-full text-sm font-medium ${
+                      data?.is_verified
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
                     {data?.is_verified ? "Verified" : "Not Verified"}
-                  </p>
-                </div>
-
-                <div>
-                  {data?.role === "LAWYER" && (
-                    <h1 className="text-2xl text-blue-900 pt-10">
-                      Professional Information
-                    </h1>
-                  )}
-                  {data?.role === "NGO" && (
-                    <h1 className="text-2xl text-blue-900 pt-10">
-                      NGO Information
-                    </h1>
-                  )}
-
-                  <hr className="border-t border-blue-200 my-4" />
-
-                  <div>
-                    {data?.role === "LAWYER" && (
-                      <div className="text-blue-900">
-                        profession: {data?.role}
-                        <br />
-                        specialization: {data?.specialization || "N/A"}
-                        <br />
-                        experience:{" "}
-                        {data?.experience ? `${data.experience} years` : "N/A"}
-                        <br />
-                        location: {data?.location || "N/A"}
-                        {/*Availability Toggle  */}
-                        <div className="mt-4">
-                          {/* <button
-                            onClick={() => {}}
-                            className={`px-4 py-2 rounded-lg text-white ${
-                              data?.isAvailable
-                                ? "bg-green-500"
-                                : "bg-gray-500"
-                            }`}
-                          >
-                            {data?.isAvailable ? "Available" : "Not Available"}
-                          </button> */}
-                          <div
-                            className={`px-4 py-2 items-center justify-center rounded-lg text-white ${
-                              data?.isAvailable ? "bg-green-500" : "bg-gray-500"
-                            }`}
-                          >
-                            {data?.isAvailable ? (
-                              <span>Available</span>
-                            ) : (
-                              <span>Not Available</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {data?.role === "NGO" && (
-                      <div className="text-blue-900">
-                        role: {data?.role}
-                        <br />
-                        organization name: {data?.organizationName || "N/A"}
-                        <br />
-                        service area: {data?.serviceArea || "N/A"}
-                        <br />
-                        location: {data?.location || "N/A"}
-                        {/* Availability Toggle  */}
-                        <div className="mt-4">
-                          <div
-                            className={`px-4 py-2 items-center justify-center rounded-lg text-white ${
-                              data?.isAvailable ? "bg-green-500" : "bg-gray-500"
-                            }`}
-                          >
-                            {data?.isAvailable ? (
-                              <span>Available</span>
-                            ) : (
-                              <span>Not Available</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+                  </span>
+                </p>
+              )}
             </div>
-          </section>
 
-          {/* side panel */}
-          <div className="ml-3">
-            <aside className="bg-white w-64 p-5 mt-10 text-white rounded-lg shadow-lg mr-[7rem]">
-              <h3 className="text-xl font-semibold text-blue-900 mb-4">
+            {/* Professional / NGO Info */}
+            
+              <h2 className="text-xl font-semibold text-blue-900 mb-4">
+                {data?.role === "LAWYER"
+                  ? "Professional Information"
+                  : data?.role === "NGO"
+                  ? "NGO Information"
+                  : ""}
+              </h2>
+
+              <div className="space-y-2 text-gray-700">
+                {data?.role === "LAWYER" && (
+                  <><div className="bg-blue-50 rounded-xl p-5 mb-6">
+                    <p className="text-gray-700 text-lg"><strong>Profession:</strong> {data?.role}</p>
+                    <p className="text-gray-700 text-lg"><strong>Specialization:</strong> {data?.specialization || "N/A"}</p>
+                    <p className="text-gray-700 text-lg">
+                      <strong>Experience:</strong>{" "}
+                      {data?.experience ? `${data.experience} years` : "N/A"}
+                    </p>
+                    <p className="text-gray-700 text-lg"><strong>Location:</strong> {data?.location || "N/A"}</p>
+                  </div></>
+                )}
+
+                {data?.role === "NGO" && (
+                  <><div className="bg-blue-50 rounded-xl p-5 mb-6">
+                    <p className="text-gray-700 text-lg"><strong>Role:</strong> {data?.role}</p>
+                    <p className="text-gray-700 text-lg"><strong>Organization:</strong> {data?.organizationName || "N/A"}</p>
+                    <p className="text-gray-700 text-lg"><strong>Service Area:</strong> {data?.serviceArea || "N/A"}</p>
+                    <p className="text-gray-700 text-lg"><strong>Location:</strong> {data?.location || "N/A"}</p>
+                  </div></>
+                )}
+              
+
+              {/* Availability Badge (Professionals Only) */}
+              {(data?.role === "LAWYER" || data?.role === "NGO") && (
+                <div className="mt-6">
+                  <span
+                    className={`inline-block px-4 py-2 rounded-full text-white text-sm font-medium ${
+                      data?.isAvailable ? "bg-green-500" : "bg-gray-400"
+                    }`}
+                  >
+                    {data?.isAvailable ? "Available" : "Not Available"}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <div className="bg-white rounded-2xl shadow-lg p-5">
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">
                 Quick Actions
               </h3>
-              <hr className="border-t border-blue-200 my-4" />
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 <li>
                   <a
                     href="/profile/edit"
-                    className="block hover:bg-gray-200 text-blue-900 p-2 rounded-lg"
+                    className="block p-2 rounded-lg hover:bg-blue-50 text-blue-900"
                   >
                     Edit Profile
                   </a>
@@ -194,57 +158,51 @@ export default function Profile() {
                 <li>
                   <a
                     href="/settings"
-                    className="block hover:bg-gray-200 text-blue-900 p-2 rounded-lg"
+                    className="block p-2 rounded-lg hover:bg-blue-50 text-blue-900"
                   >
                     Settings
                   </a>
                 </li>
               </ul>
-            </aside>
+            </div>
 
-            <aside className="bg-white w-64 p-5 mt-10 text-white rounded-lg shadow-lg mr-[7rem]">
-              <h3 className="text-xl font-semibold text-blue-900 mb-4">
+            {/* Support */}
+            <div className="bg-white rounded-2xl shadow-lg p-5">
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">
                 Need Support?
               </h3>
-              <hr className="border-t border-blue-200 my-4" />
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 <li>
-                  <a
-                    href="/support"
-                    className="block hover:bg-gray-200 text-blue-900 p-2 rounded-lg"
-                  >
+                  <a href="/support" className="block p-2 hover:bg-blue-50 rounded-lg text-blue-900">
                     Contact Support
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/faq"
-                    className="block hover:bg-gray-200 text-blue-900 p-2 rounded-lg"
-                  >
+                  <a href="/faq" className="block p-2 hover:bg-blue-50 rounded-lg text-blue-900">
                     FAQs
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="/help-center"
-                    className="block hover:bg-gray-200 text-blue-900 p-2 rounded-lg"
-                  >
+                  <a href="/help-center" className="block p-2 hover:bg-blue-50 rounded-lg text-blue-900">
                     Help Center
                   </a>
                 </li>
               </ul>
-              <a href="" className="text-blue-900 cursor-pointer mt-10">
+
+              <div className="mt-4 text-sm text-gray-500">
                 support@legalaid.com
-              </a>
-              <p className="text-gray-500 text-sm">24x7 Support Available</p>
-            </aside>
+                <br />
+                24x7 Support Available
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <footer className="text-gray-500 justify-center items-center flex p-10 bg-gray-100">
-        Legal Aid Matching platform @2026
+      {/* Footer */}
+      <footer className="text-center text-gray-500 py-6 bg-gray-100 mt-10">
+        Legal Aid Matching Platform © 2026
       </footer>
-    </div></>
+    </>
   );
 }

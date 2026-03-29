@@ -12,7 +12,8 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
   const { matchId } = useParams<{ matchId: string }>();
   const numericMatchId = Number(matchId);
 
-  const [date, setDate] = useState("2026-03-20");
+  const today = new Date().toISOString().split("T")[0];
+  const [date, setDate] = useState(today);
   const [timezone, setTimezone] = useState("IST");
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [duration, setDuration] = useState("30 mins");
@@ -51,6 +52,11 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
     if (!selectedTime) {
       alert("Please select a time slot first.");
       return;
+    }
+
+    if (date < today) {
+    alert("You cannot schedule an appointment in the past.");
+    return;
     }
 
     setLoading(true);
@@ -108,7 +114,7 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
 
   // UNCHANGED: Reset form to defaults
   const handleCancel = () => {
-    setDate("2026-03-20");
+    setDate(today);
     setTimezone("IST");
     setSelectedTime(null);
     setDuration("30 mins");
@@ -152,6 +158,7 @@ export default function AppointmentScheduler({ initialScore, providerName }: App
               <input
                 type="date"
                 value={date}
+                min={today}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-500 outline-none"
               />

@@ -435,6 +435,19 @@ const Dashboard: React.FC = () => {
                       >
                         View Details
                       </button>
+                      <button
+                        onClick={() => navigate(`/case/${c.id}/chatpage`)}
+                        className="mt-3 ml-3 bg-gray-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                      >
+                        Secure Chat
+                      </button>
+                      {/* For future...
+                      <button
+                        onClick={() => navigate(`/case/${c.id}/appointments`)}
+                        className="mt-3 ml-3 bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
+                      >
+                        Appointments
+                      </button>*/}
                     </div>
                   ))}
 

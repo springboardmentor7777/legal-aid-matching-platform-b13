@@ -108,7 +108,7 @@ export default function Signup() {
               <input
                 type="text"
                 name="name"
-                placeholder="enter your name"
+                placeholder="Please enter your name"
                 className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
                 value={form.name}
                 onChange={handleChange}
@@ -126,7 +126,7 @@ export default function Signup() {
               <input
                 type="email"
                 name="email"
-                placeholder="enter your email"
+                placeholder="Please enter your email"
                 className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
                 value={form.email}
                 onChange={handleChange}
@@ -154,7 +154,7 @@ export default function Signup() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 className="mt-1 block w-full rounded-full border border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-600 focus:ring-blue-600"
-                placeholder="enter your password"
+                placeholder="Please enter your password"
                 value={form.password}
                 onChange={handleChange}
               />
@@ -172,7 +172,11 @@ export default function Signup() {
                     <p className="mt-1 text-xs text-red-600">{errors.password}</p>
                   )} */}
           </div>
-
+          <label
+            htmlFor="role"
+            className="block text-sm font-medium text-gray-700">
+            Select your Role
+            </label>
           <select
             name="role"
             // className="w-full p-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
