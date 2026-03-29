@@ -113,4 +113,8 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             WHERE m.caseId = :caseId AND m.id != :matchId
             """)
     void rejectOtherMatches(@Param("caseId") Long caseId, @Param("matchId") Long matchId);
+
+    //  NEW: Group matches by status for Analytics Dashboard 
+    @org.springframework.data.jpa.repository.Query("SELECT new com.milestone.backend.dto.MatchStatusCountDto(m.status, COUNT(m)) FROM Match m GROUP BY m.status")
+    java.util.List<com.milestone.backend.dto.MatchStatusCountDto> countMatchesByStatus();
 }

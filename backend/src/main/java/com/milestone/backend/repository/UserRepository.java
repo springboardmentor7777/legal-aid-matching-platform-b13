@@ -24,7 +24,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // Fetch all users by role
     List<User> findAllByRole(Role role);
-     List<User> findByRoleIn(List<Role> roles);
+    List<User> findByRoleIn(List<Role> roles);
+
+    //  NEW METHOD ADDED FOR ANALYTICS DASHBOARD 
+    long countByRole(Role role);
 
     // --- Fetch only available providers for matching ---
     
@@ -61,4 +64,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("isVerified") Boolean isVerified,
             Pageable pageable
     );
+
+    //  NEW: Group users by role for the Admin Pie Chart 
+    @Query("SELECT new com.milestone.backend.dto.RoleCountDto(u.role, COUNT(u)) FROM User u GROUP BY u.role")
+    List<com.milestone.backend.dto.RoleCountDto> countUsersByRole();
 }

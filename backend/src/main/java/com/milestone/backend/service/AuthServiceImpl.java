@@ -23,6 +23,9 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    
+    //  INJECTED THE LOGGER HERE 
+    private final SystemLogService systemLogService; 
 
     @Override
     public AuthResponse refreshToken(RefreshTokenRequest request) {
@@ -71,10 +74,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> {
+                    //  LOG FAILED ATTEMPT: Email not found
+                    systemLogService.logEvent("WARN", "AuthService", "Failed login attempt: User not found for email " + request.getEmail());
+                    return new RuntimeException("User not found");
+                });
 
         // Verify password
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            //  LOG FAILED ATTEMPT: Wrong password
+            systemLogService.logEvent("WARN", "AuthService", "Failed login attempt for email: " + request.getEmail() + " (Invalid Password)");
             throw new RuntimeException("Invalid password");
         }
 
@@ -82,8 +91,11 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtUtil.generateToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user);
 
+        //  LOG SUCCESSFUL LOGIN
+        systemLogService.logEvent("INFO", "AuthService", "User logged in successfully: " + request.getEmail());
+
         return AuthResponse.builder()
-                .id(user.getId()) //  THE MAGIC LINE! Now React knows who you are!
+                .id(user.getId()) // Now React knows who you are!
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .message("Login successful")
