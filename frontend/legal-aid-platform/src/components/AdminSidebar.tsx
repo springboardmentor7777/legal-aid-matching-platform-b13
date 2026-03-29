@@ -53,6 +53,24 @@ const AdminSidebar: React.FC<Props> = ({
         >
           Impact Dashboard
         </span>
+        <span
+          className={linkClass("lawyerIngest")}
+          onClick={() => setActive("lawyerIngest")}
+        >
+          Ingest External Lawyer Data
+        </span>
+        <span
+          className={linkClass("NGOIngest")}
+          onClick={() => setActive("NGOIngest")}
+        >
+          Ingest External NGO Data
+        </span>
+        <span
+          className={linkClass("ExternalDirectory")}
+          onClick={() => setActive("ExternalDirectory")}
+        >
+          External Directory
+        </span>
       </nav>
     </aside>
   );

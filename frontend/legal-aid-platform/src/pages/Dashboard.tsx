@@ -109,14 +109,14 @@ const Dashboard: React.FC = () => {
         // where the citizen has generated matches and is waiting for a response.
         // Each result includes both caseId and matchId, which we need below to
         // call the correct reject endpoint when the lawyer declines.
-        const res = await fetch("http://localhost:8081/cases/pending", {
+        const res = await fetch("http://localhost:8081/matches/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) { setPendingCases([]); return; }
         const data = await res.json();
         const pending = Array.isArray(data)
           ? data
-              .filter((m: any) => m.status === "PENDING")
+              .filter((m: any) => m.status === "INTERESTED")
               .map((m: any) => ({
                 id: m.caseId,
                 matchId: m.matchId,        // needed for reject endpoint
@@ -177,10 +177,17 @@ const Dashboard: React.FC = () => {
     try {
       const res = await fetch(`http://localhost:8081/cases/${id}/accept`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
       if (!res.ok) { alert("Failed to accept case. Please try again."); return; }
       setPendingCases((prev) => prev.filter((c) => c.id !== id));
+      const assignedRes = await fetch("http://localhost:8081/cases/assigned", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (assignedRes.ok) {
+        const data = await assignedRes.json();
+        setAssignedCases(Array.isArray(data) ? data : []);
+      }
     } catch {
       alert("Failed to accept case. Please try again.");
     }
@@ -199,7 +206,7 @@ const Dashboard: React.FC = () => {
     try {
       // Step 1: Reject the match record so it no longer appears in pending list
       if (matchId) {
-        await fetch(`http://localhost:8081/matches/${matchId}/reject`, {
+        await fetch(`http://localhost:8081/cases/${id}/reject`, {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -280,7 +287,7 @@ const Dashboard: React.FC = () => {
 
   const totalCases = cases.length;
   const submittedCases = cases.filter((c) => c.status === "SUBMITTED").length;
-  const matchedCases = cases.filter((c) => c.status === "MATCHED").length;
+  const matchedCases = cases.filter((c) => c.status === "ASSIGNED").length;
 
   // CHANGED: Split appointments into two groups for the provider dashboard.
   // BEFORE:  Appointments were a flat list with no status-based grouping.

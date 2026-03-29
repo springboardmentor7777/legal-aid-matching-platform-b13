@@ -10,6 +10,7 @@ import com.milestone.backend.dto.CaseRequest;
 import com.milestone.backend.dto.CaseResponse;
 import com.milestone.backend.entity.Case;
 import com.milestone.backend.entity.CaseStatus;
+import com.milestone.backend.entity.Match;
 import com.milestone.backend.entity.MatchStatus;
 import com.milestone.backend.entity.Role;
 import com.milestone.backend.entity.User;
@@ -294,10 +295,16 @@ public class CaseService {
     caseObj.setAssignedLawyer(user);
     caseObj.setStatus(CaseStatus.ASSIGNED);
 
-    matchRepository.save(match);
-    caseRepository.save(caseObj);
-
-    return mapToResponse(caseObj);
+    List<Match> caseMatches = matchRepository.findByCaseId(id);
+        for (Match m: caseMatches) {
+            if (m.getUserId().equals(user.getId())) {
+                m.setStatus(MatchStatus.ACCEPTED);
+                matchRepository.save(m);
+                break;
+            }
+        }
+        
+    return mapToResponse(caseRepository.save(caseObj));
 }
 
     // ─────────────────────────────────────────────────────────────────────────────

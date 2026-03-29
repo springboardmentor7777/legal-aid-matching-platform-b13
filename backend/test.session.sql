@@ -1,2 +1,1 @@
-ALTER TABLE matches ADD CONSTRAINT matches_status_check 
-CHECK (status IN ('PENDING', 'INTERESTED', 'ACCEPTED', 'REJECTED'));
+SELECT * FROM external_lawyer_directory;

@@ -1,6 +1,6 @@
 package com.milestone.backend.controller;
 
-// import java.util.List;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.milestone.backend.service.LawyerExcelService;
-// import com.milestone.backend.dto.ExternalLawyerResponseDto;
+import com.milestone.backend.dto.ExternalLawyerResponseDto;
 import com.milestone.backend.service.ExternalLawyersDataService;
 
 @RestController
@@ -38,5 +38,11 @@ public class ExternalLaywerController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Ingestion failed: " + e.getMessage());
         }
+    }
+
+    // NEW: Get all external lawyers
+    @GetMapping
+    public ResponseEntity<List<ExternalLawyerResponseDto>> getAllExternalLawyers() {
+        return ResponseEntity.ok(lawyerDataService.getAllLawyers());
     }
 }

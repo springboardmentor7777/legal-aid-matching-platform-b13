@@ -97,7 +97,7 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     @Query("""
             SELECT m FROM Match m
             WHERE m.userId = :userId
-            AND m.status IN ('PENDING', 'ACCEPTED')
+            AND m.status IN ('PENDING', 'INTERESTED', 'ACCEPTED')
             """)
     List<Match> findVisibleMatchesForProvider(@Param("userId") Long userId);
 

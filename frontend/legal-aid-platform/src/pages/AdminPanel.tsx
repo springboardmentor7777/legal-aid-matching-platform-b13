@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import ProfileManagement from "../components/ProfileManagement";
 import CaseSubmission from "../components/CaseSubmission";
@@ -7,13 +7,19 @@ import Matches from "../components/Matches";
 import ImpactDashboard from "../components/ImpactDashboard";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
+import NGOIngest from "../components/NGOIngest";
+import LawyerIngest from "../components/LawyerIngest";
+import ExternalDirectory from "../components/ExternalDirectory";
 
 export type SectionType =
   | "profile"
   | "cases"
   | "directory"
   | "matches"
-  | "impact";
+  | "impact"
+  | "lawyerIngest"
+  | "NGOIngest"
+  |"ExternalDirectory";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -31,6 +37,12 @@ export default function AdminPanel() {
         return <Matches />;
       case "impact":
         return <ImpactDashboard />;
+      case "lawyerIngest":
+        return <LawyerIngest/>;
+      case "NGOIngest":
+        return <NGOIngest/>;
+      case "ExternalDirectory":
+        return <ExternalDirectory/>;
       default:
         return <ProfileManagement />;
     }

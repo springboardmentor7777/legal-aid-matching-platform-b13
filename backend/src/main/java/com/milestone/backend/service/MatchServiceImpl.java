@@ -192,12 +192,12 @@ public class MatchServiceImpl implements MatchService {
             );
         }
 
-        match.setStatus(MatchStatus.ACCEPTED);
+        match.setStatus(MatchStatus.INTERESTED);
         match = matchRepository.save(match);
 
         // Automatically reject all remaining PENDING matches for this case
         // so no other provider is left waiting
-        matchRepository.rejectOtherMatches(match.getCaseId(), match.getId());
+       // matchRepository.rejectOtherMatches(match.getCaseId(), match.getId());
 
         return mapToResponse(match);
     }

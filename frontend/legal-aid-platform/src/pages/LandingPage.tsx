@@ -15,6 +15,7 @@ import service from "../assets/images/ngoservice.jpg";
 import { TypeAnimation } from "react-type-animation";
 import { useAuth } from "../auth/AuthContext";
 import PageTitle from "../components/PageTitle";
+import logo from "../assets/images/L.png";
 
 export default function LandingPage() {
   const { user } = useAuth();
@@ -61,7 +62,7 @@ export default function LandingPage() {
       <header className="w-full bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            {/* <img src={""} alt="Legal Aid Logo" className="h-10 w-10" /> */}
+            <img src={logo} alt="Legal Aid Logo" className="h-10 w-10" />
             <h1 className="text-xl md:text-2xl font-bold text-blue-950 tracking-tight">
               LEGAL AID MATCHING PLATFORM
             </h1>
@@ -433,9 +434,9 @@ export default function LandingPage() {
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-6">
                 <img
-                  src={"null"}
+                  src={logo}
                   alt="Legal Aid Logo"
-                  className="h-10 w-10 brightness-0 invert"
+                  className="h-15 w-15 brightness-100 rounded-full"
                 />
                 <h2 className="text-xl font-bold">
                   LEGAL-AID MATCHING PLATFORM
