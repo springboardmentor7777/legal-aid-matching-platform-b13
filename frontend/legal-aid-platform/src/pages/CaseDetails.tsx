@@ -30,6 +30,7 @@ interface Case {
   title: string;
   updatedAt: string;
 }
+
 const CaseDetails = () => {
   const { id } = useParams();
   const numericId = Number(id);
@@ -37,15 +38,9 @@ const CaseDetails = () => {
   const { user } = useAuth();
   const [cases, setCases] = useState<Case[]>([]);
 
-  // const selectItem = cases.find(cases => cases.id === numericId);
   const selectedCase = cases.find((c) => c.id === numericId);
 
-  console.log(selectedCase);
-
-  // console.log(selectItem, numericId);
-
   useEffect(() => {
-    //
     const fetchAssigned = async () => {
       try {
         const res = await fetch("http://localhost:8081/cases/assigned", {
@@ -56,7 +51,6 @@ const CaseDetails = () => {
           return;
         }
         const data = await res.json();
-        // console.log(data);
         setCases(data);
       } catch (e) {
         console.error(e);
@@ -65,17 +59,35 @@ const CaseDetails = () => {
 
     fetchAssigned();
   }, []);
+
+  // 🔹 Reusable Field Component
+  const Info = ({
+    label,
+    value,
+    full = false,
+  }: {
+    label: string;
+    value: any;
+    full?: boolean;
+  }) => (
+    <div className={`${full ? "md:col-span-2" : ""}`}>
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-blue-900 font-medium break-words">
+        {value || "-"}
+      </p>
+    </div>
+  );
+
   return (
     <>
       <PageTitle title="Assigned Cases - Legal Aid Matching Platform" />
+
       <div className="flex min-h-screen bg-blue-50">
-        {/* UNCHANGED: Sidebar */}
         <div className="hidden lg:block w-64">
           <Sidebar role={user?.role} isOpen={true} toggleSidebar={() => {}} />
         </div>
 
         <div className="flex-1 flex flex-col">
-          {/* UNCHANGED: Navbar */}
           <Navbar
             title="Assigned Cases"
             name={user?.username || ""}
@@ -84,146 +96,90 @@ const CaseDetails = () => {
           />
 
           <main className="px-6 py-6 flex-1">
-            {/* UNCHANGED: Welcome banner */}
             {selectedCase ? (
-              <div className="bg-white rounded-md shadow-lg p-5">
-                <h1 className="text-blue-900 text-xl font-bold mb-2">
-                  {selectedCase?.title}
-                </h1>
-                <p className="text-md text-gray-500">
-                  personName:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.personName}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  submittedBy:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.submittedBy}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  additionalNotes:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.additionalNotes}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  attachment:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.attachment}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  {" "}
-                  category:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.category}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  contactInfo:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.contactInfo}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  createdAt:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.createdAt}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  currentStatus:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.currentStatus}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  customCategory:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.customCategory}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  description:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.description}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  firFile:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.firFile}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  firNumber:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.firNumber}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  incidentDate:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.incidentDate}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  incidentTime:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.incidentTime}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  legalDocuments:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.legalDocuments}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  location:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.location}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  otherLocation:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.otherLocation}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  otherRepresentative:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.otherRepresentative}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  status:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.status}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  subcategory:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.subcategory}
-                  </span>
-                </p>
-                <p className="text-md text-gray-500">
-                  updatedAt:{" "}
-                  <span className="text-blue-900">
-                    {selectedCase.updatedAt}
-                  </span>
-                </p>
+              <div className="bg-white rounded-xl shadow-lg p-6 space-y-6">
+
+                {/* Title */}
+                <div className="border-b pb-3">
+                  <h1 className="text-2xl font-bold text-blue-900">
+                    {selectedCase.title}
+                  </h1>
+                  <p className="text-sm text-gray-500">
+                    Case ID: {selectedCase.id}
+                  </p>
+                </div>
+
+                {/* Basic Info */}
+                <section>
+                  <h2 className="text-lg font-semibold text-blue-800 mb-3">
+                    Basic Information
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Info label="Person Name" value={selectedCase.personName} />
+                    <Info label="Submitted By" value={selectedCase.submittedBy} />
+                    <Info label="Contact Info" value={selectedCase.contactInfo} />
+                    <Info label="Category" value={selectedCase.category} />
+                    <Info label="Subcategory" value={selectedCase.subcategory} />
+                    <Info label="Custom Category" value={selectedCase.customCategory} />
+                  </div>
+                </section>
+
+                {/* Case Details */}
+                <section>
+                  <h2 className="text-lg font-semibold text-blue-800 mb-3">
+                    Case Details
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Info label="Description" value={selectedCase.description} full />
+                    <Info label="Additional Notes" value={selectedCase.additionalNotes} full />
+                    <Info label="Status" value={selectedCase.status} />
+                    <Info label="Current Status" value={selectedCase.currentStatus} />
+                  </div>
+                </section>
+
+                {/* Incident Info */}
+                <section>
+                  <h2 className="text-lg font-semibold text-blue-800 mb-3">
+                    Incident Information
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Info label="Date" value={selectedCase.incidentDate} />
+                    <Info label="Time" value={selectedCase.incidentTime} />
+                    <Info label="Location" value={selectedCase.location} />
+                    <Info label="Other Location" value={selectedCase.otherLocation} />
+                  </div>
+                </section>
+
+                {/* Legal Info */}
+                <section>
+                  <h2 className="text-lg font-semibold text-blue-800 mb-3">
+                    Legal Information
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Info label="FIR Number" value={selectedCase.firNumber} />
+                    <Info label="FIR File" value={selectedCase.firFile} />
+                    <Info label="Legal Documents" value={selectedCase.legalDocuments} />
+                    <Info label="Representative" value={selectedCase.otherRepresentative} />
+                  </div>
+                </section>
+
+                {/* Metadata */}
+                <section>
+                  <h2 className="text-lg font-semibold text-blue-800 mb-3">
+                    Metadata
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Info label="Created At" value={selectedCase.createdAt} />
+                    <Info label="Updated At" value={selectedCase.updatedAt} />
+                  </div>
+                </section>
+
               </div>
             ) : (
-              <p>no cases assigned</p>
+              <p className="text-gray-500">No cases assigned</p>
             )}
           </main>
 
-          {/* UNCHANGED: Footer */}
           <footer className="text-gray-500 flex justify-center items-center p-10 bg-blue-50">
             Legal Aid Matching Platform © 2026
           </footer>
