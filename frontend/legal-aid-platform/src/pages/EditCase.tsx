@@ -1,348 +1,335 @@
-// src/pages/EditCase.tsx
-
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthContext";
+import { useState } from "react";
 import Navbar from "../components/Navbar";
-import axios from "axios";
+import { useAuth } from "../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { LuSquareArrowLeft } from "react-icons/lu";
 import PageTitle from "../components/PageTitle";
 
-interface CaseFormData {
-  title: string;
-  description: string;
-  location: string;
-  currentStatus: string;
-
-  personName: string;
-  contactInfo: string;
-
-  firNumber: string;
-  firFile?: any;
-}
-
-const EditCase: React.FC = () => {
+export default function EditProfile() {
   const { user } = useAuth();
-  const { caseId } = useParams();
-  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true);
+  //   const [data, setData] = useState<string | any>("");
+  type Role = "CITIZEN" | "LAWYER" | "NGO";
 
-  const [formData, setFormData] = useState<CaseFormData>({
-    title: "",
-    description: "",
-    location: "",
-    currentStatus: "",
-    personName: "",
-    contactInfo: "",
-    firNumber: "",
-    firFile: null,
+  interface CitizenUpdate {
+    name: string;
+  }
+
+  interface LawyerUpdate extends CitizenUpdate {
+    specialization: string;
+    experience: number;
+    location: string;
+    isAvailable: boolean;
+  }
+
+  interface NgoUpdate extends CitizenUpdate {
+    organizationName: string;
+    serviceArea: string;
+    location: string;
+    isAvailable: boolean;
+  }
+
+  type FormData = CitizenUpdate | LawyerUpdate | NgoUpdate;
+
+  const role = (user?.role ?? "CITIZEN") as Role;
+
+  const [formData, setFormData] = useState<FormData>(() => {
+    if (role === "LAWYER") {
+      return {
+        name: user?.username,
+        specialization: "",
+        experience: 0,
+        location: "",
+        isAvailable: true,
+      } as LawyerUpdate;
+    }
+    if (role === "NGO") {
+      return {
+        name: "",
+        organizationName: "",
+        serviceArea: "",
+        location: "",
+        isAvailable: true,
+      } as NgoUpdate;
+    }
+    return {
+      name: user?.username,
+    } as CitizenUpdate;
   });
 
-  const [errors, setErrors] = useState<any>({});
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setError(null);
 
-  if (!user) return <Navigate to="/login" replace />;
-
-  // ✅ Fetch existing case
-  useEffect(() => {
-    axios
-      .get(`http://localhost:8081/cases/${caseId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.accessToken}`,
-        },
-      })
-      .then((res) => {
-        const d = res.data;
-
-        setFormData({
-          title: d.title || "",
-          description: d.description || "",
-          location: d.location || "",
-          currentStatus: d.currentStatus || "", // ✅ FIXED
-          personName: d.personName || "",
-          contactInfo: d.contactInfo || "",
-          firNumber: d.firNumber || "",
-          firFile: d.firFile || null,
-        });
-
-        setPageLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        alert("Failed to load case");
-      });
-  }, [caseId]);
-
-  // ✅ Handle input
-  const handleChange = (e: any) => {
-    const { name, value, files } = e.target;
-
-    if (files) {
-      setFormData({ ...formData, [name]: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  // ✅ Validation
-  const validateStep = () => {
-    const err: any = {};
-
-    if (step === 1) {
-      if (!formData.title) err.title = "Required";
-      if (!formData.description) err.description = "Required";
-      if (!formData.location) err.location = "Required";
-    }
-
-    if (step === 2) {
-      if (formData.contactInfo && !/^\d{10}$/.test(formData.contactInfo)) {
-        err.contactInfo = "Must be 10 digits";
+    setFormData((prev) => {
+      if (name === "experience") {
+        return { ...(prev as any), [name]: Number(value) } as FormData;
       }
-    }
-
-    if (step === 3) {
-      if (!formData.firNumber) err.firNumber = "Required";
-    }
-
-    return err;
+      return { ...(prev as any), [name]: value } as FormData;
+    });
   };
 
-  const handleNext = () => {
-    const err = validateStep();
-    if (Object.keys(err).length > 0) {
-      setErrors(err);
-      return;
-    }
-    setErrors({});
-    setStep((prev) => prev + 1);
-  };
-
-  // ✅ Update API (FIXED)
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    let body: any;
 
-    const err = validateStep();
-    if (Object.keys(err).length) return setErrors(err);
-
-    setLoading(true);
-
-    try {
-      await axios.put(
-        `http://localhost:8081/cases/${caseId}/update`,
-        {
-          ...formData,
-          currentStatus: formData.currentStatus, // ✅ FIXED
-          firFile:
-            typeof formData.firFile === "string"
-              ? formData.firFile
-              : formData.firFile?.name,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.accessToken}`,
-          },
-        }
-      );
-
-      alert("Case updated successfully!");
-      navigate("/mycases");
-    } catch (err: any) {
-      console.error(err);
-      alert(err.response?.data?.message || "Update failed"); // ✅ better debug
+    if (role === "CITIZEN") {
+      body = {
+        name: (formData as CitizenUpdate).name,
+      };
+    } else if (role === "LAWYER") {
+      const d = formData as LawyerUpdate;
+      body = {
+        name: d.name,
+        specialization: d.specialization,
+        experience: d.experience,
+        location: d.location,
+        isAvailable:d.isAvailable
+      };
+    } else {
+      const d = formData as NgoUpdate;
+      body = {
+        name: d.name,
+        organizationName: d.organizationName,
+        serviceArea: d.serviceArea,
+        location: d.location,
+        isAvailable:d.isAvailable
+      };
     }
 
-    setLoading(false);
+    // Call your existing update API here
+    console.log("Profile update body:", body);
+    await fetch("http://localhost:8081/profile/update", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+      body: JSON.stringify(body),
+    }).catch((err) => {
+      console.error("Error updating profile:", err);
+      setError("Failed to update profile");
+    });
+
+    // navigate("/profile");
+    setSuccessMessage("Profile updated successfully!");
+    const navigate = useNavigate();
+    navigate("/profile");
   };
 
-  if (pageLoading)
-    return <p className="text-center mt-10 text-gray-600">Loading...</p>;
+  // const [success, setSuccess] = useState(false);
 
   return (
-    <><PageTitle title="Edit Case - Legal Aid Matching Platform" />
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <Navbar
-        title="Edit Case"
-        name={user.username}
-        role={user.role}
-        toggleSidebar={() => {}}
-      />
+    <><PageTitle title="Edit Profile - Legal Aid Matching Platform" />
+    <div>
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar
+          title="edit profile"
+          name={user?.username || "guest"}
+          role={user?.role || ""}
+          toggleSidebar={() => {}}
+        />
+      </div>
+      <div className="min-h-screen bg-blue-50 flex">
+        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col m-auto">
+          {error && (
+            <div className="mb-4 text-red-500 text-sm text-center font-mono mt-5">
+              {error}!
+            </div>
+          )}
 
-      <div className="flex justify-center mt-10">
-        <div className="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-8">
-
-          {/* BACK BUTTON */}
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-blue-700 mb-4"
-          >
-            <LuSquareArrowLeft /> Back
-          </button>
-
-          {/* STEP INDICATOR */}
-          <div className="flex justify-between mb-8">
-            {[1, 2, 3].map((s) => (
-              <div key={s} className="flex-1 flex items-center">
-                <div
-                  className={`w-10 h-10 flex items-center justify-center rounded-full text-white font-bold ${
-                    step >= s ? "bg-blue-600" : "bg-gray-300"
-                  }`}
-                >
-                  {s}
-                </div>
-                {s !== 3 && (
-                  <div
-                    className={`flex-1 h-1 ${
-                      step > s ? "bg-blue-600" : "bg-gray-300"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
+          <a href="/profile" className="text-blue-900 mb-2">
+            {<LuSquareArrowLeft />} Back to Profile
+          </a>
+          <div className="shadow-lg bg-gradient-to-r from-blue-500 to-blue-700 rounded-md p-3">
+            <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
           </div>
-
-          <form onSubmit={handleUpdate} className="space-y-4">
-
-            {/* STEP 1 */}
-            {step === 1 && (
-              <>
-                <h3 className="text-xl font-semibold">Case Details</h3>
-
+          <div>
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              {/* common field for all roles */}
+              <div>
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="name"
+                >
+                  New Name
+                </label>
                 <input
-                  name="title"
-                  value={formData.title}
+                  id="name"
+                  type="text"
+                  name="name"
+                  placeholder="Please enter your name"
+                  value={formData.name}
                   onChange={handleChange}
-                  placeholder="Case Title"
-                  className="w-full p-3 border rounded-lg"
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
-                {errors.title && <p className="text-red-500">{errors.title}</p>}
+              </div>
 
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Description"
-                  className="w-full p-3 border rounded-lg"
-                />
-                {errors.description && (
-                  <p className="text-red-500">{errors.description}</p>
-                )}
-
-                <input
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Location"
-                  className="w-full p-3 border rounded-lg"
-                />
-                {errors.location && (
-                  <p className="text-red-500">{errors.location}</p>
-                )}
-              </>
-            )}
-
-            {/* STEP 2 */}
-            {step === 2 && (
-              <>
-                <h3 className="text-xl font-semibold">Other Party Info</h3>
-
-                <input
-                  name="personName"
-                  value={formData.personName}
-                  onChange={handleChange}
-                  placeholder="Person Name"
-                  className="w-full p-3 border rounded-lg"
-                />
-
-                <input
-                  name="contactInfo"
-                  value={formData.contactInfo}
-                  onChange={handleChange}
-                  placeholder="Contact Info"
-                  className="w-full p-3 border rounded-lg"
-                />
-                {errors.contactInfo && (
-                  <p className="text-red-500">{errors.contactInfo}</p>
-                )}
-              </>
-            )}
-
-            {/* STEP 3 */}
-            {step === 3 && (
-              <>
-                <h3 className="text-xl font-semibold">Evidence</h3>
-
-                <input
-                  name="firNumber"
-                  value={formData.firNumber}
-                  onChange={handleChange}
-                  placeholder="FIR Number"
-                  className="w-full p-3 border rounded-lg"
-                />
-                {errors.firNumber && (
-                  <p className="text-red-500">{errors.firNumber}</p>
-                )}
-
-                {/* FILE INPUT */}
-                <div className="flex gap-2 items-center">
-                  <div className="flex-1 border rounded px-3 py-2 bg-gray-100 text-gray-700">
-                    {formData.firFile
-                      ? typeof formData.firFile === "string"
-                        ? formData.firFile
-                        : formData.firFile.name
-                      : "No file chosen"}
+              {/* LAWYER fields */}
+              {role === "LAWYER" && (
+                <>
+                  <div>
+                    <label
+                      className="block text-gray-700 font-bold mb-2"
+                      htmlFor="specialization"
+                    >
+                      Specialization
+                    </label>
+                    <div>
+                    <select
+                      id="specialization"
+                      name="specialization"
+                      value={(formData as LawyerUpdate).specialization}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    >
+                      <option value="">Select Specialization</option>
+                      <option value="Civil Lawyer">Civil Lawyer</option>
+                      <option value="Criminal Lawyer">Criminal Lawyer</option>
+                      <option value="Family Lawyer">Family Lawyer</option>
+                      <option value="Property Lawyer">Property Lawyer</option>
+                      <option value="Cyber Lawyer">Cyber Lawyer</option>
+                      <option value="Employment Lawyer">Employment Lawyer</option>
+                      <option value="Financial Lawyer">Financial Lawyer</option>
+                    </select>
+                    </div>
                   </div>
 
-                  <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    Choose File
+                  <div>
+                    <label
+                      className="block text-gray-700 font-bold mb-2"
+                      htmlFor="experience"
+                    >
+                      Experience (years)
+                    </label>
                     <input
-                      type="file"
-                      name="firFile"
+                      id="experience"
+                      type="number"
+                      name="experience"
+                      value={(formData as LawyerUpdate).experience}
                       onChange={handleChange}
-                      className="hidden"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
+                  </div>
+
+                  <div>
+                    <label
+                      className="block text-gray-700 font-bold mb-2"
+                      htmlFor="location"
+                    >
+                      Location
+                    </label>
+                    <input
+                      id="location"
+                      type="text"
+                      name="location"
+                      value={(formData as LawyerUpdate).location}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* NGO fields */}
+              {role === "NGO" && (
+                <>
+                  <div>
+                    <label
+                      className="block text-gray-700 font-bold mb-2"
+                      htmlFor="organizationName"
+                    >
+                      Organization Name
+                    </label>
+                    <input
+                      id="organizationName"
+                      type="text"
+                      name="organizationName"
+                      value={(formData as NgoUpdate).organizationName}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      className="block text-gray-700 font-bold mb-2"
+                      htmlFor="serviceArea"
+                    >
+                      Service Area
+                    </label>
+                    <input
+                      id="serviceArea"
+                      type="text"
+                      name="serviceArea"
+                      value={(formData as NgoUpdate).serviceArea}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="block text-gray-700 font-bold mb-2"
+                      htmlFor="location"
+                    >
+                      Location
+                    </label>
+                    <input
+                      id="location"
+                      type="text"
+                      name="location"
+                      value={(formData as NgoUpdate).location}
+                      onChange={handleChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                </>
+              )}
+              {/* Availability Toggle Button */}
+              {(role === "LAWYER" || role === "NGO") && (
+                <div className="flex items-center mt-4 mb-4">
+                  <label className="text-gray-700 font-bold mr-4" htmlFor="isAvailable">
+                    Availability Status:
                   </label>
+                  <button
+                    type="button"
+                    id="isAvailable"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isAvailable: !(prev as LawyerUpdate | NgoUpdate).isAvailable,
+                      }))
+                    }
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 ${
+                      (formData as LawyerUpdate | NgoUpdate).isAvailable ? "bg-blue-600" : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        (formData as LawyerUpdate | NgoUpdate).isAvailable ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                  <span className="ml-3 text-sm text-gray-600 font-medium">
+                    {(formData as LawyerUpdate | NgoUpdate).isAvailable ? "Available" : "Not Available"}
+                  </span>
                 </div>
-              </>
-            )}
-
-            {/* BUTTONS */}
-            <div className="flex justify-between pt-4">
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={() => setStep(step - 1)}
-                  className="px-4 py-2 bg-gray-300 rounded-lg"
-                >
-                  Previous
-                </button>
               )}
-
-              {step <= 3 ? (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg ml-auto hover:bg-blue-700"
-                >
-                  Next
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg ml-auto"
-                >
-                  {loading ? "Updating..." : "Update Case"}
-                </button>
+              <button
+                type="submit"
+                className="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"
+              >
+                Save
+              </button>
+              {successMessage && (
+                <p className="text-green-600 mb-4">{successMessage}</p>
               )}
-            </div>
-
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div></>
   );
-};
-
-export default EditCase;
+}
