@@ -12,6 +12,7 @@ import NGOIngest from "../components/NGOIngest";
 import LawyerIngest from "../components/LawyerIngest";
 import ExternalDirectory from "../components/ExternalDirectory";
 import Verification from "../components/Verification";
+import SystemLogs from "../components/SystemLogs";
 
 // "admin" added so AdminSidebar can highlight the Admin Panel link
 export type SectionType =
@@ -23,7 +24,8 @@ export type SectionType =
   | "verification"
   | "lawyerIngest"
   | "NGOIngest"
-  | "ExternalDirectory";
+  | "ExternalDirectory"
+  | "SystemLogs";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -49,6 +51,8 @@ export default function AdminPanel() {
         return <NGOIngest />;
       case "ExternalDirectory":
         return <ExternalDirectory />;
+      case "SystemLogs":
+        return <SystemLogs />;
       default:
         return <ProfileManagement />;
     }
