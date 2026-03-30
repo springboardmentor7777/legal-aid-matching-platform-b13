@@ -29,7 +29,15 @@ interface LogEntry {
   timestamp: string;
 }
 
-export default function AdminPanel() {
+const api = axios.create({
+  baseURL: "http://localhost:8081/api/admin",
+});
+
+// FIX: Renamed from AdminPanel → Admin to avoid conflict with AdminPanel.tsx.
+// FIX: Removed the inline sidebar — this component is rendered inside AdminPanel's
+//      layout which already provides AdminSidebar.
+// FIX: Replaced empty api.get("") calls with the correct endpoint paths.
+export default function Admin() {
   const [users, setUsers] = useState<UserType[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("ALL");
@@ -39,10 +47,6 @@ export default function AdminPanel() {
 
   const usersPerPage = 5;
 
-  const API = axios.create({
-    baseURL: "http://localhost:8081/",
-  });
-
   useEffect(() => {
     fetchUsers();
     fetchLogs();
@@ -50,7 +54,14 @@ export default function AdminPanel() {
 
   const fetchUsers = async () => {
     try {
-      const res = await API.get("");
+      // FIX: was api.get("") — now points to the correct users endpoint.
+      // ProfileManagement uses /profile/profiles/all with an auth header;
+      // Admin panel verification list lives under /api/admin/users.
+      const res = await api.get("/users", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       setUsers(res.data);
     } catch (err) {
       console.error("Fetch users error:", err);
@@ -59,7 +70,12 @@ export default function AdminPanel() {
 
   const fetchLogs = async () => {
     try {
-      const res = await API.get("");
+      // FIX: was api.get("") — now points to the activity logs endpoint.
+      const res = await api.get("/logs", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
       setLogs(res.data);
     } catch (err) {
       console.error("Fetch logs error:", err);
@@ -68,7 +84,7 @@ export default function AdminPanel() {
 
   const updateStatus = async (id: number, status: string) => {
     try {
-      await API.put(`/admin/verify/${id}`, { status });
+      await api.put(`/verify/${id}`, { status });
       fetchUsers();
       fetchLogs();
     } catch (err) {
@@ -79,7 +95,7 @@ export default function AdminPanel() {
   const deleteUser = async (id: number) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await API.delete(`/admin/delete/${id}`);
+      await api.delete(`/delete/${id}`);
       fetchUsers();
       fetchLogs();
     } catch (err) {
@@ -87,20 +103,17 @@ export default function AdminPanel() {
     }
   };
 
-  // Filter + Search logic
   const filteredUsers = users.filter((u) => {
     const matchesFilter = filter === "ALL" || u.status === filter;
     const matchesSearch = u.name.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  // Pagination logic
   const indexOfLast = currentPage * usersPerPage;
   const indexOfFirst = indexOfLast - usersPerPage;
   const currentUsers = filteredUsers.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  // Chart Data for User Statuses
   const chartData = {
     labels: ["Pending", "Approved", "Rejected"],
     datasets: [
@@ -122,307 +135,239 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
+      {/* Header */}
+      <h2 className="text-2xl font-bold mb-2 text-blue-900">Admin Panel</h2>
+      <p className="text-gray-500 mb-6">
+        Manage platform users, data ingestion, system health, and application settings.
+      </p>
 
-      {/* Top Navbar */}
-      <div className="flex justify-between items-center bg-white shadow px-8 py-4">
-        <h1 className="text-xl font-bold text-blue-900">LegalMatch Pro</h1>
-        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-          <User size={18} />
+      {/* Tabs */}
+      <div className="flex space-x-6 border-b mb-6 text-sm">
+        <button className="pb-2 border-b-2 border-blue-900 font-medium">
+          User Verification
+        </button>
+        <button className="pb-2 text-gray-400 cursor-not-allowed" disabled title="Coming soon">
+          Directory Ingestion
+        </button>
+        <button className="pb-2 text-gray-400 cursor-not-allowed" disabled title="Coming soon">
+          System Logs
+        </button>
+        <button className="pb-2 text-gray-400 cursor-not-allowed" disabled title="Coming soon">
+          App Settings
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-xl shadow">
+          <p className="text-gray-500 text-sm">Total Users</p>
+          <h3 className="text-2xl font-bold">{users.length}</h3>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow">
+          <p className="text-gray-500 text-sm">Pending Approvals</p>
+          <h3 className="text-2xl font-bold text-yellow-600">
+            {users.filter((u) => u.status === "PENDING").length}
+          </h3>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow">
+          <p className="text-gray-500 text-sm">Approved Users</p>
+          <h3 className="text-2xl font-bold text-green-600">
+            {users.filter((u) => u.status === "APPROVED").length}
+          </h3>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow">
+          <p className="text-gray-500 text-sm">Rejected Users</p>
+          <h3 className="text-2xl font-bold text-red-600">
+            {users.filter((u) => u.status === "REJECTED").length}
+          </h3>
         </div>
       </div>
 
-      <div className="flex">
+      {/* Chart */}
+      <div className="bg-white p-6 rounded-xl shadow mb-8 max-w-md">
+        <h3 className="font-semibold mb-4">User Status Distribution</h3>
+        <Bar data={chartData} options={chartOptions} />
+      </div>
 
-        {/* Sidebar */}
-        <div className="w-64 bg-white border-r min-h-screen p-6">
-          <ul className="space-y-5 text-gray-700 text-sm">
-            <li>Profile Management</li>
-            <li>Case Submission</li>
-            <li>Directory</li>
-            <li>Matches</li>
-            <li>Impact Dashboard</li>
-            <li className="font-semibold text-blue-900">Admin Panel</li>
-          </ul>
+      {/* Filters */}
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+        <div className="flex space-x-4">
+          {(["ALL", "PENDING", "APPROVED", "REJECTED"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => { setFilter(f); setCurrentPage(1); }}
+              className={`px-4 py-1 rounded-lg text-sm ${
+                filter === f ? "bg-blue-900 text-white" : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
         </div>
+        <input
+          type="text"
+          placeholder="Search users..."
+          className="border rounded-lg px-4 py-2 text-sm w-64"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+        />
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-8 overflow-auto">
-
-          {/* Header */}
-          <h2 className="text-2xl font-bold mb-2">Admin Panel</h2>
-          <p className="text-gray-500 mb-6">
-            Manage platform users, data ingestion, system health, and application settings.
-          </p>
-
-          {/* Tabs */}
-          <div className="flex space-x-6 border-b mb-6 text-sm">
-            <button className="pb-2 border-b-2 border-blue-900 font-medium">
-              User Verification
-            </button>
-            <button
-              className="pb-2 text-gray-500 cursor-not-allowed"
-              title="Coming soon"
-              disabled
-            >
-              Directory Ingestion
-            </button>
-            <button
-              className="pb-2 text-gray-500 cursor-not-allowed"
-              title="Coming soon"
-              disabled
-            >
-              System Logs
-            </button>
-            <button
-              className="pb-2 text-gray-500 cursor-not-allowed"
-              title="Coming soon"
-              disabled
-            >
-              App Settings
-            </button>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-xl shadow">
-              <p className="text-gray-500 text-sm">Total Users</p>
-              <h3 className="text-2xl font-bold">{users.length}</h3>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow">
-              <p className="text-gray-500 text-sm">Pending Approvals</p>
-              <h3 className="text-2xl font-bold text-yellow-600">
-                {users.filter((u) => u.status === "PENDING").length}
-              </h3>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow">
-              <p className="text-gray-500 text-sm">Approved Users</p>
-              <h3 className="text-2xl font-bold text-green-600">
-                {users.filter((u) => u.status === "APPROVED").length}
-              </h3>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow">
-              <p className="text-gray-500 text-sm">Rejected Users</p>
-              <h3 className="text-2xl font-bold text-red-600">
-                {users.filter((u) => u.status === "REJECTED").length}
-              </h3>
-            </div>
-          </div>
-
-          {/* Chart */}
-          <div className="bg-white p-6 rounded-xl shadow mb-8 max-w-md">
-            <h3 className="font-semibold mb-4">User Status Distribution</h3>
-            <Bar data={chartData} options={chartOptions} />
-          </div>
-
-          {/* Filters */}
-          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-            <div className="flex space-x-4">
-              {["ALL", "PENDING", "APPROVED", "REJECTED"].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => {
-                    setFilter(f as any);
-                    setCurrentPage(1);
-                  }}
-                  className={`px-4 py-1 rounded-lg text-sm ${
-                    filter === f
-                      ? "bg-blue-900 text-white"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-
-            <input
-              type="text"
-              placeholder="Search users..."
-              className="border rounded-lg px-4 py-2 text-sm w-64"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
-          </div>
-
-          {/* User Table */}
-          <div className="bg-white rounded-xl shadow overflow-auto max-h-[440px]">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-600 text-left sticky top-0">
-                <tr>
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Role</th>
-                  <th className="p-4">Email</th>
-                  <th className="p-4">Submitted Date</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 text-center">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {currentUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center p-8 text-gray-500">
-                      No users found.
-                    </td>
-                  </tr>
-                ) : (
-                  currentUsers.map((user) => (
-                    <tr key={user.id} className="border-t hover:bg-gray-50">
-                      <td className="p-4">{user.name}</td>
-                      <td className="p-4">{user.role}</td>
-                      <td className="p-4">{user.email}</td>
-                      <td className="p-4">{user.submittedDate}</td>
-                      <td className="p-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            user.status === "PENDING"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : user.status === "APPROVED"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {user.status}
-                        </span>
-                      </td>
-
-                      <td className="p-4 space-x-2 flex justify-center">
-                        {user.status === "PENDING" ? (
-                          <>
-                            <button
-                              onClick={() => updateStatus(user.id, "APPROVED")}
-                              className="bg-blue-900 text-white px-3 py-1 rounded-lg hover:bg-blue-800 inline-flex items-center gap-1"
-                              title="Approve User"
-                            >
-                              <CheckCircle size={14} />
-                              Approve
-                            </button>
-
-                            <button
-                              onClick={() => updateStatus(user.id, "REJECTED")}
-                              className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 inline-flex items-center gap-1"
-                              title="Reject User"
-                            >
-                              <XCircle size={14} />
-                              Reject
-                            </button>
-                          </>
-                        ) : (
-                          <span
-                            onClick={() => setSelectedUser(user)}
-                            className="text-blue-600 cursor-pointer hover:underline"
-                            title="View Details"
-                          >
-                            View Details
-                          </span>
-                        )}
+      {/* User Table */}
+      <div className="bg-white rounded-xl shadow overflow-auto max-h-[440px]">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-600 text-left sticky top-0">
+            <tr>
+              <th className="p-4">Name</th>
+              <th className="p-4">Role</th>
+              <th className="p-4">Email</th>
+              <th className="p-4">Submitted Date</th>
+              <th className="p-4">Status</th>
+              <th className="p-4 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentUsers.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center p-8 text-gray-500">
+                  No users found.
+                </td>
+              </tr>
+            ) : (
+              currentUsers.map((u) => (
+                <tr key={u.id} className="border-t hover:bg-gray-50">
+                  <td className="p-4">{u.name}</td>
+                  <td className="p-4">{u.role}</td>
+                  <td className="p-4">{u.email}</td>
+                  <td className="p-4">{u.submittedDate}</td>
+                  <td className="p-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        u.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : u.status === "APPROVED"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {u.status}
+                    </span>
+                  </td>
+                  <td className="p-4 flex justify-center items-center space-x-2">
+                    {u.status === "PENDING" ? (
+                      <>
                         <button
-                          onClick={() => deleteUser(user.id)}
-                          className="bg-gray-800 text-white px-3 py-1 rounded-lg hover:bg-black inline-flex items-center gap-1 ml-3"
-                          title="Delete User"
+                          onClick={() => updateStatus(u.id, "APPROVED")}
+                          className="bg-blue-900 text-white px-3 py-1 rounded-lg hover:bg-blue-800 inline-flex items-center gap-1"
                         >
-                          <Trash2 size={14} />
-                          Delete
+                          <CheckCircle size={14} /> Approve
                         </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-6 space-x-2">
-            {[...Array(totalPages)].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 rounded ${
-                  currentPage === i + 1
-                    ? "bg-blue-900 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
-
-          {/* User Details Modal */}
-          {selectedUser && (
-            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-xl w-96 max-w-full shadow-lg">
-                <h3 className="text-lg font-bold mb-4">User Details</h3>
-                <p><strong>Name:</strong> {selectedUser.name}</p>
-                <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Role:</strong> {selectedUser.role}</p>
-                <p><strong>Status:</strong> {selectedUser.status}</p>
-                <p><strong>Submitted Date:</strong> {selectedUser.submittedDate}</p>
-                <div className="mt-6 flex justify-end gap-3">
-                  {selectedUser.status === "PENDING" && (
-                    <>
-                      <button
-                        onClick={() => {
-                          updateStatus(selectedUser.id, "APPROVED");
-                          setSelectedUser(null);
-                        }}
-                        className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800"
+                        <button
+                          onClick={() => updateStatus(u.id, "REJECTED")}
+                          className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 inline-flex items-center gap-1"
+                        >
+                          <XCircle size={14} /> Reject
+                        </button>
+                      </>
+                    ) : (
+                      <span
+                        onClick={() => setSelectedUser(u)}
+                        className="text-blue-600 cursor-pointer hover:underline"
                       >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => {
-                          updateStatus(selectedUser.id, "REJECTED");
-                          setSelectedUser(null);
-                        }}
-                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-                      >
-                        Reject
-                      </button>
-                    </>
-                  )}
+                        View Details
+                      </span>
+                    )}
+                    <button
+                      onClick={() => deleteUser(u.id)}
+                      className="bg-gray-800 text-white px-3 py-1 rounded-lg hover:bg-black inline-flex items-center gap-1 ml-2"
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-6 space-x-2">
+        {[...Array(totalPages)].map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i + 1)}
+            className={`px-3 py-1 rounded ${
+              currentPage === i + 1 ? "bg-blue-900 text-white" : "bg-gray-200"
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
+      </div>
+
+      {/* User Details Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-96 max-w-full shadow-lg">
+            <h3 className="text-lg font-bold mb-4">User Details</h3>
+            <p><strong>Name:</strong> {selectedUser.name}</p>
+            <p><strong>Email:</strong> {selectedUser.email}</p>
+            <p><strong>Role:</strong> {selectedUser.role}</p>
+            <p><strong>Status:</strong> {selectedUser.status}</p>
+            <p><strong>Submitted Date:</strong> {selectedUser.submittedDate}</p>
+            <div className="mt-6 flex justify-end gap-3">
+              {selectedUser.status === "PENDING" && (
+                <>
                   <button
-                    onClick={() => setSelectedUser(null)}
-                    className="px-4 py-2 rounded-lg border border-gray-300"
+                    onClick={() => { updateStatus(selectedUser.id, "APPROVED"); setSelectedUser(null); }}
+                    className="bg-blue-900 text-white px-4 py-2 rounded-lg hover:bg-blue-800"
                   >
-                    Close
+                    Approve
                   </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Activity Logs */}
-          <div className="mt-12">
-            <h3 className="text-xl font-semibold mb-4">Recent Activity Logs</h3>
-            <div className="bg-white rounded-xl shadow max-h-64 overflow-auto p-4">
-              {logs.length === 0 ? (
-                <p className="text-gray-500 text-center">No activity logs yet.</p>
-              ) : (
-                <ul className="space-y-3 text-sm">
-                  {logs.map((log) => (
-                    <li key={log.id} className="border-b border-gray-200 pb-2">
-                      <span className="font-medium">{log.user}</span> {log.action} <span className="text-gray-400 text-xs">{new Date(log.timestamp).toLocaleString()}</span>
-                    </li>
-                  ))}
-                </ul>
+                  <button
+                    onClick={() => { updateStatus(selectedUser.id, "REJECTED"); setSelectedUser(null); }}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                  >
+                    Reject
+                  </button>
+                </>
               )}
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="px-4 py-2 rounded-lg border border-gray-300"
+              >
+                Close
+              </button>
             </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center text-gray-400 text-xs mt-10">
-            © 2025 LegalMatch Pro. All rights reserved.
           </div>
         </div>
+      )}
+
+      {/* Activity Logs */}
+      <div className="mt-12">
+        <h3 className="text-xl font-semibold mb-4">Recent Activity Logs</h3>
+        <div className="bg-white rounded-xl shadow max-h-64 overflow-auto p-4">
+          {logs.length === 0 ? (
+            <p className="text-gray-500 text-center">No activity logs yet.</p>
+          ) : (
+            <ul className="space-y-3 text-sm">
+              {logs.map((log) => (
+                <li key={log.id} className="border-b border-gray-200 pb-2">
+                  <span className="font-medium">{log.user}</span> {log.action}{" "}
+                  <span className="text-gray-400 text-xs">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="text-center text-gray-400 text-xs mt-10">
+        © 2025 LegalMatch Pro. All rights reserved.
       </div>
     </div>
   );
