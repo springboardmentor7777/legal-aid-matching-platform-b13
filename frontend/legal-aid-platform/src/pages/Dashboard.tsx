@@ -459,6 +459,12 @@ const Dashboard: React.FC = () => {
                       <p className="text-gray-500 text-sm mt-1">{c.description}</p>
                       <div className="flex gap-3 mt-3">
                         <button
+                        onClick={() => navigate(`/case/${c.id}`)}
+                        className="mt-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        View Details
+                      </button>
+                        <button
                           onClick={() => handleAccept(c.id)}
                           className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
                         >
