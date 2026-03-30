@@ -23,209 +23,118 @@ public class CaseService {
     private final CaseRepository caseRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final SystemLogService logService;
+
     @Transactional
     public CaseDTO createCase(User user, CreateCaseRequest request) {
         Case newCase = new Case();
         newCase.setUserId(user.getId());
         newCase.setClient(user);
-
-        // Core fields
         newCase.setCaseTitle(request.getCaseTitle());
         newCase.setTitle(request.getCaseTitle());
         newCase.setCaseDescription(request.getDescription());
         newCase.setDescription(request.getDescription());
         newCase.setCategory(request.getCategory());
         newCase.setLocation(request.getLocation());
-        newCase.setStatus("SUBMITTED");
+
+        // NEW: case starts as OPEN — user sends requests directly to lawyers/NGOs
+        newCase.setStatus("OPEN");
         newCase.setFiledDate(LocalDateTime.now());
 
-        // Extended fields
         newCase.setKeywords(request.getKeywords());
         newCase.setContactInfo(request.getContactInfo());
-
-        // Parse dateTime string to LocalDateTime
         if (request.getDateTime() != null && !request.getDateTime().isEmpty()) {
-            try {
-                newCase.setDateTime(LocalDateTime.parse(request.getDateTime().replace("T", "T")));
-            } catch (Exception e) {
-                // ignore parse error
-            }
+            try { newCase.setDateTime(LocalDateTime.parse(request.getDateTime())); } catch (Exception ignored) {}
         }
-
-        // Other Party
         newCase.setOtherPartyName(request.getOtherPartyName());
         newCase.setOtherPartyLocation(request.getOtherPartyLocation());
         newCase.setOtherPartyContact(request.getOtherPartyContact());
         newCase.setOtherPartyRepresentative(request.getOtherPartyRepresentative());
-
-        // Criminal
         newCase.setInvestigatingOfficer(request.getInvestigatingOfficer());
         newCase.setWitnesses(request.getWitnesses());
-
-        // Status
         newCase.setCurrentStatus(request.getCurrentStatus());
-
-        // Evidence
         newCase.setFirNumber(request.getFirNumber());
         newCase.setFirDocument(request.getFirDocument());
         newCase.setFirDocumentName(request.getFirDocumentName());
-
-        // Store document lists as JSON strings
         try {
-            if (request.getCaseDocuments() != null) {
+            if (request.getCaseDocuments() != null)
                 newCase.setCaseDocuments(objectMapper.writeValueAsString(request.getCaseDocuments()));
-            }
-            if (request.getCaseDocumentNames() != null) {
+            if (request.getCaseDocumentNames() != null)
                 newCase.setCaseDocumentNames(objectMapper.writeValueAsString(request.getCaseDocumentNames()));
-            }
-        } catch (Exception e) {
-            // ignore
-        }
+        } catch (Exception ignored) {}
 
-        Case savedCase = caseRepository.save(newCase);
-        logService.log(
-        	    "CASE_CREATED",
-        	    user.getEmail(),
-        	    user.getRole().name(),
-        	    "Case created with ID: " + savedCase.getId(),
-        	    "SUCCESS"
-        	);
-        return mapToDTO(savedCase, user);
+        return mapToDTO(caseRepository.save(newCase), user);
     }
 
     public List<CaseDTO> getUserCases(User user) {
         return caseRepository.findByClientOrderByFiledDateDesc(user)
-                .stream()
-                .map(c -> mapToDTO(c, user))
-                .collect(Collectors.toList());
+                .stream().map(c -> mapToDTO(c, user)).collect(Collectors.toList());
     }
 
     public CaseDTO getCaseById(Long id) {
-        Case case_ = caseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Case not found with id: " + id));
-
-        User user = null;
-        if (case_.getClient() != null) {
-            user = case_.getClient();
-        } else if (case_.getUserId() != null) {
-            user = userRepository.findById(case_.getUserId()).orElse(null);
-        }
-
-        return mapToDTO(case_, user);
+        Case c = caseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Case not found: " + id));
+        User user = c.getClient() != null ? c.getClient()
+                  : (c.getUserId() != null ? userRepository.findById(c.getUserId()).orElse(null) : null);
+        return mapToDTO(c, user);
     }
 
-    public List<CaseDTO> filterCases(Long userId, String status, String category) {
-        List<Case> cases = caseRepository.findAll();
-        return cases.stream()
-                .filter(c -> userId == null || (c.getUserId() != null && c.getUserId().equals(userId)))
-                .filter(c -> status == null || status.equals(c.getStatus()))
-                .filter(c -> category == null || category.equals(c.getCategory()))
-                .map(c -> {
-                    User user = c.getClient() != null ? c.getClient() :
-                               (c.getUserId() != null ? userRepository.findById(c.getUserId()).orElse(null) : null);
-                    return mapToDTO(c, user);
-                })
-                .collect(Collectors.toList());
-    }
-
-    // Admin: get every case in the system
     public List<CaseDTO> getAllCases() {
-        return caseRepository.findAll().stream()
-                .map(c -> {
-                    User user = c.getClient() != null ? c.getClient()
-                              : (c.getUserId() != null ? userRepository.findById(c.getUserId()).orElse(null) : null);
-                    return mapToDTO(c, user);
-                })
-                .collect(Collectors.toList());
+        return caseRepository.findAll().stream().map(c -> {
+            User user = c.getClient() != null ? c.getClient()
+                      : (c.getUserId() != null ? userRepository.findById(c.getUserId()).orElse(null) : null);
+            return mapToDTO(c, user);
+        }).collect(Collectors.toList());
     }
 
     public boolean isCaseOwner(User user, Long caseId) {
         return caseRepository.findById(caseId)
-                .map(c -> c.getClient() != null ? c.getClient().getId().equals(user.getId()) :
-                         (c.getUserId() != null && c.getUserId().equals(user.getId())))
+                .map(c -> c.getClient() != null ? c.getClient().getId().equals(user.getId())
+                        : (c.getUserId() != null && c.getUserId().equals(user.getId())))
                 .orElse(false);
     }
 
-    private CaseDTO mapToDTO(Case case_, User user) {
+    public CaseDTO mapToDTO(Case c, User user) {
         CaseDTO dto = new CaseDTO();
-        dto.setId(case_.getId());
-        dto.setCaseId(case_.getId());
-        dto.setUserId(case_.getUserId() != null ? case_.getUserId() :
-                      (case_.getClient() != null ? case_.getClient().getId() : null));
-
-        // Title
-        dto.setTitle(case_.getCaseTitle() != null ? case_.getCaseTitle() : case_.getTitle());
-        dto.setCaseTitle(case_.getCaseTitle() != null ? case_.getCaseTitle() : case_.getTitle());
-
-        // Description
-        dto.setDescription(case_.getCaseDescription() != null ? case_.getCaseDescription() : case_.getDescription());
-
-        // Core
-        dto.setCategory(case_.getCategory());
-        dto.setLocation(case_.getLocation());
-        dto.setStatus(case_.getStatus());
-        dto.setCreatedAt(case_.getCreatedAt());
-        dto.setUpdatedAt(case_.getUpdatedAt());
-        dto.setFilingDate(case_.getFiledDate());
-        dto.setHearingDate(case_.getHearingDate());
-
-        // Extended
-        dto.setKeywords(case_.getKeywords());
-        dto.setContactInfo(case_.getContactInfo());
-        if (case_.getDateTime() != null) {
-            dto.setDateTime(case_.getDateTime().toString());
-        }
-
-        // Other Party
-        dto.setOtherPartyName(case_.getOtherPartyName());
-        dto.setOtherPartyLocation(case_.getOtherPartyLocation());
-        dto.setOtherPartyContact(case_.getOtherPartyContact());
-        dto.setOtherPartyRepresentative(case_.getOtherPartyRepresentative());
-
-        // Criminal
-        dto.setInvestigatingOfficer(case_.getInvestigatingOfficer());
-        dto.setWitnesses(case_.getWitnesses());
-
-        // Status
-        dto.setCurrentStatus(case_.getCurrentStatus());
-
-        // Evidence
-        dto.setFirNumber(case_.getFirNumber());
-        dto.setFirDocument(case_.getFirDocument());
-        dto.setFirDocumentName(case_.getFirDocumentName());
-
-        // Parse JSON document lists
+        dto.setId(c.getId());
+        dto.setCaseId(c.getId());
+        dto.setUserId(c.getUserId() != null ? c.getUserId() : (c.getClient() != null ? c.getClient().getId() : null));
+        dto.setTitle(c.getCaseTitle() != null ? c.getCaseTitle() : c.getTitle());
+        dto.setCaseTitle(c.getCaseTitle() != null ? c.getCaseTitle() : c.getTitle());
+        dto.setDescription(c.getCaseDescription() != null ? c.getCaseDescription() : c.getDescription());
+        dto.setCategory(c.getCategory());
+        dto.setLocation(c.getLocation());
+        dto.setStatus(c.getStatus());
+        dto.setCreatedAt(c.getCreatedAt());
+        dto.setUpdatedAt(c.getUpdatedAt());
+        dto.setFilingDate(c.getFiledDate());
+        dto.setHearingDate(c.getHearingDate());
+        dto.setKeywords(c.getKeywords());
+        dto.setContactInfo(c.getContactInfo());
+        if (c.getDateTime() != null) dto.setDateTime(c.getDateTime().toString());
+        dto.setOtherPartyName(c.getOtherPartyName());
+        dto.setOtherPartyLocation(c.getOtherPartyLocation());
+        dto.setOtherPartyContact(c.getOtherPartyContact());
+        dto.setOtherPartyRepresentative(c.getOtherPartyRepresentative());
+        dto.setInvestigatingOfficer(c.getInvestigatingOfficer());
+        dto.setWitnesses(c.getWitnesses());
+        dto.setCurrentStatus(c.getCurrentStatus());
+        dto.setFirNumber(c.getFirNumber());
+        dto.setFirDocument(c.getFirDocument());
+        dto.setFirDocumentName(c.getFirDocumentName());
         try {
-            if (case_.getCaseDocuments() != null) {
-                dto.setCaseDocuments(objectMapper.readValue(case_.getCaseDocuments(), new TypeReference<List<String>>() {}));
-            }
-            if (case_.getCaseDocumentNames() != null) {
-                dto.setCaseDocumentNames(objectMapper.readValue(case_.getCaseDocumentNames(), new TypeReference<List<String>>() {}));
-            }
-        } catch (Exception e) {
-            // ignore
+            if (c.getCaseDocuments() != null)
+                dto.setCaseDocuments(objectMapper.readValue(c.getCaseDocuments(), new TypeReference<List<String>>() {}));
+            if (c.getCaseDocumentNames() != null)
+                dto.setCaseDocumentNames(objectMapper.readValue(c.getCaseDocumentNames(), new TypeReference<List<String>>() {}));
+        } catch (Exception ignored) {}
+        User owner = user != null ? user : c.getClient();
+        if (owner != null) {
+            dto.setUserName(owner.getFullname());
+            dto.setUserEmail(owner.getEmail());
+            dto.setClientName(owner.getFullname());
         }
-
-        // User info
-        if (user != null) {
-            dto.setUserName(user.getFullname());
-            dto.setUserEmail(user.getEmail());
-            dto.setClientName(user.getFullname());
-        } else if (case_.getClient() != null) {
-            dto.setUserName(case_.getClient().getFullname());
-            dto.setUserEmail(case_.getClient().getEmail());
-            dto.setClientName(case_.getClient().getFullname());
-        }
-
-        // Assigned lawyer/NGO
-        if (case_.getAssignedTo() != null) {
-            dto.setLawyerName(case_.getAssignedTo().getFullname());
-        }
-        if (case_.getNgo() != null) {
-            dto.setNgoName(case_.getNgo().getOrganizationName());
-        }
-
+        if (c.getAssignedTo() != null) dto.setLawyerName(c.getAssignedTo().getFullname());
+        if (c.getNgo() != null) dto.setNgoName(c.getNgo().getOrganizationName());
         return dto;
     }
 }

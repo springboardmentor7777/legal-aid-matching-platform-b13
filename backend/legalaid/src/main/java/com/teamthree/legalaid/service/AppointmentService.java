@@ -27,16 +27,14 @@ public class AppointmentService {
     private final LawyerRepository lawyerRepository;
     private final NgoProfileRepository ngoProfileRepository;
     private final NotificationService notificationService;
-    private final SystemLogService logService;
-    
+
     @Transactional
     public AppointmentDTO createAppointment(User user, AppointmentRequest request) {
         Match match = matchRepository.findById(request.getMatchId())
                 .orElseThrow(() -> new RuntimeException("Match not found: " + request.getMatchId()));
 
         // FIX: was match.getCase() — correct method is getCaseEntity()
-
-       if (match.getCaseEntity() == null
+        if (match.getCaseEntity() == null
                 || match.getCaseEntity().getClient() == null
                 || !match.getCaseEntity().getClient().getId().equals(user.getId())) {
             throw new RuntimeException("You are not authorised to book an appointment on this match");
@@ -56,13 +54,7 @@ public class AppointmentService {
                 .build();
 
         Appointment saved = appointmentRepository.save(appointment);
-        logService.log(
-        	    "APPOINTMENT_CREATED",
-        	    user.getEmail(),
-        	    user.getRole().name(),
-        	    "Appointment created with ID: " + saved.getId(),
-        	    "SUCCESS"
-        	);
+
         // Notify citizen
         notificationService.saveNotification(Notification.builder()
                 .userId(user.getId())
@@ -117,13 +109,7 @@ public class AppointmentService {
         }
 
         Appointment saved = appointmentRepository.save(appointment);
-        logService.log(
-        	    "UPDATE",
-        	    user.getEmail(),
-        	    user.getRole().name(),
-        	    "Appointment updated with ID: " + saved.getId(),
-        	    "SUCCESS"
-        	);
+
         if (request.getStatus() != null) {
             String msg = "CANCELLED".equals(request.getStatus())
                     ? "Your appointment has been cancelled."

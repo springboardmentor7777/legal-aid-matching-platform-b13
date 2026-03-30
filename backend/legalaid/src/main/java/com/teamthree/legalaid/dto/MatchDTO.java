@@ -17,13 +17,14 @@ public class MatchDTO {
     private String caseTitle;
     private String caseCategory;
     private String caseLocation;
+    private String clientName;      
     private Long profileId;
-    private String profileType; 
+    private String profileType;
     private String profileName;
     private String profileExpertise;
     private String profileLocation;
     private Boolean profileVerified;
-    private Integer experienceYears; 
+    private Integer experienceYears;
     private Integer matchScore;
     private String status;
     private LocalDateTime matchDate;

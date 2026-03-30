@@ -25,9 +25,19 @@ public class Message {
     @Column(name = "receiver_id")
     private Long receiverId;
 
-    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
+
+    // File attachment — stored as base64
+    @Column(name = "file_data", columnDefinition = "TEXT")
+    private String fileData;
+
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_type")
+    private String fileType;
 }
