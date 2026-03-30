@@ -66,7 +66,7 @@ export default function Mycase() {
     <><PageTitle title="My Cases - Legal Aid Matching Platform" />
     <div className="min-h-screen bg-blue-50">
       <Navbar
-        title="my cases"
+        title="My Cases"
         name={user?.username || ""}
         role={user?.role || "guest"}
         toggleSidebar={() => {}}
