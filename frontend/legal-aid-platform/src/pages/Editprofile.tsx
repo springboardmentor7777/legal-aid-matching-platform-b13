@@ -114,7 +114,7 @@ export default function EditProfile() {
     });
 
     // navigate("/profile");
-    setSuccessMessage("changes submitted");
+    setSuccessMessage("Changes saved successfully!");
     const navigate = useNavigate();
     navigate("/profile");
   };
@@ -126,7 +126,7 @@ export default function EditProfile() {
     <div>
       <div className="fixed top-0 left-0 right-0 z-50">
         <Navbar
-          title="edit profile"
+          title="Edit Profile"
           name={user?.username || "guest"}
           role={user?.role || ""}
           toggleSidebar={() => {}}
