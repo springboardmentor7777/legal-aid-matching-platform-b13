@@ -4,22 +4,26 @@ import ProfileManagement from "../components/ProfileManagement";
 import CaseSubmission from "../components/CaseSubmission";
 import Directory from "../components/Directory";
 import Matches from "../components/Matches";
-import ImpactDashboard from "../components/ImpactDashboard";
+import ImpactDashboard from "../components/Impact";   // ← use the richer Impact.tsx
+import Admin from "../pages/Admin";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
 import NGOIngest from "../components/NGOIngest";
 import LawyerIngest from "../components/LawyerIngest";
 import ExternalDirectory from "../components/ExternalDirectory";
+import Verification from "../components/Verification";
 
+// "admin" added so AdminSidebar can highlight the Admin Panel link
 export type SectionType =
   | "profile"
   | "cases"
   | "directory"
   | "matches"
   | "impact"
+  | "verification"
   | "lawyerIngest"
   | "NGOIngest"
-  |"ExternalDirectory";
+  | "ExternalDirectory";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -37,12 +41,14 @@ export default function AdminPanel() {
         return <Matches />;
       case "impact":
         return <ImpactDashboard />;
+      case "verification":
+        return <Verification />;
       case "lawyerIngest":
-        return <LawyerIngest/>;
+        return <LawyerIngest />;
       case "NGOIngest":
-        return <NGOIngest/>;
+        return <NGOIngest />;
       case "ExternalDirectory":
-        return <ExternalDirectory/>;
+        return <ExternalDirectory />;
       default:
         return <ProfileManagement />;
     }
@@ -60,7 +66,7 @@ export default function AdminPanel() {
       </div>
       <div className="min-h-screen flex bg-gray-50 mt-20">
         <AdminSidebar active={activeSection} setActive={setActiveSection} />
-        <main className="flex-1 p-8">{renderSection()}</main>
+        <main className="flex-1 p-8 overflow-auto">{renderSection()}</main>
       </div>
     </div>
   );
