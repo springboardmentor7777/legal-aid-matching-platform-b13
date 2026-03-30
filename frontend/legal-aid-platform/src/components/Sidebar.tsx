@@ -67,12 +67,12 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={()=> navigate("/pages/MatchingResult")}>
               Matching Result
               </li>
-            <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
+            {/*<li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/lawyers">Lawyers Directory</a>
             </li>
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/ngos">NGOs Directory</a>
-            </li>
+            </li>*/}
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/external">External Directory</a>
             </li>
