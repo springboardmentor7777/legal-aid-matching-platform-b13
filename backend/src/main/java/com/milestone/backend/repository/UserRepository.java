@@ -8,44 +8,61 @@ import com.milestone.backend.entity.User;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    // Find by email
+    // 🔹 Authentication
     Optional<User> findByEmail(String email);
-
-    // Check if email exists
     boolean existsByEmail(String email);
 
-    // Fetch all users by role
+    // 🔹 Role-based queries
     List<User> findAllByRole(Role role);
     List<User> findByRoleIn(List<Role> roles);
 
-    //  NEW METHOD ADDED FOR ANALYTICS DASHBOARD 
+    // 🔹 Analytics
     long countByRole(Role role);
 
-    // --- Fetch only available providers for matching ---
-    
-    // Available Lawyers
-    @Query("SELECT u FROM User u JOIN u.lawyerProfile lp WHERE u.role = :role AND lp.isAvailable = true")
+    // 🔹 Pending Verifications (Admin API)
+    List<User> findByIsVerifiedFalse();
+
+    // ================= AVAILABLE PROVIDERS =================
+
+    // 🔹 Available Lawyers
+    @Query("""
+        SELECT u FROM User u 
+        JOIN u.lawyerProfile lp 
+        WHERE u.role = :role 
+        AND lp.isAvailable = true
+        AND u.enabled = true
+    """)
     List<User> findAvailableLawyers(@Param("role") Role role);
 
-    // Available NGOs
-    @Query("SELECT u FROM User u JOIN u.ngoProfile np WHERE u.role = :role AND np.isAvailable = true")
+    // 🔹 Available NGOs
+    @Query("""
+        SELECT u FROM User u 
+        JOIN u.ngoProfile np 
+        WHERE u.role = :role 
+        AND np.isAvailable = true
+        AND u.enabled = true
+    """)
     List<User> findAvailableNgos(@Param("role") Role role);
 
-    // --- Search and filter with pagination ---
+    // ================= SEARCH + FILTER =================
 
-    // Search and filter Lawyers
-    @Query("SELECT u FROM User u LEFT JOIN u.lawyerProfile lp WHERE u.role = :role " +
-           "AND (:location IS NULL OR LOWER(lp.location) LIKE LOWER(CONCAT('%', :location, '%'))) " +
-           "AND (:expertise IS NULL OR LOWER(lp.specialization) LIKE LOWER(CONCAT('%', :expertise, '%'))) " +
-           "AND (:isVerified IS NULL OR u.isVerified = :isVerified)")
+    // 🔹 Search Lawyers
+    @Query("""
+        SELECT u FROM User u 
+        LEFT JOIN u.lawyerProfile lp 
+        WHERE u.role = :role
+        AND (:location IS NULL OR LOWER(lp.location) LIKE LOWER(CONCAT('%', :location, '%')))
+        AND (:expertise IS NULL OR LOWER(lp.specialization) LIKE LOWER(CONCAT('%', :expertise, '%')))
+        AND (:isVerified IS NULL OR u.isVerified = :isVerified)
+        AND u.enabled = true
+    """)
     Page<User> searchLawyers(
             @Param("role") Role role,
             @Param("location") String location,
@@ -54,10 +71,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Pageable pageable
     );
 
-    // Search and filter NGOs
-    @Query("SELECT u FROM User u LEFT JOIN u.ngoProfile np WHERE u.role = :role " +
-           "AND (:location IS NULL OR LOWER(np.serviceArea) LIKE LOWER(CONCAT('%', :location, '%'))) " +
-           "AND (:isVerified IS NULL OR u.isVerified = :isVerified)")
+    // 🔹 Search NGOs
+    @Query("""
+        SELECT u FROM User u 
+        LEFT JOIN u.ngoProfile np 
+        WHERE u.role = :role
+        AND (:location IS NULL OR LOWER(np.serviceArea) LIKE LOWER(CONCAT('%', :location, '%')))
+        AND (:isVerified IS NULL OR u.isVerified = :isVerified)
+        AND u.enabled = true
+    """)
     Page<User> searchNgos(
             @Param("role") Role role,
             @Param("location") String location,
@@ -65,7 +87,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
             Pageable pageable
     );
 
-    //  NEW: Group users by role for the Admin Pie Chart 
-    @Query("SELECT new com.milestone.backend.dto.RoleCountDto(u.role, COUNT(u)) FROM User u GROUP BY u.role")
+    // ================= ADMIN DASHBOARD =================
+
+    @Query("""
+        SELECT new com.milestone.backend.dto.RoleCountDto(u.role, COUNT(u)) 
+        FROM User u 
+        GROUP BY u.role
+    """)
     List<com.milestone.backend.dto.RoleCountDto> countUsersByRole();
 }

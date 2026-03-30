@@ -18,7 +18,7 @@ import com.milestone.backend.entity.Match;
 import com.milestone.backend.repository.CaseRepository;
 import com.milestone.backend.repository.MatchRepository;
 import com.milestone.backend.repository.UserRepository;
-
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CaseService {
@@ -155,7 +155,7 @@ public class CaseService {
         response.setLegalDocuments(caseObj.getLegalDocuments());
         // -------------------------
 
-        response.setStatus(caseObj.getStatus().name());
+        response.setStatus(caseObj.getStatus());
         response.setUpdatedAt(caseObj.getUpdatedAt());
 
         return response;
@@ -262,6 +262,7 @@ public class CaseService {
     // This is a separate flow from match-based acceptance and sets the case
     // status to ASSIGNED and records the assignedLawyer.
     // ─────────────────────────────────────────────────────────────────────────────
+    @Transactional
     public CaseResponse acceptCase(Long id, User user) {
 
     // ✅ Role check

@@ -31,10 +31,12 @@ import lombok.NoArgsConstructor;
 )
 public class User implements UserDetails {
 
+    // ===== Primary Key =====
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // ===== Basic Fields =====
     @Column(nullable = false)
     private String name;
 
@@ -45,14 +47,22 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    // ===== Role =====
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
-    @Column(name = "created_at")
+    // ===== Timestamp =====
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime timeStamp = LocalDateTime.now();
 
+    // ===== Verification =====
+    @Column(nullable = false)
     private Boolean isVerified = false;
+
+    // ✅ IMPORTANT: Add this field
+    @Column(nullable = false)
+    private Boolean enabled = true;
 
     // ===== Spring Security Methods =====
 
@@ -77,9 +87,10 @@ public class User implements UserDetails {
         return true;
     }
 
+    // ✅ FIXED: now depends on enabled
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return enabled;
     }
 
     @Override
@@ -87,9 +98,10 @@ public class User implements UserDetails {
         return true;
     }
 
+    // ✅ FIXED: now depends on enabled
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
     // ===== Profiles =====
@@ -101,4 +113,18 @@ public class User implements UserDetails {
     @JsonIgnoreProperties({"user"})
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private NgoProfile ngoProfile;
+
+    // ===== Utility Methods (Good for viva) =====
+
+    public void verifyUser() {
+        this.isVerified = true;
+    }
+
+    public void disableUser() {
+        this.enabled = false;
+    }
+
+    public void enableUser() {
+        this.enabled = true;
+    }
 }
