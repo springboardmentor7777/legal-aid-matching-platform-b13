@@ -47,6 +47,9 @@ const AdminSidebar: React.FC<Props> = ({ active, setActive }) => {
         <span className={linkClass("ExternalDirectory")} onClick={() => setActive("ExternalDirectory")}>
           External Directory
         </span>
+        <span className={linkClass("SystemLogs")} onClick={() => setActive("SystemLogs")}>
+          System Logs
+        </span>
       </nav>
     </aside>
   );
