@@ -98,12 +98,12 @@ export default function ExternalDirectory() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <Navbar
+      {/* <Navbar
         title="External Directory"
         name={user?.username || ""}
         role={user?.role || ""}
         toggleSidebar={() => {}}
-      />
+      /> */}
 
       <div className="max-w-5xl mx-auto p-6">
         {/* Tabs */}
