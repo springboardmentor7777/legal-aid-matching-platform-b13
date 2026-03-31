@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateProfileRequest {
-    
-	private String fullName;
-    private String email;
 
+    private String fullName;
+    private String email;
+    private String phone;       // optional: stored in user if column exists
+    private String location;    // optional: stored in user if column exists
 }
