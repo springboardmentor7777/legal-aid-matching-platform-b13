@@ -124,8 +124,7 @@ export default function MatchingResults() {
         <main className="flex-1 p-6">
           <div className="flex gap-6">
 
-            <Filters />
-
+            {/*<Filters onApply={(filters) => setActiveFilters(filters)} />*/}
             <div className="flex-1">
 
               <h1 className="text-2xl font-bold mb-4 text-blue-900">
