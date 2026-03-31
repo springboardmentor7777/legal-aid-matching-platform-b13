@@ -7,6 +7,12 @@ import Navbar from "../components/Navbar";
 import { LuSquareArrowLeft } from "react-icons/lu";
 import PageTitle from "../components/PageTitle";
 
+const Label = ({ children, required }: { children: string; required?: boolean }) => (
+  <label className="block font-medium">
+    {children} {required && <span className="text-red-500">*</span>}
+  </label>
+);
+
 interface CaseFormData {
   // STEP 1 - CASE DETAILS
   title: string;
@@ -215,32 +221,35 @@ const CaseSubmissionForm: React.FC = () => {
               <>
                 <h3 className="font-semibold text-lg">Case Details</h3>
 
-                <label className="block font-medium">Case Title</label>
+                <Label className="block font-medium" required>Case Title</Label>
                 <input
                   name="title"
                   placeholder="Case Title"
                   value={formData.title}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
+                  required
                 />
                 {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
 
-                <label className="block font-medium">Case Description</label>
+                <Label className="block font-medium" required>Case Description</Label>
                 <textarea
                   name="description"
                   placeholder="Case Description"
                   value={formData.description}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
+                  required
                 />
                 {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
 
-                <label className="block font-medium">Category</label>
+                <Label className="block font-medium" required>Category</Label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
+                  required
                 >
                   <option value="">Select Category</option>
                   {Object.keys(caseCategories).map((cat) => (
@@ -268,12 +277,13 @@ const CaseSubmissionForm: React.FC = () => {
 
                 {formData.category && formData.category !== "other" && (
                   <>
-                    <label className="block font-medium">Subcategory</label>
+                    <Label className="block font-medium" required>Subcategory</Label>
                     <select
                       name="subcategory"
                       value={formData.subcategory}
                       onChange={handleChange}
                       className="w-full border px-3 py-2 rounded"
+                      required
                     >
                       <option value="">Select Subcategory</option>
                       {caseCategories[formData.category].map((sub) => (
@@ -286,13 +296,14 @@ const CaseSubmissionForm: React.FC = () => {
                   </>
                 )}
 
-                <label className="block font-medium">Location</label>
+                <Label className="block font-medium" required>Location</Label>
                 <input
                   name="location"
                   placeholder="Location"
                   value={formData.location}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
+                  required
                 />
                 {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
 
@@ -321,12 +332,13 @@ const CaseSubmissionForm: React.FC = () => {
                   </div>
                 </div>
 
-                <label className="block font-medium">Current Status</label>
+                <Label className="block font-medium" required>Current Status</Label>
                 <select
                   name="currentStatus"
                   value={formData.currentStatus}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
+                  required
                 >
                   <option value="">Select Status</option>
                   <option value="ongoing">Ongoing</option>
@@ -341,13 +353,14 @@ const CaseSubmissionForm: React.FC = () => {
               <>
                 <h3 className="font-semibold text-lg">Other Party Information</h3>
 
-                <label className="block font-medium">Other Party Name</label>
+                <Label className="block font-medium" required>Other Party Name</Label>
                 <input
                   name="personName"
                   placeholder="Other Party Name"
                   value={formData.personName}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
+                  required
                 />
                 {errors.personName && <p className="text-red-500 text-sm">{errors.personName}</p>}
 
@@ -390,24 +403,25 @@ const CaseSubmissionForm: React.FC = () => {
               <>
                 <h3 className="font-semibold text-lg">Evidence & Documents</h3>
 
-                <label className="block font-medium">FIR Number</label>
+                <Label className="block font-medium" required>FIR Number</Label>
                 <input
                   name="firNumber"
                   placeholder="FIR Number"
                   value={formData.firNumber}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
+                  required
                 />
                 {errors.firNumber && <p className="text-red-500 text-sm">{errors.firNumber}</p>}
 
-                <label className="block font-medium">FIR Document</label>
+                <Label className="block font-medium" required>FIR Document</Label>
                 <div className="flex gap-2">
                   <div className="flex-1 border rounded px-3 py-2 bg-gray-50">
                     {formData.firFile ? formData.firFile.name : "No file chosen"}
                   </div>
                   <label className="cursor-pointer bg-blue-900 text-white px-4 py-2 rounded">
                     Choose File
-                    <input type="file" name="firFile" onChange={handleChange} className="hidden" />
+                    <input type="file" name="firFile" onChange={handleChange} className="hidden" required/>
                   </label>
                 </div>
                 {errors.firFile && <p className="text-red-500 text-sm">{errors.firFile}</p>}
