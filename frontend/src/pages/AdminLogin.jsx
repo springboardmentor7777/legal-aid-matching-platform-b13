@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import "./auth.css";
 
 const AdminLogin = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -17,119 +19,122 @@ const AdminLogin = () => {
     setError("");
     try {
       const res = await API.post("/admin/login", { username, password });
-      // Store token and set role as ADMIN
       login({
-        accessToken: res.data.accessToken,
-        refreshToken: res.data.accessToken,
-        role: "ADMIN",
+        accessToken:  res.data.accessToken,
+        refreshToken: res.data.refreshToken, // use the actual refresh token from backend
+        role:   "ADMIN",
         userId: "admin",
       });
       navigate("/dashboard");
     } catch (err) {
-      setError("Invalid admin credentials. Please try again.");
+      if (!err.response) {
+        setError("Network error. Please check your connection.");
+      } else if (err.response.status === 401) {
+        setError("Invalid admin credentials. Please try again.");
+      } else {
+        setError("Something went wrong. Please try again shortly.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        {/* Header */}
-        <div style={styles.cardTop}>
-          <div style={styles.shield}>🛡️</div>
-          <h1 style={styles.title}>Admin Portal</h1>
-          <p style={styles.subtitle}>Restricted access — authorized personnel only</p>
+    <div className="admin-page">
+      <div className="admin-card">
+        <div className="admin-card-top">
+          <div className="admin-shield" aria-hidden="true">🛡️</div>
+          <h1 className="admin-title">Admin Portal</h1>
+          <p className="admin-subtitle">Restricted access — authorised personnel only</p>
         </div>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
+        {error && (
+          <div className="admin-error" role="alert">
+            <span aria-hidden="true">⚠</span> {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
-          <div style={styles.field}>
-            <label style={styles.label}>Username</label>
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="admin-field">
+            <label htmlFor="admin-username" className="admin-label">Username</label>
             <input
+              id="admin-username"
               type="text"
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)}
               placeholder="Admin username"
               required
-              style={styles.input}
-              onFocus={e => e.target.style.borderColor = "#C9A84C"}
-              onBlur={e => e.target.style.borderColor = "#334155"}
+              disabled={loading}
+              autoComplete="username"
+              className="admin-input"
             />
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              style={styles.input}
-              onFocus={e => e.target.style.borderColor = "#C9A84C"}
-              onBlur={e => e.target.style.borderColor = "#334155"}
-            />
+          <div className="admin-field">
+            <label htmlFor="admin-password" className="admin-label">Password</label>
+            <div className="admin-input-wrap">
+              <input
+                id="admin-password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                disabled={loading}
+                autoComplete="current-password"
+                className="admin-input admin-input--password"
+              />
+              <button
+                type="button"
+                className="admin-eye"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }}>
-            {loading ? "Signing in..." : "Access Admin Panel →"}
+            className={`admin-btn${loading ? " admin-btn--loading" : ""}`}
+          >
+            {loading ? (
+              <>
+                <span className="admin-spinner" aria-hidden="true" />
+                Signing in…
+              </>
+            ) : (
+              "Access Admin Panel →"
+            )}
           </button>
         </form>
 
-        <p style={styles.backLink}>
+        <p className="admin-back">
           Not an admin?{" "}
-          <span onClick={() => navigate("/login")} style={styles.link}>
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            className="admin-back-link"
+          >
             Go to regular login
-          </span>
+          </button>
         </p>
       </div>
     </div>
   );
-};
-
-const styles = {
-  page: {
-    minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-    background: "linear-gradient(160deg, #0A1628 0%, #0F1F3D 100%)",
-    fontFamily: "'Georgia', serif"
-  },
-  card: {
-    background: "#1E2D4A", borderRadius: "16px", padding: "48px",
-    width: "100%", maxWidth: "400px",
-    border: "1px solid rgba(201,168,76,0.2)",
-    boxShadow: "0 24px 80px rgba(0,0,0,0.5)"
-  },
-  cardTop: { textAlign: "center", marginBottom: "32px" },
-  shield: { fontSize: "48px", marginBottom: "16px" },
-  title: { fontSize: "24px", fontWeight: "700", color: "white", marginBottom: "8px" },
-  subtitle: { fontSize: "13px", color: "#94A3B8" },
-  errorBox: {
-    background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
-    color: "#FCA5A5", padding: "12px 16px", borderRadius: "8px",
-    fontSize: "13px", marginBottom: "20px"
-  },
-  field: { marginBottom: "20px" },
-  label: { display: "block", fontSize: "12px", fontWeight: "600", color: "#94A3B8", marginBottom: "6px", letterSpacing: "0.5px", textTransform: "uppercase" },
-  input: {
-    width: "100%", padding: "12px 14px", border: "1.5px solid #334155",
-    borderRadius: "8px", fontSize: "14px", outline: "none",
-    boxSizing: "border-box", transition: "border-color 0.2s",
-    fontFamily: "inherit", color: "white", background: "#0F1F3D"
-  },
-  btn: {
-    width: "100%", padding: "13px",
-    background: "linear-gradient(135deg, #C9A84C, #E8C97A)",
-    color: "#0F1F3D", border: "none", borderRadius: "8px",
-    fontSize: "14px", fontWeight: "700", cursor: "pointer",
-    fontFamily: "inherit", marginTop: "8px"
-  },
-  backLink: { textAlign: "center", fontSize: "12px", color: "#64748B", marginTop: "24px" },
-  link: { color: "#C9A84C", cursor: "pointer", fontWeight: "600" },
 };
 
 export default AdminLogin;

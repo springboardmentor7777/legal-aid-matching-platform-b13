@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import "./auth.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -20,130 +22,157 @@ const Login = () => {
       login(res.data);
       navigate("/dashboard");
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
+      if (!err.response) {
+        setError("Network error. Please check your connection and try again.");
+      } else if (err.response.status === 401) {
+        setError("Incorrect email or password. Please try again.");
+      } else if (err.response.status === 429) {
+        setError("Too many login attempts. Please wait a moment and try again.");
+      } else {
+        setError("Something went wrong on our end. Please try again shortly.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.left}>
-        <div style={styles.leftContent}>
-          <div style={styles.logo}>⚖️ LegalAid</div>
-          <h2 style={styles.tagline}>Justice is a right,<br />not a privilege.</h2>
-          <p style={styles.subTagline}>
+    <div className="auth-page">
+      {/* Left Panel */}
+      <div className="auth-left">
+        <div className="auth-left-inner">
+          <div className="auth-brand">
+            <span className="auth-brand-icon">⚖️</span>
+            <span className="auth-brand-name">LegalAid</span>
+          </div>
+          <h2 className="auth-tagline">
+            Justice is a right,<br />not a privilege.
+          </h2>
+          <p className="auth-subtagline">
             Connecting citizens with verified lawyers and NGOs across India.
           </p>
-          <div style={styles.stats}>
-            <div style={styles.stat}><span style={styles.statNum}>2,400+</span><span style={styles.statLabel}>Cases Filed</span></div>
-            <div style={styles.stat}><span style={styles.statNum}>800+</span><span style={styles.statLabel}>Lawyers</span></div>
-            <div style={styles.stat}><span style={styles.statNum}>150+</span><span style={styles.statLabel}>NGOs</span></div>
+          <div className="auth-stats">
+            <div className="auth-stat">
+              <span className="auth-stat-num">2,400+</span>
+              <span className="auth-stat-label">Cases Filed</span>
+            </div>
+            <div className="auth-stat">
+              <span className="auth-stat-num">800+</span>
+              <span className="auth-stat-label">Lawyers</span>
+            </div>
+            <div className="auth-stat">
+              <span className="auth-stat-num">150+</span>
+              <span className="auth-stat-label">NGOs</span>
+            </div>
           </div>
+        </div>
+        <div className="auth-left-decor" aria-hidden="true">
+          <div className="decor-ring decor-ring-1" />
+          <div className="decor-ring decor-ring-2" />
         </div>
       </div>
 
-      <div style={styles.right}>
-        <div style={styles.card}>
-          <h1 style={styles.title}>Welcome back</h1>
-          <p style={styles.subtitle}>Sign in to your account to continue</p>
+      {/* Right Panel */}
+      <div className="auth-right">
+        <div className="auth-card">
+          <h1 className="auth-card-title">Welcome back</h1>
+          <p className="auth-card-subtitle">Sign in to your account to continue</p>
 
-          {error && <div style={styles.errorBox}>{error}</div>}
+          {error && (
+            <div className="auth-error" role="alert">
+              <span className="auth-error-icon">⚠</span>
+              {error}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit}>
-            <div style={styles.field}>
-              <label style={styles.label}>Email Address</label>
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="auth-field">
+              <label htmlFor="login-email" className="auth-label">
+                Email Address
+              </label>
               <input
+                id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                style={styles.input}
-                onFocus={e => e.target.style.borderColor = "#C9A84C"}
-                onBlur={e => e.target.style.borderColor = "#E2E8F0"}
+                disabled={loading}
+                autoComplete="email"
+                className="auth-input"
               />
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                style={styles.input}
-                onFocus={e => e.target.style.borderColor = "#C9A84C"}
-                onBlur={e => e.target.style.borderColor = "#E2E8F0"}
-              />
+            <div className="auth-field">
+              <div className="auth-label-row">
+                <label htmlFor="login-password" className="auth-label">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="auth-forgot">
+                  Forgot password?
+                </Link>
+              </div>
+              <div className="auth-input-wrap">
+                <input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                  autoComplete="current-password"
+                  className="auth-input auth-input--password"
+                />
+                <button
+                  type="button"
+                  className="auth-eye"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={0}
+                >
+                  {showPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              style={{...styles.btn, opacity: loading ? 0.7 : 1}}
+              className={`auth-btn${loading ? " auth-btn--loading" : ""}`}
             >
-              {loading ? "Signing in..." : "Sign In →"}
+              {loading ? (
+                <>
+                  <span className="auth-spinner" aria-hidden="true" />
+                  Signing in…
+                </>
+              ) : (
+                "Sign In →"
+              )}
             </button>
           </form>
 
-          <p style={styles.footer}>
+          <p className="auth-footer">
             Don't have an account?{" "}
-            <Link to="/register" style={styles.link}>Create one here</Link>
+            <Link to="/register" className="auth-link">
+              Create one here
+            </Link>
           </p>
         </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  page: { display: "flex", minHeight: "100vh", fontFamily: "'Georgia', serif" },
-  left: {
-    width: "45%", background: "linear-gradient(160deg, #0F1F3D 0%, #1a3560 100%)",
-    display: "flex", alignItems: "center", justifyContent: "center", padding: "60px",
-    position: "relative", overflow: "hidden"
-  },
-  leftContent: { position: "relative", zIndex: 1, color: "white" },
-  logo: { fontSize: "22px", fontWeight: "700", color: "#C9A84C", marginBottom: "48px", letterSpacing: "1px" },
-  tagline: { fontSize: "36px", fontWeight: "700", lineHeight: "1.3", color: "#fff", marginBottom: "16px" },
-  subTagline: { fontSize: "15px", color: "#94A3B8", lineHeight: "1.7", marginBottom: "48px", maxWidth: "320px" },
-  stats: { display: "flex", gap: "32px" },
-  stat: { display: "flex", flexDirection: "column" },
-  statNum: { fontSize: "24px", fontWeight: "700", color: "#C9A84C" },
-  statLabel: { fontSize: "12px", color: "#94A3B8", marginTop: "2px", letterSpacing: "0.5px" },
-  right: {
-    width: "55%", background: "#F8FAFC",
-    display: "flex", alignItems: "center", justifyContent: "center", padding: "60px"
-  },
-  card: {
-    background: "white", borderRadius: "16px", padding: "48px",
-    width: "100%", maxWidth: "420px",
-    boxShadow: "0 4px 40px rgba(0,0,0,0.08)"
-  },
-  title: { fontSize: "26px", fontWeight: "700", color: "#0F1F3D", marginBottom: "8px" },
-  subtitle: { fontSize: "14px", color: "#64748B", marginBottom: "32px" },
-  errorBox: {
-    background: "#FEF2F2", border: "1px solid #FECACA", color: "#DC2626",
-    padding: "12px 16px", borderRadius: "8px", fontSize: "13px", marginBottom: "20px"
-  },
-  field: { marginBottom: "20px" },
-  label: { display: "block", fontSize: "13px", fontWeight: "600", color: "#374151", marginBottom: "6px" },
-  input: {
-    width: "100%", padding: "12px 14px", border: "1.5px solid #E2E8F0",
-    borderRadius: "8px", fontSize: "14px", color: "#1E293B",
-    outline: "none", boxSizing: "border-box", transition: "border-color 0.2s",
-    fontFamily: "inherit"
-  },
-  btn: {
-    width: "100%", padding: "13px", background: "linear-gradient(135deg, #0F1F3D, #1a3560)",
-    color: "white", border: "none", borderRadius: "8px", fontSize: "15px",
-    fontWeight: "600", cursor: "pointer", marginTop: "8px", letterSpacing: "0.3px",
-    fontFamily: "inherit"
-  },
-  footer: { textAlign: "center", fontSize: "13px", color: "#64748B", marginTop: "24px" },
-  link: { color: "#C9A84C", fontWeight: "600", textDecoration: "none" },
 };
 
 export default Login;

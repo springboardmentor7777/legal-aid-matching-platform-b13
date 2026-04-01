@@ -2,135 +2,182 @@ import { useEffect, useState } from "react";
 import Layout from "../../components/layout/Layout";
 import API from "../../api/axios";
 import { Link } from "react-router-dom";
+import CaseDetailModal from "../../components/common/CaseDetailModal";
 
 const statusConfig = {
-  SUBMITTED: { bg: "#EFF6FF", color: "#1D4ED8", label: "Submitted" },
-  ACTIVE: { bg: "#F0FDF4", color: "#166534", label: "Active" },
-  PENDING: { bg: "#FFFBEB", color: "#92400E", label: "Pending" },
-  RESOLVED: { bg: "#F0FDF4", color: "#166534", label: "Resolved" },
-  CLOSED: { bg: "#F1F5F9", color: "#475569", label: "Closed" },
+  OPEN:      { bg: "#EFF6FF", color: "#1D4ED8", border: "#BFDBFE", label: "Open",     dot: "#3B82F6",
+               desc: "Awaiting lawyer/NGO — browse Find Lawyers to send requests" },
+  ASSIGNED:  { bg: "#F0FDF4", color: "#166534", border: "#86EFAC", label: "Assigned", dot: "#22C55E",
+               desc: "A lawyer/NGO has accepted your case" },
+  RESOLVED:  { bg: "#F0FDF4", color: "#059669", border: "#6EE7B7", label: "Resolved", dot: "#10B981",
+               desc: "Case has been resolved" },
+  CLOSED:    { bg: "#F8FAFC", color: "#475569", border: "#E2E8F0", label: "Closed",   dot: "#94A3B8",
+               desc: "Case is closed" },
+  // Legacy statuses (for old data)
+  SUBMITTED: { bg: "#EFF6FF", color: "#1D4ED8", border: "#BFDBFE", label: "Submitted", dot: "#3B82F6", desc: "" },
+  ACTIVE:    { bg: "#FFF7ED", color: "#C2410C", border: "#FED7AA", label: "Active",    dot: "#F97316", desc: "" },
+  PENDING:   { bg: "#FFFBEB", color: "#92400E", border: "#FDE68A", label: "Pending",   dot: "#F59E0B", desc: "" },
+};
+
+const categoryIcons = {
+  property: "🏠", criminal: "⚖️", family: "👨‍👩‍👧", consumer: "🛒",
+  labour: "👷", civil: "📋", "human rights": "🕊️", other: "📁",
 };
 
 const MyCases = () => {
-  const [cases, setCases] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("ALL");
+  const [cases, setCases]               = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [filter, setFilter]             = useState("ALL");
+  const [selectedCaseId, setSelectedCaseId] = useState(null);
 
   useEffect(() => {
-    const fetchCases = async () => {
-      try {
-        const res = await API.get("/api/cases/my");
-        setCases(res.data);
-      } catch (error) {
-        console.error("Error fetching cases", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCases();
+    API.get("/api/cases/my")
+      .then(res => setCases(res.data || []))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
-
- const acceptCase = async (id) => {
-    try {
-      await API.put(`/api/cases/${id}/accept`);
-      alert("Case accepted successfully");
-    } catch (error) {
-      console.error("Error accepting case", error);
-    }
-  };
-
-  const declineCase = async (id) => {
-    try {
-      await API.put(`/api/cases/${id}/decline`);
-      alert("Case declined");
-    } catch (error) {
-      console.error("Error declining case", error);
-    }
-  };
 
   const filtered = filter === "ALL" ? cases : cases.filter(c => c.status === filter);
 
+  const openCases     = cases.filter(c => c.status === "OPEN" || c.status === "SUBMITTED").length;
+  const assignedCases = cases.filter(c => c.status === "ASSIGNED" || c.status === "ACTIVE").length;
+
+  const filterTabs = ["ALL", "OPEN", "ASSIGNED", "RESOLVED", "CLOSED"];
+
   return (
     <Layout>
-      <div style={styles.header}>
+      {selectedCaseId && (
+        <CaseDetailModal caseId={selectedCaseId} onClose={() => setSelectedCaseId(null)} />
+      )}
+
+      {/* Header */}
+      <div style={s.header}>
         <div>
-          <h1 style={styles.title}>My Cases</h1>
-          <p style={styles.subtitle}>{cases.length} total case{cases.length !== 1 ? "s" : ""} found</p>
+          <h1 style={s.title}>My Cases</h1>
+          <p style={s.subtitle}>{cases.length} total case{cases.length !== 1 ? "s" : ""}</p>
         </div>
-        <Link to="/submit-case" style={styles.newBtn}>+ New Case</Link>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link to="/lawyers" style={s.findBtn}>⚖️ Find Lawyers / NGOs</Link>
+          <Link to="/submit-case" style={s.newBtn}>+ New Case</Link>
+        </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div style={styles.tabs}>
-        {["ALL", "SUBMITTED", "ACTIVE", "PENDING", "RESOLVED"].map(t => (
-          <button key={t} onClick={() => setFilter(t)}
-            style={{ ...styles.tab, ...(filter === t ? styles.tabActive : {}) }}>
-            {t === "ALL" ? "All Cases" : statusConfig[t]?.label || t}
-            <span style={{ ...styles.tabCount, ...(filter === t ? styles.tabCountActive : {}) }}>
-              {t === "ALL" ? cases.length : cases.filter(c => c.status === t).length}
-            </span>
-          </button>
-        ))}
+      {/* Summary cards */}
+      <div style={s.summaryRow}>
+        <div style={s.summaryCard}>
+          <span style={s.summaryNum}>{cases.length}</span>
+          <span style={s.summaryLbl}>Total Cases</span>
+        </div>
+        <div style={{ ...s.summaryCard, background: "#EFF6FF", border: "1px solid #BFDBFE" }}>
+          <span style={{ ...s.summaryNum, color: "#1D4ED8" }}>{openCases}</span>
+          <span style={s.summaryLbl}>Open (seeking help)</span>
+        </div>
+        <div style={{ ...s.summaryCard, background: "#F0FDF4", border: "1px solid #86EFAC" }}>
+          <span style={{ ...s.summaryNum, color: "#166534" }}>{assignedCases}</span>
+          <span style={s.summaryLbl}>Assigned</span>
+        </div>
       </div>
 
-      {/* Cases List */}
+      {/* OPEN cases CTA */}
+      {openCases > 0 && (
+        <div style={s.ctaBanner}>
+          <span style={{ fontSize: "18px" }}>💡</span>
+          <div style={{ flex: 1 }}>
+            <div style={s.ctaTitle}>You have {openCases} open case{openCases > 1 ? "s" : ""} seeking legal help</div>
+            <div style={s.ctaText}>Browse available lawyers and NGOs, then send your case for review.</div>
+          </div>
+          <Link to="/lawyers" style={s.ctaBtn}>Find Lawyers →</Link>
+        </div>
+      )}
+
+      {/* Filter tabs */}
+      <div style={s.tabs}>
+        {filterTabs.map(t => {
+          const sc     = statusConfig[t];
+          const active = filter === t;
+          const count  = t === "ALL" ? cases.length : cases.filter(c => c.status === t).length;
+          return (
+            <button key={t} onClick={() => setFilter(t)} style={{
+              ...s.tabBtn,
+              ...(active ? { background: "#0F1F3D", color: "white", border: "1.5px solid #0F1F3D" } : {}),
+            }}>
+              {t === "ALL" ? "All" : sc?.label || t}
+              <span style={{
+                ...s.tabCount,
+                background: active ? "rgba(255,255,255,0.2)" : "#F1F5F9",
+                color:      active ? "white" : "#64748B",
+              }}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Case list */}
       {loading ? (
-        <div style={styles.loading}>Loading your cases...</div>
+        <div style={s.center}>Loading cases...</div>
       ) : filtered.length === 0 ? (
-        <div style={styles.empty}>
-          <div style={styles.emptyIcon}>📂</div>
-          <h3 style={styles.emptyTitle}>No cases found</h3>
-          <p style={styles.emptyText}>
-            {filter === "ALL" ? "You haven't submitted any cases yet." : `No cases with status "${filter}".`}
-          </p>
+        <div style={s.empty}>
+          <div style={{ fontSize: "48px", marginBottom: "12px" }}>📁</div>
+          <h3 style={s.emptyTitle}>{filter === "ALL" ? "No cases yet" : `No ${filter.toLowerCase()} cases`}</h3>
           {filter === "ALL" && (
-            <Link to="/submit-case" style={styles.emptyBtn}>Submit Your First Case →</Link>
+            <p style={{ color: "#64748B", fontSize: "13px", marginBottom: "16px" }}>
+              Submit your first case to get started.
+            </p>
+          )}
+          {filter === "ALL" && (
+            <Link to="/submit-case" style={s.newBtn}>+ Submit a Case</Link>
           )}
         </div>
       ) : (
-        <div style={styles.casesList}>
+        <div style={s.caseList}>
           {filtered.map(c => {
-            const sc = statusConfig[c.status] || statusConfig.SUBMITTED;
+            const sc    = statusConfig[c.status] || statusConfig.OPEN;
+            const catIcon = categoryIcons[(c.category || "").toLowerCase()] || "📁";
             return (
-              <div key={c.id} style={styles.caseCard}>
-                <div style={styles.caseTop}>
-                  <div style={styles.caseLeft}>
-                    <span style={styles.caseId}>Case #{c.id}</span>
-                    <h3 style={styles.caseTitle}>{c.title || c.caseTitle}</h3>
+              <div key={c.id} style={{ ...s.caseCard, borderLeft: `4px solid ${sc.border}` }}>
+                <div style={s.caseTop}>
+                  <div style={s.caseLeft}>
+                    <span style={s.catIcon}>{catIcon}</span>
+                    <div>
+                      <div style={s.caseTitle}>{c.caseTitle || c.title}</div>
+                      <div style={s.caseMeta}>
+                        {c.category && <span>📂 {c.category}</span>}
+                        {c.location  && <span>📍 {c.location}</span>}
+                        {c.filingDate && (
+                          <span>🗓 {new Date(c.filingDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <span style={{ ...styles.statusBadge, background: sc.bg, color: sc.color }}>
-                    {sc.label}
-                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
+                    <span style={{ ...s.statusBadge, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: sc.dot, display: "inline-block", marginRight: "5px" }}/>
+                      {sc.label}
+                    </span>
+                    <button onClick={() => setSelectedCaseId(c.id || c.caseId)} style={s.viewBtn}>
+                      👁 View Details
+                    </button>
+                  </div>
                 </div>
 
-                <p style={styles.caseDesc}>
-                  {(c.description || "").slice(0, 140)}
-                  {(c.description || "").length > 140 ? "..." : ""}
-                </p>
+                {sc.desc && (
+                  <div style={s.statusDesc}>{sc.desc}</div>
+                )}
 
-                <div style={styles.caseMeta}>
-                  <span style={styles.metaItem}>📂 {c.category || "Uncategorized"}</span>
-                  <span style={styles.metaItem}>📍 {c.location || "—"}</span>
-                  <span style={styles.metaItem}>
-                    📅 {c.createdAt ? new Date(c.createdAt).toLocaleDateString("en-IN") : "—"}
-                  </span>
-                  {c.lawyerName && (
-                    <span style={styles.metaItem}>⚖️ {c.lawyerName}</span>
-                  )}
-                </div>
-                <div style={styles.actions}>
-                  <Link to={`/case-details/${c.id}`} style={styles.viewBtn}>
-                    View Details
+                {/* Show assigned lawyer/NGO if ASSIGNED */}
+                {(c.status === "ASSIGNED" || c.status === "ACTIVE") && (c.lawyerName || c.ngoName) && (
+                  <div style={s.assignedRow}>
+                    <span style={s.assignedIcon}>{c.lawyerName ? "⚖️" : "🤝"}</span>
+                    <span style={s.assignedName}>Handled by {c.lawyerName || c.ngoName}</span>
+                  </div>
+                )}
+
+                {/* CTA for OPEN cases */}
+                {(c.status === "OPEN" || c.status === "SUBMITTED") && (
+                  <Link to="/lawyers" style={s.findHelpBtn}>
+                    ⚖️ Find Lawyers / NGOs for this case →
                   </Link>
-
-                  <button style={styles.acceptBtn} onClick={() => acceptCase(c.id)}>
-                    Accept
-                  </button>
-
-                  <button style={styles.declineBtn} onClick={() => declineCase(c.id)}>
-                    Decline
-                  </button>
-                </div>
+                )}
               </div>
             );
           })}
@@ -140,53 +187,40 @@ const MyCases = () => {
   );
 };
 
-const styles = {
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" },
-  title: { fontSize: "24px", fontWeight: "700", color: "#0F1F3D", fontFamily: "'Georgia', serif", marginBottom: "4px" },
-  subtitle: { fontSize: "13px", color: "#64748B" },
-  newBtn: {
-    background: "linear-gradient(135deg, #0F1F3D, #1a3560)", color: "white",
-    padding: "10px 18px", borderRadius: "8px", fontSize: "13px",
-    fontWeight: "600", textDecoration: "none"
-  },
-  tabs: { display: "flex", gap: "6px", marginBottom: "24px", flexWrap: "wrap" },
-  tab: {
-    padding: "8px 14px", border: "1.5px solid #E2E8F0", background: "white",
-    borderRadius: "8px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit",
-    color: "#64748B", display: "flex", alignItems: "center", gap: "6px"
-  },
-  tabActive: { border: "1.5px solid #0F1F3D", background: "#0F1F3D", color: "white" },
-  tabCount: {
-    background: "#F1F5F9", padding: "1px 6px",
-    borderRadius: "10px", fontSize: "10px", fontWeight: "700", color: "#64748B"
-  },
-  tabCountActive: { background: "rgba(255,255,255,0.2)", color: "white" },
-  loading: { textAlign: "center", padding: "60px", color: "#94A3B8" },
-  empty: { textAlign: "center", padding: "80px", background: "white", borderRadius: "12px" },
-  emptyIcon: { fontSize: "56px", marginBottom: "16px" },
-  emptyTitle: { fontSize: "18px", fontWeight: "700", color: "#0F1F3D", marginBottom: "8px", fontFamily: "'Georgia', serif" },
-  emptyText: { color: "#64748B", marginBottom: "24px", fontSize: "14px" },
-  emptyBtn: {
-    background: "#0F1F3D", color: "white", padding: "12px 24px",
-    borderRadius: "8px", fontSize: "14px", textDecoration: "none", fontWeight: "600"
-  },
-  casesList: { display: "flex", flexDirection: "column", gap: "14px" },
-  caseCard: {
-    background: "white", borderRadius: "12px", padding: "22px 24px",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.05)", border: "1px solid #F1F5F9"
-  },
-  caseTop: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" },
-  caseLeft: {},
-  caseId: {
-    fontSize: "10px", fontWeight: "700", color: "#94A3B8",
-    background: "#F1F5F9", padding: "2px 8px", borderRadius: "4px",
-    display: "inline-block", marginBottom: "6px"
-  },
-  caseTitle: { fontSize: "16px", fontWeight: "700", color: "#0F1F3D", fontFamily: "'Georgia', serif" },
-  statusBadge: { fontSize: "11px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px", flexShrink: 0 },
-  caseDesc: { fontSize: "13px", color: "#64748B", lineHeight: "1.7", marginBottom: "14px" },
-  caseMeta: { display: "flex", gap: "20px", flexWrap: "wrap" },
-  metaItem: { fontSize: "12px", color: "#94A3B8" },
+const s = {
+  header:      { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" },
+  title:       { fontSize: "24px", fontWeight: "700", color: "#0F1F3D", fontFamily: "'Georgia', serif", marginBottom: "4px" },
+  subtitle:    { fontSize: "13px", color: "#64748B" },
+  findBtn:     { padding: "9px 16px", background: "#0F1F3D", color: "white", borderRadius: "10px", textDecoration: "none", fontSize: "13px", fontWeight: "600" },
+  newBtn:      { padding: "9px 16px", background: "white", color: "#0F1F3D", border: "1.5px solid #E2E8F0", borderRadius: "10px", textDecoration: "none", fontSize: "13px", fontWeight: "600" },
+  summaryRow:  { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px", marginBottom: "20px" },
+  summaryCard: { background: "white", borderRadius: "12px", padding: "18px", display: "flex", flexDirection: "column", gap: "4px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", border: "1px solid #F1F5F9" },
+  summaryNum:  { fontSize: "28px", fontWeight: "700", color: "#0F1F3D", fontFamily: "'Georgia', serif" },
+  summaryLbl:  { fontSize: "12px", color: "#64748B" },
+  ctaBanner:   { display: "flex", alignItems: "center", gap: "14px", background: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: "12px", padding: "16px 20px", marginBottom: "20px" },
+  ctaTitle:    { fontSize: "14px", fontWeight: "700", color: "#1D4ED8", marginBottom: "2px" },
+  ctaText:     { fontSize: "12px", color: "#3B82F6" },
+  ctaBtn:      { padding: "8px 16px", background: "#1D4ED8", color: "white", borderRadius: "8px", textDecoration: "none", fontSize: "12px", fontWeight: "700", flexShrink: 0 },
+  tabs:        { display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" },
+  tabBtn:      { padding: "7px 16px", border: "1.5px solid #E2E8F0", background: "white", borderRadius: "8px", fontSize: "13px", cursor: "pointer", fontFamily: "inherit", color: "#64748B", fontWeight: "600", display: "flex", alignItems: "center", gap: "6px" },
+  tabCount:    { fontSize: "10px", fontWeight: "700", padding: "1px 6px", borderRadius: "10px" },
+  center:      { textAlign: "center", padding: "60px", color: "#94A3B8" },
+  empty:       { textAlign: "center", padding: "60px", background: "white", borderRadius: "16px" },
+  emptyTitle:  { fontSize: "18px", fontWeight: "700", color: "#0F1F3D", fontFamily: "'Georgia', serif", marginBottom: "8px" },
+  caseList:    { display: "flex", flexDirection: "column", gap: "14px" },
+  caseCard:    { background: "white", borderRadius: "14px", padding: "20px 22px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", border: "1px solid #F1F5F9" },
+  caseTop:     { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" },
+  caseLeft:    { display: "flex", alignItems: "flex-start", gap: "14px", flex: 1, minWidth: 0 },
+  catIcon:     { fontSize: "24px", flexShrink: 0 },
+  caseTitle:   { fontSize: "16px", fontWeight: "700", color: "#0F1F3D", fontFamily: "'Georgia', serif", marginBottom: "6px" },
+  caseMeta:    { display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#94A3B8" },
+  statusBadge: { fontSize: "11px", fontWeight: "700", padding: "5px 12px", borderRadius: "20px", display: "flex", alignItems: "center" },
+  viewBtn:     { fontSize: "12px", color: "#1D4ED8", background: "#EFF6FF", border: "none", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", fontFamily: "inherit", fontWeight: "600" },
+  statusDesc:  { fontSize: "12px", color: "#64748B", background: "#F8FAFC", borderRadius: "8px", padding: "8px 12px", marginTop: "8px" },
+  assignedRow: { display: "flex", alignItems: "center", gap: "8px", background: "#F0FDF4", borderRadius: "8px", padding: "8px 12px", marginTop: "8px" },
+  assignedIcon:{ fontSize: "16px" },
+  assignedName:{ fontSize: "13px", fontWeight: "600", color: "#166534" },
+  findHelpBtn: { display: "inline-block", marginTop: "10px", fontSize: "12px", color: "#1D4ED8", fontWeight: "600", textDecoration: "none" },
 };
 
 export default MyCases;
