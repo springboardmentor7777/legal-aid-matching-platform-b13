@@ -20,21 +20,18 @@ interface Props {
 const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
   const [query, setQuery] = useState("");
 
-//  Group by matchId so EVERY case gets its own separate chat room!
+  // ✅ Remove duplicates (based on matchId)
   const uniqueUsers = useMemo(() => {
-    const map = new Map<number, MatchDTO>(); 
-    
+    const map = new Map<number, MatchDTO>();
     users.forEach((user) => {
-      // As long as the match has an ID, give it a row in the sidebar
-      if (user.matchId && !map.has(user.matchId)) {
+      if (!map.has(user.matchId)) {
         map.set(user.matchId, user);
       }
     });
-    
     return Array.from(map.values());
   }, [users]);
 
-  //  Filter based on search
+  // ✅ Filter based on search
   const filteredUsers = useMemo(() => {
     return uniqueUsers.filter((u) =>
       (u.displayName || "")
@@ -46,7 +43,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
   return (
     <div className="flex flex-col h-full bg-white border-r">
       
-      {/*  Search Bar */}
+      {/* 🔍 Search Bar */}
       <div className="p-4">
         <input
           type="text"
@@ -59,7 +56,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
 
       <hr className="border-t border-blue-200 my-2" />
 
-      {/*  Chat List */}
+      {/* 📋 Chat List */}
       <div className="flex-1 overflow-y-auto">
         {filteredUsers.length === 0 ? (
           <div className="p-4 text-sm text-gray-400 text-center">
@@ -81,7 +78,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
                     {initial}
                   </div>
 
-                  {/*  User Info */}
+                  {/* 📄 User Info */}
                   <div className="overflow-hidden">
                     <div className="font-semibold text-blue-900 truncate">
                       {name}
