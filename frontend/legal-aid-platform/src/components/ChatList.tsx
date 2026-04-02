@@ -20,18 +20,14 @@ interface Props {
 const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
   const [query, setQuery] = useState("");
 
-  //  Remove duplicates (based on matchId)
- // Remove duplicates (based on the user's name instead of matchId)
+//  Group by matchId so EVERY case gets its own separate chat room!
   const uniqueUsers = useMemo(() => {
-    const map = new Map<string, MatchDTO>(); 
+    const map = new Map<number, MatchDTO>(); 
     
     users.forEach((user) => {
-      
-      const nameKey = user.displayName || "Unknown User"; 
-      
-      // Now it knows what nameKey is!
-      if (!map.has(nameKey)) {
-        map.set(nameKey, user);
+      // As long as the match has an ID, give it a row in the sidebar
+      if (user.matchId && !map.has(user.matchId)) {
+        map.set(user.matchId, user);
       }
     });
     
