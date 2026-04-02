@@ -3,5 +3,6 @@ public enum MatchStatus {
     PENDING,
     INTERESTED,
     ACCEPTED,
-    REJECTED
+    REJECTED,
+    REQUESTED
 }

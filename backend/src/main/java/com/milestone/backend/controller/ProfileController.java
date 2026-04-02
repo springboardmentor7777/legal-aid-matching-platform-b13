@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.milestone.backend.dto.ProfileResponseDto;
 import com.milestone.backend.dto.ProfileUpdateRequest;
+import com.milestone.backend.dto.VerificationDto;
 import com.milestone.backend.entity.User;
 import com.milestone.backend.entity.Role;
 import com.milestone.backend.entity.LawyerProfile;
@@ -56,8 +57,6 @@ public class ProfileController {
         return ResponseEntity.ok(safeProfile);
     }
 
-    // CHANGE 2: Changed return type from ResponseEntity<User> to
-    // ResponseEntity<Map<String, Object>>
     @PutMapping("/update")
     public ResponseEntity<Map<String, Object>> updateProfile(
             @Valid @RequestBody ProfileUpdateRequest request,
@@ -68,12 +67,10 @@ public class ProfileController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // 1. Update basic user details
         if (request.getName() != null) {
             user.setName(request.getName());
         }
 
-        // 2. Update Lawyer specific details
         if (user.getRole() == Role.LAWYER) {
             if (user.getLawyerProfile() == null) {
                 LawyerProfile lawyerProfile = new LawyerProfile();
@@ -86,11 +83,10 @@ public class ProfileController {
                 user.getLawyerProfile().setExperience(request.getExperience());
             if (request.getLocation() != null)
                 user.getLawyerProfile().setLocation(request.getLocation());
-            if(request.getIsAvailable() != null)
+            if (request.getIsAvailable() != null)
                 user.getLawyerProfile().setIsAvailable(request.getIsAvailable());
         }
 
-        // 3. Update NGO specific details
         if (user.getRole() == Role.NGO) {
             if (user.getNgoProfile() == null) {
                 NgoProfile ngoProfile = new NgoProfile();
@@ -101,18 +97,15 @@ public class ProfileController {
                 user.getNgoProfile().setOrganizationName(request.getOrganizationName());
             if (request.getServiceArea() != null)
                 user.getNgoProfile().setServiceArea(request.getServiceArea());
-            // CHANGE 3: Catch the location from the frontend and save it
             if (request.getLocation() != null)
                 user.getNgoProfile().setLocation(request.getLocation());
-            if(request.getIsAvailable() != null)
+            if (request.getIsAvailable() != null)
                 user.getNgoProfile().setIsAvailable(request.getIsAvailable());
         }
 
         // Save the user to the database
         userRepository.save(user);
 
-        // CHANGE 4: Return the exact same safe Map as the GET request instead of the
-        // raw User
         return getProfile(user);
     }
 
@@ -127,12 +120,26 @@ public class ProfileController {
     @PutMapping("/profile/verify")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> verifyUser(@RequestBody VerificationRequest request) {
-        
+
         Map<String, Object> response = profileService.updateUserVerification(
-                request.getEmail(), 
-                request.isVerified()
-        );
-        
+                request.getEmail(),
+                request.isVerified());
+
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/admin/pending-verifications")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<List<VerificationDto>> getPending() {
+        return ResponseEntity.ok(profileService.getPendingProfiles());
+    }
+
+    @PutMapping("/admin/verify-profile/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Map<String, Object>> verifyProfile(@PathVariable Long id,
+            @RequestBody VerificationRequest request) {
+        return ResponseEntity.ok(profileService.updateVerificationStatus(
+                id,
+                request.isVerified()));
     }
 }

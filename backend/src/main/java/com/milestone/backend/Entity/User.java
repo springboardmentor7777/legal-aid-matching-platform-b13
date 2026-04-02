@@ -57,8 +57,8 @@ public class User implements UserDetails {
     private LocalDateTime timeStamp = LocalDateTime.now();
 
     // ===== Verification =====
-    @Column(nullable = false)
-    private Boolean isVerified = false;
+    @Column(name = "is_verified")
+    private Boolean isVerified = null;
 
     // ✅ IMPORTANT: Add this field
     @Column(nullable = false)
@@ -118,6 +118,10 @@ public class User implements UserDetails {
 
     public void verifyUser() {
         this.isVerified = true;
+    }
+
+    public void rejectUser() {
+        this.isVerified = false;
     }
 
     public void disableUser() {

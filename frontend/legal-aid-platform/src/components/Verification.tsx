@@ -1,25 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-// ── Types matching backend DTOs ──────────────────────────────────────────────
-//
-// Backend VerificationDto is built from the User entity:
-//   new VerificationDto(user.getId(), user.getName(), user.getRole(), user.getIsVerified())
-//
-// There is NO organization or location field in the DTO — those fields were
-// removed from the mock data to match reality.
-//
-// Role is a Java enum (LAWYER | NGO) — arrives as a string in JSON.
-// Approve endpoints:
-//   PUT /admin/verify/lawyer/{id}
-//   PUT /admin/verify/ngo/{id}
-// There is no "Reject" endpoint — rejection is handled as UI-only state here
-// (you can add a backend endpoint later without touching this component).
-
 interface VerificationDto {
   id: number;
   name: string;
-  role: string;         // "LAWYER" | "NGO"  (Java enum → JSON string)
+  role: string; // "LAWYER" | "NGO"  (Java enum → JSON string)
   isVerified: boolean;
 }
 
@@ -31,31 +16,29 @@ interface VerificationItem extends VerificationDto {
   uiStatus: UIStatus;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
 const BASE = "http://localhost:8081";
 
 const getStatusStyle = (status: UIStatus) => {
-  if (status === "Pending")  return "bg-blue-50 text-blue-600";
+  if (status === "Pending") return "bg-blue-50 text-blue-600";
   if (status === "Approved") return "bg-green-50 text-green-600";
   if (status === "Rejected") return "bg-red-50 text-red-600";
   return "";
 };
 
-// ── Component ────────────────────────────────────────────────────────────────
 
 export default function Verification() {
   const [filters, setFilters] = useState({ role: "", status: "", name: "" });
-  const [data, setData]       = useState<VerificationItem[]>([]);
+  const [data, setData] = useState<VerificationItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // ── Fetch verifications from backend ──────────────────────────────────────
   useEffect(() => {
     axios
-      .get<VerificationDto[]>(`${BASE}/verifications`)
+      .get<VerificationDto[]>(`${BASE}/profile/admin/pending-verifications`, {
+        headers: { Authorization: `Bearer ${localStorage.accessToken}` },
+      })
       .then((res) => {
         // Map each DTO to a UI item.
         // isVerified=true means already approved; false = pending.
@@ -69,57 +52,85 @@ export default function Verification() {
       .finally(() => setLoading(false));
   }, []);
 
-  // ── Filter change ──────────────────────────────────────────────────────────
   const handleFilterChange = (
-    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
   ) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
     setCurrentPage(1);
   };
 
-  // ── Approve action (calls the correct endpoint based on role) ─────────────
   const handleApprove = async (item: VerificationItem) => {
-    // Already approved — no-op
+
     if (item.uiStatus === "Approved") return;
 
-    // Pick endpoint based on role (backend enum is uppercase)
-    const rolePath =
-      item.role.toUpperCase() === "LAWYER" ? "lawyer" : "ngo";
-
     try {
-      await axios.put(`${BASE}/verify/${rolePath}/${item.id}`);
+    const token = localStorage.getItem("accessToken");
+
+    // Axios PUT signature: (url, body, config)
+    await axios.put(
+      `${BASE}/profile/admin/verify-profile/${item.id}`,
+      { is_verified: true }, // The body (is_verified must match your DTO)
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // The security header
+        },
+      }
+    );
+
+    setData((prev) =>
+      prev.map((d) =>
+        d.id === item.id ? { ...d, isVerified: true, uiStatus: "Approved" } : d
+      )
+    );
+  } catch (error: any) {
+    console.error("Approval failed", error.response?.data || error.message);
+    alert(`Failed to approve ${item.name}.`);
+  }
+  };
+
+  const handleReject = async (id: number) => {
+    
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      await axios.put(
+        `${BASE}/profile/admin/verify-profile/${id}`,
+        { is_verified: false }, // 2. Request body matching VerificationRequest.java
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       setData((prev) =>
         prev.map((d) =>
-          d.id === item.id ? { ...d, isVerified: true, uiStatus: "Approved" } : d
-        )
+          d.id === id ? { ...d, isVerified: false, uiStatus: "Rejected" } : d,
+        ),
       );
-    } catch {
-      alert(`Failed to approve ${item.name}. Please try again.`);
+    } catch (error: any) {
+      console.error("Rejection Error:", error.response?.data || error.message);
+      alert(
+        "Failed to reject the profile. Please check the console for details.",
+      );
     }
   };
 
-  // ── Reject action (UI-only — no backend endpoint exists yet) ──────────────
-  const handleReject = (id: number) => {
-    setData((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, uiStatus: "Rejected" } : d))
-    );
-  };
-
-  // ── Apply filters ──────────────────────────────────────────────────────────
   const filtered = data.filter((item) => {
-    const matchRole   = !filters.role   || item.role.toUpperCase() === filters.role.toUpperCase();
+    const matchRole =
+      !filters.role || item.role.toUpperCase() === filters.role.toUpperCase();
     const matchStatus = !filters.status || item.uiStatus === filters.status;
-    const matchName   = !filters.name   || item.name.toLowerCase().includes(filters.name.toLowerCase());
+    const matchName =
+      !filters.name ||
+      item.name.toLowerCase().includes(filters.name.toLowerCase());
     return matchRole && matchStatus && matchName;
   });
 
-  const totalPages   = Math.ceil(filtered.length / itemsPerPage);
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const indexOfFirst = (currentPage - 1) * itemsPerPage;
-  const indexOfLast  = indexOfFirst + itemsPerPage;
-  const currentData  = filtered.slice(indexOfFirst, indexOfLast);
+  const indexOfLast = indexOfFirst + itemsPerPage;
+  const currentData = filtered.slice(indexOfFirst, indexOfLast);
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-blue-900">Verification</h2>
@@ -191,8 +202,13 @@ export default function Verification() {
                 </tr>
               ) : (
                 currentData.map((item) => (
-                  <tr key={item.id} className="border-t hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-medium text-gray-700">{item.name}</td>
+                  <tr
+                    key={item.id}
+                    className="border-t hover:bg-gray-50 transition"
+                  >
+                    <td className="px-4 py-3 font-medium text-gray-700">
+                      {item.name}
+                    </td>
 
                     {/* Display role in title-case for readability */}
                     <td className="px-4 text-gray-600">
@@ -212,7 +228,7 @@ export default function Verification() {
                     <td className="px-4">
                       <span
                         className={`px-3 py-1 text-xs rounded-full font-medium ${getStatusStyle(
-                          item.uiStatus
+                          item.uiStatus,
                         )}`}
                       >
                         {item.uiStatus}
@@ -246,8 +262,7 @@ export default function Verification() {
         {!loading && (
           <div className="flex justify-between items-center px-4 py-3 border-t text-sm">
             <p className="text-gray-500">
-              Showing{" "}
-              {filtered.length === 0 ? 0 : indexOfFirst + 1}–
+              Showing {filtered.length === 0 ? 0 : indexOfFirst + 1}–
               {Math.min(indexOfLast, filtered.length)} of {filtered.length}
             </p>
             <div className="flex gap-2">

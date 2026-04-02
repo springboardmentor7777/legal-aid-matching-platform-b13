@@ -4,6 +4,8 @@ import com.milestone.backend.entity.User;
 import com.milestone.backend.repository.UserRepository;
 import com.milestone.backend.dto.ProfileResponseDto;
 import com.milestone.backend.dto.ProfileUpdateDto;
+import com.milestone.backend.dto.VerificationDto;
+
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -118,11 +120,12 @@ public class ProfileServiceImpl implements ProfileService {
             dto.setName(user.getName());
             dto.setEmail(user.getEmail());
             dto.setRole(user.getRole().name());
-            
+
             // (UPDATED for Boolean wrapper) Ensure the frontend sees the status!
-            // Note: If your DTO expects a primitive boolean, keep it as setVerified. 
-            // If the DTO expects a Boolean object, make sure the DTO has it defined properly.
-            dto.setVerified(user.getIsVerified() != null ? user.getIsVerified() : false); 
+            // Note: If your DTO expects a primitive boolean, keep it as setVerified.
+            // If the DTO expects a Boolean object, make sure the DTO has it defined
+            // properly.
+            dto.setVerified(user.getIsVerified() != null ? user.getIsVerified() : false);
 
             // Map Lawyer specifics if they exist
             if (user.getRole() == Role.LAWYER && user.getLawyerProfile() != null) {
@@ -140,5 +143,32 @@ public class ProfileServiceImpl implements ProfileService {
 
             return dto;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<VerificationDto> getPendingProfiles() {
+        return userRepository.findPendingVerifications().stream()
+                .map(user -> new VerificationDto(
+                        user.getId(),
+                        user.getName(),
+                        user.getRole(),
+                        user.getIsVerified()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> updateVerificationStatus(Long id, Boolean status) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setIsVerified(status);
+        userRepository.save(user);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", status ? "Profile Verified Successfully" : "Profile Rejected");
+        response.put("id", id);
+        response.put("newStatus", status);
+        return response;
     }
 }

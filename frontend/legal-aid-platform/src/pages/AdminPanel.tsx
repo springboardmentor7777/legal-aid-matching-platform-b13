@@ -37,8 +37,8 @@ export default function AdminPanel() {
         return <ProfileManagement />;
       case "cases":
         return <CaseSubmission />;
-      case "directory":
-        return <Directory />;
+      // case "directory":
+      //   return <Directory />;
       case "matches":
         return <Matches />;
       case "impact":
