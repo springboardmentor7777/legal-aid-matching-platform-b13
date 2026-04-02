@@ -20,18 +20,25 @@ interface Props {
 const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
   const [query, setQuery] = useState("");
 
-  // ✅ Remove duplicates (based on matchId)
+  //  Remove duplicates (based on matchId)
+ // Remove duplicates (based on the user's name instead of matchId)
   const uniqueUsers = useMemo(() => {
-    const map = new Map<number, MatchDTO>();
+    const map = new Map<string, MatchDTO>(); 
+    
     users.forEach((user) => {
-      if (!map.has(user.matchId)) {
-        map.set(user.matchId, user);
+      
+      const nameKey = user.displayName || "Unknown User"; 
+      
+      // Now it knows what nameKey is!
+      if (!map.has(nameKey)) {
+        map.set(nameKey, user);
       }
     });
+    
     return Array.from(map.values());
   }, [users]);
 
-  // ✅ Filter based on search
+  //  Filter based on search
   const filteredUsers = useMemo(() => {
     return uniqueUsers.filter((u) =>
       (u.displayName || "")
@@ -43,7 +50,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
   return (
     <div className="flex flex-col h-full bg-white border-r">
       
-      {/* 🔍 Search Bar */}
+      {/*  Search Bar */}
       <div className="p-4">
         <input
           type="text"
@@ -56,7 +63,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
 
       <hr className="border-t border-blue-200 my-2" />
 
-      {/* 📋 Chat List */}
+      {/*  Chat List */}
       <div className="flex-1 overflow-y-auto">
         {filteredUsers.length === 0 ? (
           <div className="p-4 text-sm text-gray-400 text-center">
@@ -78,7 +85,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
                     {initial}
                   </div>
 
-                  {/* 📄 User Info */}
+                  {/*  User Info */}
                   <div className="overflow-hidden">
                     <div className="font-semibold text-blue-900 truncate">
                       {name}
