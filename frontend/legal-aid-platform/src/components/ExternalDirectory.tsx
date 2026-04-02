@@ -33,12 +33,15 @@ export default function ExternalDirectory() {
   const { user } = useAuth();
 
   async function fetchLawyers() {
-    const res = await fetch("http://localhost:8081/directory/external/lawyers", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.accessToken}`,
+    const res = await fetch(
+      "http://localhost:8081/directory/external/lawyers",
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.accessToken}`,
+        },
       },
-    });
+    );
     const data = await res.json();
     setLawyer(data);
   }
@@ -98,6 +101,17 @@ export default function ExternalDirectory() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      {user?.role === "CITIZEN" ? (
+        <Navbar
+          title="External Directory"
+          name={user.username}
+          role={user.role}
+          toggleSidebar={() => {}}
+        />
+      ) : (
+        <></>
+      )}
+
       {/* <Navbar
         title="External Directory"
         name={user?.username || ""}
@@ -161,9 +175,7 @@ export default function ExternalDirectory() {
                     <Badge text={ngo.isVerified} />
                   </div>
 
-                  <p className="text-sm text-gray-500 mb-1">
-                    📧 {ngo.email}
-                  </p>
+                  <p className="text-sm text-gray-500 mb-1">📧 {ngo.email}</p>
                   <p className="text-sm">
                     <span className="font-medium">Organization:</span>{" "}
                     {ngo.organizationName}

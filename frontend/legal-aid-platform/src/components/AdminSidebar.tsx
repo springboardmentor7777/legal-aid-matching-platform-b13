@@ -26,12 +26,12 @@ const AdminSidebar: React.FC<Props> = ({ active, setActive }) => {
         <span className={linkClass("cases")} onClick={() => setActive("cases")}>
           Case Submission
         </span>
-        <span className={linkClass("directory")} onClick={() => setActive("directory")}>
+        {/* <span className={linkClass("directory")} onClick={() => setActive("directory")}>
           Directory
-        </span>
-        <span className={linkClass("matches")} onClick={() => setActive("matches")}>
+        </span> */}
+        {/* <span className={linkClass("matches")} onClick={() => setActive("matches")}>
           Matches
-        </span>
+        </span> */}
         <span className={linkClass("impact")} onClick={() => setActive("impact")}>
           Impact Dashboard
         </span>
