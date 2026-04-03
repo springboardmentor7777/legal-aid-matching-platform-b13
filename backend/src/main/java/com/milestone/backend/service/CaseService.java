@@ -284,11 +284,10 @@ public class CaseService {
             .findByCaseIdAndUserId(id, user.getId())
             .orElseThrow(() -> new RuntimeException("No match found for this case"));
 
-    // ❌ Already handled
-    if (match.getStatus() != MatchStatus.PENDING) {
+    //  Allow the lawyer to accept if it is PENDING (new) or INTERESTED (Citizen accepted)
+    if (match.getStatus() != MatchStatus.PENDING && match.getStatus() != MatchStatus.INTERESTED) {
         throw new RuntimeException("This case is no longer available");
     }
-
     // ✅ Accept match
     match.setStatus(MatchStatus.ACCEPTED);
 
