@@ -21,7 +21,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public List<NotificationResponseDto> getAllNotifications(User user) {
         List<Notification> notifications = notificationRepository.findByUser_IdOrderByCreatedAtDesc(user.getId());
-        
+
         return notifications.stream()
                 .map(n -> new NotificationResponseDto(
                         n.getId(),
@@ -32,8 +32,7 @@ public class NotificationServiceImpl implements NotificationService {
                         n.getReferenceType(),
                         n.getPriority(),
                         n.isRead(),
-                        n.getCreatedAt()
-                ))
+                        n.getCreatedAt()))
                 .collect(Collectors.toList());
     }
 
@@ -41,40 +40,42 @@ public class NotificationServiceImpl implements NotificationService {
     public Map<Long, Boolean> UpdateIsRead(long id, boolean isRead) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found with ID: " + id));
-        
+
         notification.setRead(isRead);
         notificationRepository.save(notification);
-        
+
         Map<Long, Boolean> response = new HashMap<>();
         response.put(notification.getId(), notification.isRead());
         return response;
     }
 
     // @Override
-    // public void createNotification(User user, String title, String message, String type, 
-    //                                 Long referenceId, String referenceType, String priority) {
-    //     Notification notification = new Notification();
-    //     notification.setUser(user);
-    //     notification.setTitle(title);
-    //     notification.setMessage(message);
-    //     notification.setType(type);
-    //     notification.setReferenceId(referenceId);
-    //     notification.setReferenceType(referenceType);
-    //     notification.setPriority(priority != null ? priority : "NORMAL"); // Default priority
-    //     notification.setRead(false);
-        
-    //     notificationRepository.save(notification);
+    // public void createNotification(User user, String title, String message,
+    // String type,
+    // Long referenceId, String referenceType, String priority) {
+    // Notification notification = new Notification();
+    // notification.setUser(user);
+    // notification.setTitle(title);
+    // notification.setMessage(message);
+    // notification.setType(type);
+    // notification.setReferenceId(referenceId);
+    // notification.setReferenceType(referenceType);
+    // notification.setPriority(priority != null ? priority : "NORMAL"); // Default
+    // priority
+    // notification.setRead(false);
+
+    // notificationRepository.save(notification);
     // }
     @Override
-public void createNotification(User user, String title, String message, String type, Long referenceId) {
-    Notification notification = new Notification();
-    notification.setUser(user);
-    notification.setTitle(title);
-    notification.setMessage(message);
-    notification.setType(type);
-    notification.setReferenceId(referenceId);
-    notification.setReferenceType("APPOINTMENT");
-    notification.setRead(false);
-    notificationRepository.save(notification);
-}
+    public void createNotification(User user, String title, String message, String type, Long referenceId) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setType(type);
+        notification.setReferenceId(referenceId);
+        notification.setReferenceType("APPOINTMENT");
+        notification.setRead(false);
+        notificationRepository.save(notification);
+    }
 }

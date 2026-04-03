@@ -24,6 +24,7 @@ public class ChatService {
     private final ChatRepository chatRepo;
     private final MatchRepository matchRepo;
     private final UserRepository userRepo;
+    private final NotificationService notificationService;
 
     public List<ChatMessage> getChat(Long matchId, Long userId) {
 
@@ -75,10 +76,39 @@ public class ChatService {
 
         Chat savedChat = chatRepo.save(chat);
 
+        User prov = userRepo.findById(providerId)
+                .orElseThrow(() -> new RuntimeException("Provider not found"));
+        User cit = userRepo.findById(citizenId)
+                .orElseThrow(() -> new RuntimeException("Citizen not found"));
+
+       if(citizenId == currentSenderId) {
+            notificationService.createNotification(
+                    prov,
+                    "New message from citizen in your match",
+                    chat.getMessage(),
+                    "Message from: " + cit.getName(),
+                    match.getCaseEntity().getId()
+            );
+        } else {
+            notificationService.createNotification(
+                    cit,
+                    "New message from provider in your match",
+                    chat.getMessage(),
+                    "Message from: " + prov.getName(),
+                    match.getCaseEntity().getId()
+            );
+        }
+ 
+
         return toDTO(savedChat);
     }
 
     private ChatMessage toDTO(Chat chat) {
+        // notificationService.createNotification(
+        //         chat.getMatch().getCaseEntity().getUser().getId(),
+        //         "New message in your match",
+        //         "/matches/" + chat.getMatch().getId()
+        // );
         return new ChatMessage(
                 chat.getId(),
                 chat.getMatch().getId(),
