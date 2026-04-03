@@ -17,7 +17,7 @@ const NotificationItem: React.FC<Props> = ({ notification, onToggleRead }) => {
       <p className="text-sm">{notification.message}</p>
 
       <span className="text-xs text-gray-500">
-        {notification.createdAt}
+        {notification.type}
       </span>
 
     </div>
