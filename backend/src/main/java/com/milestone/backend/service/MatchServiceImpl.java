@@ -318,6 +318,7 @@ public class MatchServiceImpl implements MatchService {
         MatchResponse response = new MatchResponse();
         response.setMatchId(match.getId());
         response.setCaseId(match.getCaseId());
+        response.setCasetitle(match.getCaseEntity().getTitle());
         response.setUserId(match.getUserId());
         response.setScore(match.getScore());
         response.setStatus(match.getStatus().name());

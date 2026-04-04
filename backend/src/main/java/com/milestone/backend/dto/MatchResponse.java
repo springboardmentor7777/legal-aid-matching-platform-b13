@@ -7,6 +7,7 @@ public class MatchResponse {
     private Long userId;
     private Double score;
     private String status;
+    private String casetitle;
 
     // ADDED THESE THREE FIELDS FOR THE FRONTEND
     private String providerName;
@@ -86,4 +87,13 @@ public class MatchResponse {
     public String getProviderEmail() {
         return providerEmail;
     }
+
+    public String getCasetitle() {
+        return casetitle;
+    }
+
+    public void setCasetitle(String casetitle) {
+        this.casetitle = casetitle;
+    }
+
 }
