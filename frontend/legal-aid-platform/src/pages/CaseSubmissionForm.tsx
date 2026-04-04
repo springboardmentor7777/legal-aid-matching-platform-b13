@@ -33,7 +33,7 @@ interface CaseFormData {
 
   // STEP 3 - EVIDENCE
   firNumber: string;
-  firFile?: File | null;
+  firFile?: File | null | any;
   legalDocuments?: File | null;
   attachment?: File | null;
   additionalNotes?: string;

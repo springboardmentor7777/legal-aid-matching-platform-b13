@@ -1,5 +1,5 @@
 import React from "react";
-import type { Role }  from "../pages/Dashboard";
+import type { Role } from "../pages/Dashboard";
 import { useNavigate } from "react-router";
 
 interface SidebarProps {
@@ -38,17 +38,17 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
       <hr className="border-t border-blue-200 my-4" />
       <ul className="p-4 space-y-3 lg:space-y-0 lg:flex lg:flex-col lg:space-x-0">
         <li
-              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
-              onClick={() => navigate("/dashboard")}
-            >
-              Home
-            </li>
+          className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
+          onClick={() => navigate("/dashboard")}
+        >
+          Home
+        </li>
         <li
-              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
-              onClick={() => navigate("/pages/SupportPage")}
-            >
-              Support
-            </li>
+          className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
+          onClick={() => navigate("/pages/SupportPage")}
+        >
+          Support
+        </li>
       </ul>
       {/* <hr className="bg-gray-200 border-sm" /> */}
       <hr className="border-t border-blue-200 my-4" />
@@ -61,12 +61,18 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
             >
               File a Case
             </li>
-            <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={()=> navigate("/mycases")}>
+            <li
+              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
+              onClick={() => navigate("/mycases")}
+            >
               View Filed Cases
             </li>
-            <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={()=> navigate("/pages/MatchingResult")}>
+            <li
+              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2"
+              onClick={() => navigate("/pages/MatchingResult")}
+            >
               Matching Result
-              </li>
+            </li>
             {/*<li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/lawyers">Lawyers Directory</a>
             </li>
@@ -76,28 +82,20 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/external">External Directory</a>
             </li>
+            <li
+              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3"
+              onClick={() => {
+                //localStorage.clear();
+                navigate("/chatpage");
+              }}
+            >
+              Secure Chat
+            </li>
           </>
         )}
       </ul>
-      <ul className="p-4 space-y-3 lg:space-y-0 lg:flex lg:flex-col lg:space-x-0">
-        <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={() => {
-          //localStorage.clear();
-          navigate("/chatpage");
-        }}>
-          Secure Chat
-        </li>
-       {/* <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2" onClick={() => {
-          //localStorage.clear();
-
-          navigate("/pages/AppointmentScheduler/4");
-        }}>
-          Appointment Scheduler
-        </li>*/}
-      </ul>
-      
     </aside>
   );
 };
 
 export default Sidebar;
-

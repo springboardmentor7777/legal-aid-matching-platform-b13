@@ -10,6 +10,8 @@ interface MatchDTO {
   providerPhone?: string;
   clientPhone?: string;
   providerType?: string;
+  status?: string;
+  casetitle?: string;
 }
 
 interface Props {
@@ -24,7 +26,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
   const uniqueUsers = useMemo(() => {
     const map = new Map<number, MatchDTO>();
     users.forEach((user) => {
-      if (!map.has(user.matchId)) {
+      if (!map.has(user.matchId) && user.status === "ACCEPTED") {
         map.set(user.matchId, user);
       }
     });
@@ -84,7 +86,7 @@ const ChatList: React.FC<Props> = ({ users, setSelectedUser }) => {
                       {name}
                     </div>
                     <div className="text-sm text-gray-500">
-                      Click to start chat
+                      Chat regarding {user.casetitle || "case"}
                     </div>
                   </div>
                 </div>

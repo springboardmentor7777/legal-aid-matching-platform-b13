@@ -59,7 +59,9 @@ const Dashboard: React.FC = () => {
   // AFTER:   A proper modal with a textarea, disabled submit until reason is typed.
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [appointmentToCancel, setAppointmentToCancel] = useState<number | null>(null);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<number | null>(
+    null,
+  );
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
@@ -77,7 +79,10 @@ const Dashboard: React.FC = () => {
         const res = await fetch("http://localhost:8081/cases/my", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) { setCases([]); return; }
+        if (!res.ok) {
+          setCases([]);
+          return;
+        }
         const data = await res.json();
         setCases(Array.isArray(data) ? data : []);
       } catch {
@@ -90,7 +95,10 @@ const Dashboard: React.FC = () => {
         const res = await fetch("http://localhost:8081/cases/assigned", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) { setAssignedCases([]); return; }
+        if (!res.ok) {
+          setAssignedCases([]);
+          return;
+        }
         const data = await res.json();
         setAssignedCases(Array.isArray(data) ? data : []);
       } catch {
@@ -112,14 +120,17 @@ const Dashboard: React.FC = () => {
         const res = await fetch("http://localhost:8081/matches/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) { setPendingCases([]); return; }
+        if (!res.ok) {
+          setPendingCases([]);
+          return;
+        }
         const data = await res.json();
         const pending = Array.isArray(data)
           ? data
               .filter((m: any) => m.status === "INTERESTED")
               .map((m: any) => ({
                 id: m.caseId,
-                matchId: m.matchId,        // needed for reject endpoint
+                matchId: m.matchId, // needed for reject endpoint
                 title: m.caseTitle || `Case #${m.caseId}`,
                 description: m.clientName ? `Client: ${m.clientName}` : "",
                 status: m.status,
@@ -136,7 +147,10 @@ const Dashboard: React.FC = () => {
         const res = await fetch("http://localhost:8081/cases/resolved", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) { setResolvedCases([]); return; }
+        if (!res.ok) {
+          setResolvedCases([]);
+          return;
+        }
         const data = await res.json();
         setResolvedCases(Array.isArray(data) ? data : []);
       } catch {
@@ -149,7 +163,10 @@ const Dashboard: React.FC = () => {
         const res = await fetch("http://localhost:8081/appointments/my", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) { setAppointments([]); return; }
+        if (!res.ok) {
+          setAppointments([]);
+          return;
+        }
         const data = await res.json();
         setAppointments(Array.isArray(data) ? data : []);
       } catch {
@@ -177,9 +194,15 @@ const Dashboard: React.FC = () => {
     try {
       const res = await fetch(`http://localhost:8081/cases/${id}/accept`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
-      if (!res.ok) { alert("Failed to accept case. Please try again."); return; }
+      if (!res.ok) {
+        alert("Failed to accept case. Please try again.");
+        return;
+      }
       setPendingCases((prev) => prev.filter((c) => c.id !== id));
       const assignedRes = await fetch("http://localhost:8081/cases/assigned", {
         headers: { Authorization: `Bearer ${token}` },
@@ -214,10 +237,16 @@ const Dashboard: React.FC = () => {
       // Step 2: Record the decline reason on the case entity
       const res = await fetch(`http://localhost:8081/cases/${id}/decline`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ reason }),
       });
-      if (!res.ok) { alert("Failed to decline case. Please try again."); return; }
+      if (!res.ok) {
+        alert("Failed to decline case. Please try again.");
+        return;
+      }
       setPendingCases((prev) => prev.filter((c) => c.id !== id));
     } catch {
       alert("Failed to decline case. Please try again.");
@@ -231,14 +260,17 @@ const Dashboard: React.FC = () => {
   // so the UI reflects the change without a full page refresh.
   const handleConfirmAppointment = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8081/appointments/${id}/confirm`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `http://localhost:8081/appointments/${id}/confirm`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       if (!res.ok) throw new Error();
       // Optimistically update status in local state
       setAppointments((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, status: "CONFIRMED" } : a))
+        prev.map((a) => (a.id === id ? { ...a, status: "CONFIRMED" } : a)),
       );
     } catch {
       alert("Failed to confirm appointment. Please try again.");
@@ -263,17 +295,23 @@ const Dashboard: React.FC = () => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8081/appointments/${appointmentToCancel}/cancel`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ reason: cancelReason }),
-      });
+      const res = await fetch(
+        `http://localhost:8081/appointments/${appointmentToCancel}/cancel`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reason: cancelReason }),
+        },
+      );
       if (!res.ok) throw new Error();
       // Optimistically update status in local state
       setAppointments((prev) =>
         prev.map((a) =>
-          a.id === appointmentToCancel ? { ...a, status: "CANCELLED" } : a
-        )
+          a.id === appointmentToCancel ? { ...a, status: "CANCELLED" } : a,
+        ),
       );
     } catch {
       alert("Failed to decline appointment. Please try again.");
@@ -293,26 +331,33 @@ const Dashboard: React.FC = () => {
   // BEFORE:  Appointments were a flat list with no status-based grouping.
   // AFTER:   pendingAppointments → shown with Confirm/Decline buttons
   //          confirmedAppointments → shown as a read-only confirmed list
-  const pendingAppointments = appointments.filter((a) => a.status === "PENDING_CONFIRMATION");
-  const confirmedAppointments = appointments.filter((a) => a.status === "CONFIRMED");
+  const pendingAppointments = appointments.filter(
+    (a) => a.status === "PENDING_CONFIRMATION",
+  );
+  const confirmedAppointments = appointments.filter(
+    (a) => a.status === "CONFIRMED",
+  );
 
   // CHANGED: Helper to render a colour-coded status badge.
   // BEFORE:  No status badge existed.
   const statusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      PENDING_CONFIRMATION: "bg-amber-100 text-amber-700 border border-amber-300",
-      CONFIRMED:            "bg-green-100 text-green-700 border border-green-300",
-      CANCELLED:            "bg-red-100   text-red-600   border border-red-300",
-      SCHEDULED:            "bg-blue-100  text-blue-700  border border-blue-300",
+      PENDING_CONFIRMATION:
+        "bg-amber-100 text-amber-700 border border-amber-300",
+      CONFIRMED: "bg-green-100 text-green-700 border border-green-300",
+      CANCELLED: "bg-red-100   text-red-600   border border-red-300",
+      SCHEDULED: "bg-blue-100  text-blue-700  border border-blue-300",
     };
     const labels: Record<string, string> = {
       PENDING_CONFIRMATION: "Awaiting Confirmation",
-      CONFIRMED:            "Confirmed",
-      CANCELLED:            "Cancelled",
-      SCHEDULED:            "Scheduled",
+      CONFIRMED: "Confirmed",
+      CANCELLED: "Cancelled",
+      SCHEDULED: "Scheduled",
     };
     return (
-      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] ?? "bg-gray-100 text-gray-600"}`}>
+      <span
+        className={`text-xs px-2 py-0.5 rounded-full font-medium ${styles[status] ?? "bg-gray-100 text-gray-600"}`}
+      >
         {labels[status] ?? status}
       </span>
     );
@@ -322,14 +367,16 @@ const Dashboard: React.FC = () => {
     <>
       <PageTitle title="Dashboard - Legal Aid Matching Platform" />
       <div className="flex min-h-screen bg-blue-50">
-
         {/* UNCHANGED: Sidebar */}
         <div className="hidden lg:block w-64">
-          <Sidebar role={user.role as Role} isOpen={true} toggleSidebar={() => {}} />
+          <Sidebar
+            role={user.role as Role}
+            isOpen={true}
+            toggleSidebar={() => {}}
+          />
         </div>
 
         <div className="flex-1 flex flex-col">
-
           {/* UNCHANGED: Navbar */}
           <Navbar
             title="Dashboard"
@@ -339,7 +386,6 @@ const Dashboard: React.FC = () => {
           />
 
           <main className="px-6 py-6 flex-1">
-
             {/* UNCHANGED: Welcome banner */}
             <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100 mb-6">
               <h1 className="text-2xl font-bold text-blue-900">
@@ -351,16 +397,28 @@ const Dashboard: React.FC = () => {
             {user.role === "CITIZEN" && (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-6">
                 <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
-                  <h3 className="text-sm font-semibold text-blue-900">Total Cases</h3>
-                  <p className="text-3xl font-bold text-blue-700 mt-3">{totalCases}</p>
+                  <h3 className="text-sm font-semibold text-blue-900">
+                    Total Cases
+                  </h3>
+                  <p className="text-3xl font-bold text-blue-700 mt-3">
+                    {totalCases}
+                  </p>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
-                  <h3 className="text-sm font-semibold text-blue-900">Submitted Cases</h3>
-                  <p className="text-3xl font-bold text-blue-700 mt-3">{submittedCases}</p>
+                  <h3 className="text-sm font-semibold text-blue-900">
+                    Submitted Cases
+                  </h3>
+                  <p className="text-3xl font-bold text-blue-700 mt-3">
+                    {submittedCases}
+                  </p>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-md border border-blue-100">
-                  <h3 className="text-sm font-semibold text-blue-900">Matched Cases</h3>
-                  <p className="text-3xl font-bold text-blue-700 mt-3">{matchedCases}</p>
+                  <h3 className="text-sm font-semibold text-blue-900">
+                    Matched Cases
+                  </h3>
+                  <p className="text-3xl font-bold text-blue-700 mt-3">
+                    {matchedCases}
+                  </p>
                 </div>
               </div>
             )}
@@ -373,46 +431,69 @@ const Dashboard: React.FC = () => {
                     badge when there are pending requests. 
                     BEFORE: No active-border highlight; no pending badge. */}
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-
                   <div
                     onClick={() => setActiveSection("ASSIGNED")}
                     className={`bg-white p-6 rounded-2xl shadow-md border cursor-pointer transition-all hover:shadow-lg ${
-                      activeSection === "ASSIGNED" ? "border-blue-500" : "border-blue-100"
+                      activeSection === "ASSIGNED"
+                        ? "border-blue-500"
+                        : "border-blue-100"
                     }`}
                   >
-                    <h3 className="text-sm font-semibold text-blue-900">Assigned Cases</h3>
-                    <p className="text-3xl font-bold text-blue-700 mt-3">{assignedCases.length}</p>
+                    <h3 className="text-sm font-semibold text-blue-900">
+                      Assigned Cases
+                    </h3>
+                    <p className="text-3xl font-bold text-blue-700 mt-3">
+                      {assignedCases.length}
+                    </p>
                   </div>
 
                   <div
                     onClick={() => setActiveSection("PENDING")}
                     className={`bg-white p-6 rounded-2xl shadow-md border cursor-pointer transition-all hover:shadow-lg ${
-                      activeSection === "PENDING" ? "border-blue-500" : "border-blue-100"
+                      activeSection === "PENDING"
+                        ? "border-blue-500"
+                        : "border-blue-100"
                     }`}
                   >
-                    <h3 className="text-sm font-semibold text-blue-900">Pending Requests</h3>
-                    <p className="text-3xl font-bold text-blue-700 mt-3">{pendingCases.length}</p>
+                    <h3 className="text-sm font-semibold text-blue-900">
+                      Pending Requests
+                    </h3>
+                    <p className="text-3xl font-bold text-blue-700 mt-3">
+                      {pendingCases.length}
+                    </p>
                   </div>
 
                   <div
                     onClick={() => setActiveSection("RESOLVED")}
                     className={`bg-white p-6 rounded-2xl shadow-md border cursor-pointer transition-all hover:shadow-lg ${
-                      activeSection === "RESOLVED" ? "border-blue-500" : "border-blue-100"
+                      activeSection === "RESOLVED"
+                        ? "border-blue-500"
+                        : "border-blue-100"
                     }`}
                   >
-                    <h3 className="text-sm font-semibold text-blue-900">Resolved Cases</h3>
-                    <p className="text-3xl font-bold text-blue-700 mt-3">{resolvedCases.length}</p>
+                    <h3 className="text-sm font-semibold text-blue-900">
+                      Resolved Cases
+                    </h3>
+                    <p className="text-3xl font-bold text-blue-700 mt-3">
+                      {resolvedCases.length}
+                    </p>
                   </div>
 
                   {/* CHANGED: Added pending appointments badge to the card */}
                   <div
                     onClick={() => setActiveSection("APPOINTMENTS")}
                     className={`bg-white p-6 rounded-2xl shadow-md border cursor-pointer transition-all hover:shadow-lg ${
-                      activeSection === "APPOINTMENTS" ? "border-blue-500" : "border-blue-100"
+                      activeSection === "APPOINTMENTS"
+                        ? "border-blue-500"
+                        : "border-blue-100"
                     }`}
                   >
-                    <h3 className="text-sm font-semibold text-blue-900">Scheduled Appointments</h3>
-                    <p className="text-3xl font-bold text-blue-700 mt-3">{appointments.length}</p>
+                    <h3 className="text-sm font-semibold text-blue-900">
+                      Scheduled Appointments
+                    </h3>
+                    <p className="text-3xl font-bold text-blue-700 mt-3">
+                      {appointments.length}
+                    </p>
                     {/* CHANGED: Badge only appears when there are pending confirmations */}
                     {pendingAppointments.length > 0 && (
                       <p className="text-xs text-amber-600 font-semibold mt-1">
@@ -420,15 +501,19 @@ const Dashboard: React.FC = () => {
                       </p>
                     )}
                   </div>
-
                 </div>
 
                 {/* UNCHANGED: Assigned cases section */}
                 {activeSection === "ASSIGNED" &&
                   assignedCases.map((c) => (
-                    <div key={c.id} className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50">
+                    <div
+                      key={c.id}
+                      className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50"
+                    >
                       <h3 className="font-semibold text-gray-800">{c.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">{c.description}</p>
+                      <p className="text-gray-500 text-sm mt-1">
+                        {c.description}
+                      </p>
                       <button
                         onClick={() => navigate(`/case/${c.id}`)}
                         className="mt-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -454,16 +539,21 @@ const Dashboard: React.FC = () => {
                 {/* UNCHANGED: Pending case requests section */}
                 {activeSection === "PENDING" &&
                   pendingCases.map((c) => (
-                    <div key={c.id} className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50">
+                    <div
+                      key={c.id}
+                      className="bg-white p-4 mb-3 rounded-xl shadow border border-blue-50"
+                    >
                       <h3 className="font-semibold text-gray-800">{c.title}</h3>
-                      <p className="text-gray-500 text-sm mt-1">{c.description}</p>
+                      <p className="text-gray-500 text-sm mt-1">
+                        {c.description}
+                      </p>
                       <div className="flex gap-3 mt-3">
                         <button
-                        onClick={() => navigate(`/case/${c.id}`)}
-                        className="mt-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                      >
-                        View Details
-                      </button>
+                          onClick={() => navigate(`/case/${c.id}`)}
+                          className="mt-3 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                        >
+                          View Details
+                        </button>
                         <button
                           onClick={() => handleAccept(c.id)}
                           className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors"
@@ -490,13 +580,13 @@ const Dashboard: React.FC = () => {
                             2. "Confirmed Appointments" — green cards, read-only. */}
                 {activeSection === "APPOINTMENTS" && (
                   <div className="space-y-4">
-
                     {/* Sub-section 1: Pending confirmation */}
                     {pendingAppointments.length > 0 && (
                       <div>
                         <h2 className="text-base font-bold text-amber-700 mb-3 flex items-center gap-2">
                           <span className="inline-block w-2 h-2 rounded-full bg-amber-500" />
-                          Awaiting Your Confirmation ({pendingAppointments.length})
+                          Awaiting Your Confirmation (
+                          {pendingAppointments.length})
                         </h2>
 
                         {pendingAppointments.map((a) => (
@@ -511,11 +601,12 @@ const Dashboard: React.FC = () => {
                                 </p>
                                 <p className="text-sm text-gray-500 mt-1">
                                   📅 {a.appointmentDate || a.date}
-                                  &nbsp;·&nbsp;
-                                  🕐 {a.appointmentTime || a.time}
+                                  &nbsp;·&nbsp; 🕐 {a.appointmentTime || a.time}
                                 </p>
                                 {a.notes && (
-                                  <p className="text-xs text-gray-400 mt-1 italic">{a.notes}</p>
+                                  <p className="text-xs text-gray-400 mt-1 italic">
+                                    {a.notes}
+                                  </p>
                                 )}
                               </div>
                               {statusBadge(a.status)}
@@ -546,7 +637,8 @@ const Dashboard: React.FC = () => {
                       <div>
                         <h2 className="text-base font-bold text-green-700 mb-3 flex items-center gap-2">
                           <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                          Confirmed Appointments ({confirmedAppointments.length})
+                          Confirmed Appointments ({confirmedAppointments.length}
+                          )
                         </h2>
 
                         {confirmedAppointments.map((a) => (
@@ -561,12 +653,15 @@ const Dashboard: React.FC = () => {
                                 </p>
                                 <p className="text-sm text-gray-500 mt-1">
                                   📅 {a.appointmentDate || a.date}
-                                  &nbsp;·&nbsp;
-                                  🕐 {a.appointmentTime || a.time}
-                                  {a.callDuration && <>&nbsp;·&nbsp; ⏱ {a.callDuration}</>}
+                                  &nbsp;·&nbsp; 🕐 {a.appointmentTime || a.time}
+                                  {a.callDuration && (
+                                    <>&nbsp;·&nbsp; ⏱ {a.callDuration}</>
+                                  )}
                                 </p>
                                 {a.zone && (
-                                  <p className="text-xs text-gray-400 mt-1">Timezone: {a.zone}</p>
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    Timezone: {a.zone}
+                                  </p>
                                 )}
                               </div>
                               {statusBadge(a.status)}
@@ -577,14 +672,14 @@ const Dashboard: React.FC = () => {
                     )}
 
                     {appointments.length === 0 && (
-                      <p className="text-gray-400 text-sm text-center py-8">No appointments yet.</p>
+                      <p className="text-gray-400 text-sm text-center py-8">
+                        No appointments yet.
+                      </p>
                     )}
                   </div>
                 )}
-
               </>
             )}
-
           </main>
 
           {/* UNCHANGED: Footer */}
@@ -604,7 +699,9 @@ const Dashboard: React.FC = () => {
       {cancelModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold text-gray-800 mb-1">Decline Appointment</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-1">
+              Decline Appointment
+            </h2>
             <p className="text-sm text-gray-500 mb-5">
               Please provide a reason. The citizen will be notified.
             </p>

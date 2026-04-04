@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Phone, Mail } from "lucide-react";
 import PageTitle from "../components/PageTitle";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../auth/AuthContext";
 
 const faqs = [
   {
@@ -27,13 +29,23 @@ const faqs = [
 export default function SupportPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
+  const {user} = useAuth();
+
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
     <><PageTitle title="Support - Legal Aid Matching Platform" />
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar
+          title="support"
+          name={user?.username || "admin"}
+          role={user?.role || "guest"}
+          toggleSidebar={() => {}}
+        />
+      </div>
+    <div className="min-h-screen bg-gray-50 p-6 mt-20">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-center">Support Center</h1>
 
