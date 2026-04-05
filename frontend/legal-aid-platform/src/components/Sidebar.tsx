@@ -82,17 +82,17 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isOpen, toggleSidebar }) => {
             <li className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3 lg:py-2">
               <a href="/directories/external">External Directory</a>
             </li>
-            <li
-              className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3"
-              onClick={() => {
-                //localStorage.clear();
-                navigate("/chatpage");
-              }}
-            >
-              Secure Chat
-            </li>
           </>
         )}
+        <li
+          className="p-2 rounded-md hover:bg-slate-700 cursor-pointer lg:hover:bg-blue-100 lg:px-3"
+          onClick={() => {
+            //localStorage.clear();
+            navigate("/chatpage");
+          }}
+        >
+          Secure Chat
+        </li>
       </ul>
     </aside>
   );

@@ -100,7 +100,7 @@ function App() {
       />
 
       {/* Optional: admin-only route */}
-      <Route path="/admin" element={<Admin />} />
+      
 
       <Route
         path="/submitcase"
