@@ -1,13 +1,11 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const API = axios.create({
-
-  
   baseURL: "http://localhost:8080",
   headers: {
     "Content-Type": "application/json",
   },
-
 });
 
 // Attach JWT automatically
@@ -15,7 +13,7 @@ API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
 
-    if (token ) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -24,25 +22,29 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle expired tokens
+// Global Error Handler with Toast Notifications
 API.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
+    const message = error.response?.data?.message || error.response?.data?.error || error.message;
 
-    if (status === 401 && window.location.pathname !== '/login') {
-      console.log("Token expired → logging out");
-
+    if (status === 401 && window.location.pathname !== "/login") {
+      toast.error("Session expired. Please log in again.", { id: "session-expired" });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
-      window.location.href = "/login";
-    }
-
-    // 🔥 Handle 403 (optional but useful)
-    if (status === 403) {
-      console.log("Access denied (403)");
-      alert("You are not allowed to perform this action");
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
+    } else if (status === 403) {
+      toast.error("Access denied. You don't have permission.", { id: "access-denied" });
+    } else if (status === 500) {
+      toast.error("Server error — please try again later.", { id: "server-error" });
+    } else if (status === 404) {
+      // 404 is often expected, don't toast globally
+      console.warn("Resource not found:", message);
+    } else if (!error.response) {
+      toast.error("Network error — check your connection.", { id: "network-error" });
     }
 
     return Promise.reject(error);

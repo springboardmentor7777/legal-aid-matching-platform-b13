@@ -30,4 +30,20 @@ public class NGOProfile {
 
     @Column(name = "contact_info")
     private String contactInfo;
+
+    private String state;
+
+    private String city;
+
+    @Column(columnDefinition = "TEXT")
+    private String focusAreas;
+
+    @Column(columnDefinition = "TEXT")
+    private String officeAddress;
+
+    @Column(name = "ngo_darpan_id")
+    private String ngoDarpanId;
+
+    @Column(name = "registration_cert_name")
+    private String registrationCertName;
 }

@@ -43,14 +43,20 @@ const RegisterPage = () => {
     }
     setLoading(true);
     try {
-await register({
-  username: formData.username,
-  email: formData.email,
-  password: formData.password,
-  role: formData.role
-});
-setSuccess('Registration successful! Redirecting to login...');
-      setTimeout(() => navigate('/login'), 2000);
+      const resData = await register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      });
+      const role = resData?.role || formData.role;
+      if (role === 'LAWYER' || role === 'NGO') {
+        setSuccess('Registration successful! Redirecting to onboarding...');
+        setTimeout(() => navigate('/onboarding'), 1500);
+      } else {
+        setSuccess('Registration successful! Redirecting to dashboard...');
+        setTimeout(() => navigate('/dashboard'), 1500);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

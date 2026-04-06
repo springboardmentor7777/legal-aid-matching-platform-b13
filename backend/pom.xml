@@ -48,6 +48,12 @@ https://maven.apache.org/xsd/maven-4.0.0.xsd">
         <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
+    <!-- Spring Boot Actuator (Health, Metrics, Monitoring) -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+
     <!-- PostgreSQL -->
     <dependency>
         <groupId>org.postgresql</groupId>

@@ -2,7 +2,6 @@ package com.legalmatch.backend.service;
 
 import com.legalmatch.backend.dto.LoginRequest;
 import com.legalmatch.backend.dto.RegisterRequest;
-import com.legalmatch.backend.service.AuthService;
 import com.legalmatch.backend.dto.AuthResponse;
 import com.legalmatch.backend.entity.User;
 import com.legalmatch.backend.repository.UserRepository;
@@ -37,8 +36,14 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthResponse(accessToken, refreshToken);
-
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .role(user.getRole().name())
+                .onboardingComplete(user.getOnboardingComplete() != null ? user.getOnboardingComplete() : false)
+                .build();
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -56,8 +61,16 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
-        return new AuthResponse(accessToken, refreshToken);
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .role(user.getRole().name())
+                .onboardingComplete(user.getOnboardingComplete() != null ? user.getOnboardingComplete() : false)
+                .build();
     }
+
     public AuthResponse refreshToken(String refreshToken) {
 
         String userEmail = jwtService.extractUsername(refreshToken);
@@ -80,9 +93,13 @@ public class AuthService {
         String newAccessToken = jwtService.generateToken(userDetails);
         String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
-        return new AuthResponse(newAccessToken, newRefreshToken);
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .role(user.getRole().name())
+                .onboardingComplete(user.getOnboardingComplete() != null ? user.getOnboardingComplete() : false)
+                .build();
     }
-
-
-
 }

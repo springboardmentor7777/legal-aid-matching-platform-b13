@@ -5,8 +5,8 @@ ALTER TABLE cases ADD COLUMN IF NOT EXISTS case_type VARCHAR(255);
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS urgency VARCHAR(50) DEFAULT 'MEDIUM';
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS location VARCHAR(255);
 
--- Copy old data if title/category exist
-UPDATE cases SET case_type = COALESCE(category, title, 'Other') WHERE case_type IS NULL;
+-- Copy old data if title exists
+UPDATE cases SET case_type = COALESCE(title, 'Other') WHERE case_type IS NULL;
 
 -- Make case_type NOT NULL after population
 ALTER TABLE cases ALTER COLUMN case_type SET NOT NULL;

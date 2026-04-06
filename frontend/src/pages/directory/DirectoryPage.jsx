@@ -52,8 +52,8 @@ const DirectoryPage = () => {
 
       const endpoint =
         roleFilter === 'Lawyer'
-          ? '/directory/lawyers'
-          : '/directory/ngos';
+          ? '/api/directory/lawyers'
+          : '/api/directory/ngos';
 
       const params = {
         page: currentPage - 1,
@@ -287,7 +287,7 @@ const DirectoryPage = () => {
             </div>
             <button
               type="submit"
-              className="px-6 py-3 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors"
+              className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-200"
             >
               Search
             </button>

@@ -32,6 +32,13 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(name = "onboarding_complete")
+    private Boolean onboardingComplete;
+
+    @Column(name = "suspended")
+    @Builder.Default
+    private Boolean suspended = false;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(() -> "ROLE_" + role.name());
@@ -49,7 +56,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return suspended == null || !suspended;
     }
 
     @Override
@@ -59,6 +66,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return suspended == null || !suspended;
     }
 }

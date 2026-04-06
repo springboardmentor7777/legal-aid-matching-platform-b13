@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MatchService {
 
+    private static final double MATCH_THRESHOLD = 50.0;
+
     private final MatchRepository matchRepository;
     private final CaseService caseService;
     private final UserRepository userRepository;
@@ -23,13 +25,13 @@ public class MatchService {
     private final NGOProfileRepository ngoRepository;
 
     /**
-     * Generate matches for a case
+     * Generate matches for a case — only saves matches with score >= 50%
      */
     public List<MatchResponse> generateMatches(Long caseId, String username) {
 
         Case legalCase = caseService.getCaseEntityById(caseId);
 
-        // ✅ Security check
+        // Security check
         if (!legalCase.getUser().getEmail().equals(username)) {
             throw new RuntimeException("You can only generate matches for your own cases");
         }
@@ -37,15 +39,15 @@ public class MatchService {
         List<MatchEntity> existingMatches = matchRepository.findByLegalCase(legalCase);
         List<MatchEntity> newMatches = new ArrayList<>();
 
-        // =========================
-        // 🔹 LAWYER MATCHING
-        // =========================
+        // ═══ LAWYER MATCHING ═══
         List<LawyerProfile> lawyers = lawyerRepository.findAll();
 
         for (LawyerProfile lp : lawyers) {
 
             double score = calculateLawyerScore(legalCase, lp);
-            if (score < 10) continue;
+
+            // ✅ THRESHOLD: Only save matches >= 50%
+            if (score < MATCH_THRESHOLD) continue;
 
             boolean alreadyExists = existingMatches.stream()
                     .anyMatch(m -> m.getProvider().getId().equals(lp.getUser().getId()));
@@ -72,15 +74,15 @@ public class MatchService {
             }
         }
 
-        // =========================
-        // 🔹 NGO MATCHING
-        // =========================
+        // ═══ NGO MATCHING ═══
         List<NGOProfile> ngos = ngoRepository.findAll();
 
         for (NGOProfile np : ngos) {
 
             double score = calculateNGOScore(legalCase, np);
-            if (score < 10) continue;
+
+            // ✅ THRESHOLD: Only save matches >= 50%
+            if (score < MATCH_THRESHOLD) continue;
 
             boolean alreadyExists = existingMatches.stream()
                     .anyMatch(m -> m.getProvider().getId().equals(np.getUser().getId()));
@@ -107,13 +109,13 @@ public class MatchService {
             }
         }
 
-        // ✅ Update case status ONLY if matches found
+        // Update case status ONLY if matches found
         if (!newMatches.isEmpty()) {
             legalCase.setStatus(CaseStatus.MATCHED);
             caseService.save(legalCase);
         }
 
-        // ✅ Return all matches (existing + new)
+        // Return all matches (existing + new)
         List<MatchEntity> allMatches = matchRepository.findByLegalCase(legalCase);
 
         return allMatches.stream()
@@ -122,7 +124,8 @@ public class MatchService {
     }
 
     /**
-     * 🔹 Lawyer scoring
+     * Lawyer scoring — max 100
+     * Expertise match: 40, Location match: 30, Verified: 20, Practice area overlap: 10
      */
     private double calculateLawyerScore(Case legalCase, LawyerProfile lp) {
 
@@ -130,56 +133,96 @@ public class MatchService {
 
         String caseType = safeLower(legalCase.getCaseType());
         String expertise = safeLower(lp.getExpertise());
+        String practiceAreas = safeLower(lp.getPracticeAreas());
 
+        // Primary expertise match
         if (expertise.contains(caseType) || caseType.contains(expertise)) {
             score += 40;
         }
 
+        // Practice areas comma-separated overlap
+        if (practiceAreas != null && !practiceAreas.isEmpty()) {
+            for (String area : practiceAreas.split(",")) {
+                if (caseType.contains(area.trim()) || area.trim().contains(caseType)) {
+                    score += 10;
+                    break;
+                }
+            }
+        }
+
+        // Location match (city/state)
         if (matchLocation(legalCase.getLocation(), lp.getLocation())) {
             score += 30;
+        }
+
+        // Jurisdiction state match
+        if (legalCase.getJurisdictionState() != null && lp.getState() != null) {
+            if (safeLower(legalCase.getJurisdictionState()).equals(safeLower(lp.getState()))) {
+                score += 10;
+            }
         }
 
         if (Boolean.TRUE.equals(lp.getVerified())) {
             score += 20;
         }
 
-        return score;
+        return Math.min(score, 100);
     }
 
     /**
-     * 🔹 NGO scoring
+     * NGO scoring — max 100
      */
     private double calculateNGOScore(Case legalCase, NGOProfile np) {
 
         double score = 0;
 
+        // Location match
         if (matchLocation(legalCase.getLocation(), np.getLocation())) {
-            score += 40;
+            score += 30;
+        }
+
+        // Jurisdiction state match
+        if (legalCase.getJurisdictionState() != null && np.getState() != null) {
+            if (safeLower(legalCase.getJurisdictionState()).equals(safeLower(np.getState()))) {
+                score += 10;
+            }
         }
 
         String caseType = safeLower(legalCase.getCaseType());
         String focus = safeLower(np.getFocusArea());
+        String focusAreas = safeLower(np.getFocusAreas());
 
+        // Primary focus area match
         if (caseType.contains(focus) || focus.contains(caseType)) {
             score += 30;
+        }
+
+        // Focus areas comma-separated overlap
+        if (focusAreas != null && !focusAreas.isEmpty()) {
+            for (String area : focusAreas.split(",")) {
+                if (caseType.contains(area.trim()) || area.trim().contains(caseType)) {
+                    score += 10;
+                    break;
+                }
+            }
         }
 
         if (Boolean.TRUE.equals(np.getVerified())) {
             score += 20;
         }
 
-        return score;
+        return Math.min(score, 100);
     }
 
     /**
-     * 🔹 Utility: safe lowercase
+     * Utility: safe lowercase
      */
     private String safeLower(String value) {
         return value != null ? value.toLowerCase() : "";
     }
 
     /**
-     * 🔹 Utility: location match
+     * Utility: location match
      */
     private boolean matchLocation(String loc1, String loc2) {
         if (loc1 == null || loc2 == null) return false;
@@ -259,7 +302,61 @@ public class MatchService {
     }
 
     /**
-     * 🔹 Authorization helper
+     * Get active (ACCEPTED) matches for a provider
+     */
+    public List<MatchResponse> getActiveMatches(String username) {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return matchRepository
+                .findByProviderAndStatusOrderByCreatedAtDesc(user, MatchStatus.ACCEPTED)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Update internal status and provider notes for a match
+     */
+    public MatchResponse manageMatch(Long matchId, String username, String internalStatus, String providerNotes) {
+        MatchEntity match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("Match not found"));
+
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Only the provider can manage a match
+        if (!match.getProvider().getId().equals(user.getId())) {
+            throw new RuntimeException("Only the assigned provider can manage this case");
+        }
+
+        // Only accepted matches can be managed
+        if (match.getStatus() != MatchStatus.ACCEPTED) {
+            throw new RuntimeException("Only accepted matches can be managed");
+        }
+
+        if (internalStatus != null) {
+            match.setInternalStatus(internalStatus);
+        }
+        if (providerNotes != null) {
+            match.setProviderNotes(providerNotes);
+        }
+
+        matchRepository.save(match);
+
+        // Notify citizen about status update
+        notificationService.createNotification(
+                match.getCitizen(),
+                "Case Update",
+                "Your provider updated the case status to: " + internalStatus,
+                "CASE_UPDATE"
+        );
+
+        return mapToResponse(match);
+    }
+
+    /**
+     * Authorization helper
      */
     private boolean isAuthorized(MatchEntity match, User user) {
         return match.getProvider().getId().equals(user.getId()) ||
@@ -267,7 +364,7 @@ public class MatchService {
     }
 
     /**
-     * Convert entity → DTO
+     * Convert entity → DTO (includes full case details for providers)
      */
     private MatchResponse mapToResponse(MatchEntity match) {
 
@@ -285,12 +382,14 @@ public class MatchService {
             location = np.getLocation();
         }
 
+        Case c = match.getLegalCase();
+
         return MatchResponse.builder()
                 .id(match.getId())
-                .caseId(match.getLegalCase().getId())
-                .caseType(match.getLegalCase().getCaseType())
-                .caseDescription(match.getLegalCase().getDescription())
-                .caseLocation(match.getLegalCase().getLocation())
+                .caseId(c.getId())
+                .caseType(c.getCaseType())
+                .caseDescription(c.getDescription())
+                .caseLocation(c.getLocation())
                 .citizenId(match.getCitizen().getId())
                 .citizenName(match.getCitizen().getUsername())
                 .providerId(match.getProvider().getId())
@@ -300,6 +399,20 @@ public class MatchService {
                 .matchScore(match.getMatchScore())
                 .status(match.getStatus().name())
                 .createdAt(match.getCreatedAt())
+                // Full case details for provider "View Full Case"
+                .whatHappened(c.getWhatHappened())
+                .opposingPartyName(c.getOpposingPartyName())
+                .desiredOutcome(c.getDesiredOutcome())
+                .hasUpcomingCourtDate(c.getHasUpcomingCourtDate())
+                .upcomingCourtDate(c.getUpcomingCourtDate())
+                .courtName(c.getCourtName())
+                .evidenceSummary(c.getEvidenceSummary())
+                .firDocumentName(c.getFirDocumentName())
+                .preferredLanguage(c.getPreferredLanguage())
+                .urgency(c.getUrgency())
+                .incidentDate(c.getIncidentDate())
+                .providerNotes(match.getProviderNotes())
+                .internalStatus(match.getInternalStatus())
                 .build();
     }
 }

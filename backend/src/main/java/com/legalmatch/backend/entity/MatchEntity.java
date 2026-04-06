@@ -48,6 +48,14 @@ public class MatchEntity {
     @Enumerated(EnumType.STRING)
     private MatchStatus status;
 
+    // 📝 Provider notes (sticky notes for case management)
+    @Column(name = "provider_notes", columnDefinition = "TEXT")
+    private String providerNotes;
+
+    // 🔄 Internal status tracking for providers
+    @Column(name = "internal_status")
+    private String internalStatus;
+
     // ⏱ Created time
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -58,6 +66,9 @@ public class MatchEntity {
         this.createdAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = MatchStatus.PENDING;
+        }
+        if (this.internalStatus == null) {
+            this.internalStatus = "Reviewing";
         }
     }
 }

@@ -1,1 +1,1 @@
-ALTER TABLE cases DROP COLUMN category;
+ALTER TABLE cases DROP COLUMN IF EXISTS category_id;

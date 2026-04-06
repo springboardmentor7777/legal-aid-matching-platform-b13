@@ -25,19 +25,26 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Submitting login:", formData);
+    setError("");
+    setIsLoading(true);
 
     try {
-      await login({
+      const userData = await login({
         email: formData.email,
         password: formData.password,
       });
 
-      navigate("/dashboard/citizen");
+      const role = userData?.role?.toUpperCase();
+      const onboardingDone = userData?.onboardingComplete;
+
+      if (role === "ADMIN") navigate("/admin");
+      else if ((role === "LAWYER" || role === "NGO") && !onboardingDone) navigate("/onboarding");
+      else navigate("/dashboard");
 
     } catch (err) {
       setError("Login failed. Please check your credentials.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,7 +138,7 @@ export default function Login() {
 
           {/* SOCIAL LOGIN (UI ONLY) */}
           <div className="flex gap-4">
-            <button className="w-1/2 border py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50">
+            <button type="button" className="w-1/2 border py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50">
               <img
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
                 alt="Google"
@@ -140,7 +147,7 @@ export default function Login() {
               Google
             </button>
 
-            <button className="w-1/2 border py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50">
+            <button type="button" className="w-1/2 border py-2 rounded-lg flex justify-center items-center gap-2 hover:bg-gray-50">
               <img
                 src="https://www.svgrepo.com/show/303128/apple-logo.svg"
                 alt="Apple"
@@ -162,4 +169,3 @@ export default function Login() {
     </div>
   );
 }
-

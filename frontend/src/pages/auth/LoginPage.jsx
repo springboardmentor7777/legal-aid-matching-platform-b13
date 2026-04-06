@@ -21,9 +21,21 @@ const LoginPage = () => {
           email,
           password
         });
-   const role = userData?.role?.toUpperCase();
-      if (role === 'ADMIN') navigate('/admin');
-      else navigate('/dashboard');
+        // Normalize: AuthContext already strips ROLE_ but be safe
+        let role = (userData?.role || '').toUpperCase();
+        if (role.startsWith('ROLE_')) role = role.substring(5);
+        const onboardingDone = userData?.onboardingComplete;
+
+        if (role === 'ADMIN') {
+          navigate('/admin');
+        } else if (role === 'CITIZEN') {
+          navigate('/dashboard');
+        } else if (role === 'LAWYER' || role === 'NGO') {
+          navigate(onboardingDone ? '/dashboard' : '/onboarding');
+        } else {
+          // Unknown role — never block, send to dashboard
+          navigate('/dashboard');
+        }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {

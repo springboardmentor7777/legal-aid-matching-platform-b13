@@ -31,4 +31,20 @@ public class LawyerProfile {
 
     @Column(name = "contact_info")
     private String contactInfo;
+
+    private String state;
+
+    private String city;
+
+    @Column(columnDefinition = "TEXT")
+    private String practiceAreas;
+
+    @Column(columnDefinition = "TEXT")
+    private String officeAddress;
+
+    @Column(name = "bar_council_license")
+    private String barCouncilLicense;
+
+    @Column(name = "license_document_name")
+    private String licenseDocumentName;
 }

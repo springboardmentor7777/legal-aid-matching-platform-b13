@@ -14,4 +14,7 @@ public interface NGOProfileRepository extends JpaRepository<NGOProfile, Long> {
 
     // Get all verified NGOs
     List<NGOProfile> findByVerifiedTrue();
+
+    // Get all unverified NGOs (pending verification)
+    List<NGOProfile> findByVerifiedFalseOrVerifiedIsNull();
 }

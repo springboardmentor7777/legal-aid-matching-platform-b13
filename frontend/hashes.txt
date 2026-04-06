@@ -1,0 +1,4 @@
+Admin@123=$2b$10$E8o5E6hUW8gmjA.zY.c2TOXpn50ZgDc/PJmtUujd7Pa.hNM4gE5Di
+Citizen@123=$2b$10$kIn2HVsDRQFlz5HvBapn4.rgqGmOuIuYOWpKeOFlgYuhMXE.7WhJW
+Lawyer@123=$2b$10$QbbWbWrOsYRSSrEiyk3BW.wcyU7M/SNVyaPUYJUkl9Ea1Toe2S2MG
+Ngo@123=$2b$10$fK905ketcpyQ7/yg81taqeBrODxDfYhPRguHoEzB4ikxAXwxNfYYy

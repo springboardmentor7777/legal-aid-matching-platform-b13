@@ -30,8 +30,15 @@ export default function Register() {
     setError("");
 
     try {
-      await register(formData);
-      navigate("/login");
+      const resData = await register(formData);
+      const role = resData?.role || formData.role;
+
+      // Route based on role — LAWYER/NGO to onboarding, CITIZEN to dashboard
+      if (role === "LAWYER" || role === "NGO") {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       setError(
         err.response?.data?.message ||

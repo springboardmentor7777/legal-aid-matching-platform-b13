@@ -21,4 +21,6 @@ public interface MatchRepository extends JpaRepository<MatchEntity, Long> {
     long countByProviderAndStatus(User provider, MatchStatus status);
 
     long countByCitizenAndStatus(User citizen, MatchStatus status);
+
+    List<MatchEntity> findByProviderAndStatusOrderByCreatedAtDesc(User provider, MatchStatus status);
 }

@@ -15,4 +15,6 @@ public interface LawyerProfileRepository extends JpaRepository<LawyerProfile, Lo
     // Get all verified lawyers
     List<LawyerProfile> findByVerifiedTrue();
 
+    // Get all unverified lawyers (pending verification)
+    List<LawyerProfile> findByVerifiedFalseOrVerifiedIsNull();
 }
