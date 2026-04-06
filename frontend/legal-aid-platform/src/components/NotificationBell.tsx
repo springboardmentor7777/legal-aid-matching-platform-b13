@@ -42,8 +42,8 @@ const NotificationBell = () => {
   useEffect(() => {
     loadNotifications();
     
-    //  INTEGRATION BOOST: Check for new notifications every 30 seconds
-    const interval = setInterval(loadNotifications, 30000);
+    //  INTEGRATION BOOST: Check for new notifications every seconds
+    const interval = setInterval(loadNotifications, 1000);
     return () => clearInterval(interval);
   }, []);
 
