@@ -8,6 +8,6 @@ export interface Notification {
   id: number;
   message: string;
   type: NotificationType;
-  read: boolean;
+  isRead: boolean;
   createdAt: string;
 }
