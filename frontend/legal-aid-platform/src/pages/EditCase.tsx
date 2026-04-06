@@ -1,335 +1,152 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../auth/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { LuSquareArrowLeft } from "react-icons/lu";
 import PageTitle from "../components/PageTitle";
+import axios from "axios";
 
-export default function EditProfile() {
+export default function EditCase() {
   const { user } = useAuth();
+  const { caseId } = useParams(); // Gets the '56' from the URL
+  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState("");
 
-  //   const [data, setData] = useState<string | any>("");
-  type Role = "CITIZEN" | "LAWYER" | "NGO";
-
-  interface CitizenUpdate {
-    name: string;
-  }
-
-  interface LawyerUpdate extends CitizenUpdate {
-    specialization: string;
-    experience: number;
-    location: string;
-    isAvailable: boolean;
-  }
-
-  interface NgoUpdate extends CitizenUpdate {
-    organizationName: string;
-    serviceArea: string;
-    location: string;
-    isAvailable: boolean;
-  }
-
-  type FormData = CitizenUpdate | LawyerUpdate | NgoUpdate;
-
-  const role = (user?.role ?? "CITIZEN") as Role;
-
-  const [formData, setFormData] = useState<FormData>(() => {
-    if (role === "LAWYER") {
-      return {
-        name: user?.username,
-        specialization: "",
-        experience: 0,
-        location: "",
-        isAvailable: true,
-      } as LawyerUpdate;
-    }
-    if (role === "NGO") {
-      return {
-        name: "",
-        organizationName: "",
-        serviceArea: "",
-        location: "",
-        isAvailable: true,
-      } as NgoUpdate;
-    }
-    return {
-      name: user?.username,
-    } as CitizenUpdate;
+  // Match this to the fields your CaseRequest DTO expects
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    location: "",
+    contactInfo: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setError(null);
+  // 1. Fetch the existing case data when the page loads
+  useEffect(() => {
+    axios
+      .get(`http://localhost:8081/cases/${caseId}`, {
+        headers: { Authorization: `Bearer ${localStorage.accessToken}` },
+      })
+      .then((res) => {
+        const data = res.data;
+        setFormData({
+          title: data.title || "",
+          description: data.description || "",
+          location: data.location || "",
+          contactInfo: data.contactInfo || "",
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load case details.");
+      });
+  }, [caseId]);
 
-    setFormData((prev) => {
-      if (name === "experience") {
-        return { ...(prev as any), [name]: Number(value) } as FormData;
-      }
-      return { ...(prev as any), [name]: value } as FormData;
-    });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // 2. Submit the updated data to the backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let body: any;
-
-    if (role === "CITIZEN") {
-      body = {
-        name: (formData as CitizenUpdate).name,
-      };
-    } else if (role === "LAWYER") {
-      const d = formData as LawyerUpdate;
-      body = {
-        name: d.name,
-        specialization: d.specialization,
-        experience: d.experience,
-        location: d.location,
-        isAvailable:d.isAvailable
-      };
-    } else {
-      const d = formData as NgoUpdate;
-      body = {
-        name: d.name,
-        organizationName: d.organizationName,
-        serviceArea: d.serviceArea,
-        location: d.location,
-        isAvailable:d.isAvailable
-      };
+    try {
+      await axios.put(`http://localhost:8081/cases/${caseId}/update`, formData, {
+        headers: { Authorization: `Bearer ${localStorage.accessToken}` },
+      });
+      // Send them back to their cases list when successful
+      navigate("/mycases"); 
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update case.");
     }
-
-    // Call your existing update API here
-    console.log("Profile update body:", body);
-    await fetch("http://localhost:8081/profile/update", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-      body: JSON.stringify(body),
-    }).catch((err) => {
-      console.error("Error updating profile:", err);
-      setError("Failed to update profile");
-    });
-
-    // navigate("/profile");
-    setSuccessMessage("Profile updated successfully!");
-    const navigate = useNavigate();
-    navigate("/profile");
   };
 
-  // const [success, setSuccess] = useState(false);
-
   return (
-    <><PageTitle title="Edit Profile - Legal Aid Matching Platform" />
-    <div>
-      <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar
-          title="edit profile"
-          name={user?.username || "guest"}
-          role={user?.role || ""}
-          toggleSidebar={() => {}}
-        />
-      </div>
-      <div className="min-h-screen bg-blue-50 flex">
-        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col m-auto">
-          {error && (
-            <div className="mb-4 text-red-500 text-sm text-center font-mono mt-5">
-              {error}!
-            </div>
-          )}
+    <>
+      <PageTitle title="Edit Case - Legal Aid Matching Platform" />
+      <div>
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <Navbar
+            title="Edit Case"
+            name={user?.username || "guest"}
+            role={user?.role || ""}
+            toggleSidebar={() => {}}
+          />
+        </div>
+        <div className="min-h-screen bg-blue-50 flex pt-20">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col m-auto">
+            {error && (
+              <div className="mb-4 text-red-500 text-sm text-center font-mono mt-5">
+                {error}
+              </div>
+            )}
 
-          <a href="/profile" className="text-blue-900 mb-2">
-            {<LuSquareArrowLeft />} Back to Profile
-          </a>
-          <div className="shadow-lg bg-gradient-to-r from-blue-500 to-blue-700 rounded-md p-3">
-            <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
-          </div>
-          <div>
+            <button onClick={() => navigate("/mycases")} className="text-blue-900 mb-2 text-left flex items-center gap-1 hover:underline">
+              <LuSquareArrowLeft /> Back to My Cases
+            </button>
+            
+            <div className="shadow-lg bg-gradient-to-r from-blue-500 to-blue-700 rounded-md p-3">
+              <h2 className="text-2xl font-bold text-white">Edit Case #{caseId}</h2>
+            </div>
+            
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-              {/* common field for all roles */}
               <div>
-                <label
-                  className="block text-gray-700 font-bold mb-2"
-                  htmlFor="name"
-                >
-                  New Name
-                </label>
+                <label className="block text-gray-700 font-bold mb-2">Case Title</label>
                 <input
-                  id="name"
                   type="text"
-                  name="name"
-                  placeholder="Please enter your name"
-                  value={formData.name}
+                  name="title"
+                  value={formData.title}
                   onChange={handleChange}
                   className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
                 />
               </div>
 
-              {/* LAWYER fields */}
-              {role === "LAWYER" && (
-                <>
-                  <div>
-                    <label
-                      className="block text-gray-700 font-bold mb-2"
-                      htmlFor="specialization"
-                    >
-                      Specialization
-                    </label>
-                    <div>
-                    <select
-                      id="specialization"
-                      name="specialization"
-                      value={(formData as LawyerUpdate).specialization}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                      <option value="">Select Specialization</option>
-                      <option value="Civil Lawyer">Civil Lawyer</option>
-                      <option value="Criminal Lawyer">Criminal Lawyer</option>
-                      <option value="Family Lawyer">Family Lawyer</option>
-                      <option value="Property Lawyer">Property Lawyer</option>
-                      <option value="Cyber Lawyer">Cyber Lawyer</option>
-                      <option value="Employment Lawyer">Employment Lawyer</option>
-                      <option value="Financial Lawyer">Financial Lawyer</option>
-                    </select>
-                    </div>
-                  </div>
+              <div>
+                <label className="block text-gray-700 font-bold mb-2">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                />
+              </div>
 
-                  <div>
-                    <label
-                      className="block text-gray-700 font-bold mb-2"
-                      htmlFor="experience"
-                    >
-                      Experience (years)
-                    </label>
-                    <input
-                      id="experience"
-                      type="number"
-                      name="experience"
-                      value={(formData as LawyerUpdate).experience}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      className="block text-gray-700 font-bold mb-2"
-                      htmlFor="location"
-                    >
-                      Location
-                    </label>
-                    <input
-                      id="location"
-                      type="text"
-                      name="location"
-                      value={(formData as LawyerUpdate).location}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* NGO fields */}
-              {role === "NGO" && (
-                <>
-                  <div>
-                    <label
-                      className="block text-gray-700 font-bold mb-2"
-                      htmlFor="organizationName"
-                    >
-                      Organization Name
-                    </label>
-                    <input
-                      id="organizationName"
-                      type="text"
-                      name="organizationName"
-                      value={(formData as NgoUpdate).organizationName}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      className="block text-gray-700 font-bold mb-2"
-                      htmlFor="serviceArea"
-                    >
-                      Service Area
-                    </label>
-                    <input
-                      id="serviceArea"
-                      type="text"
-                      name="serviceArea"
-                      value={(formData as NgoUpdate).serviceArea}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      className="block text-gray-700 font-bold mb-2"
-                      htmlFor="location"
-                    >
-                      Location
-                    </label>
-                    <input
-                      id="location"
-                      type="text"
-                      name="location"
-                      value={(formData as NgoUpdate).location}
-                      onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-                </>
-              )}
-              {/* Availability Toggle Button */}
-              {(role === "LAWYER" || role === "NGO") && (
-                <div className="flex items-center mt-4 mb-4">
-                  <label className="text-gray-700 font-bold mr-4" htmlFor="isAvailable">
-                    Availability Status:
-                  </label>
-                  <button
-                    type="button"
-                    id="isAvailable"
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        isAvailable: !(prev as LawyerUpdate | NgoUpdate).isAvailable,
-                      }))
-                    }
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1 ${
-                      (formData as LawyerUpdate | NgoUpdate).isAvailable ? "bg-blue-600" : "bg-gray-300"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        (formData as LawyerUpdate | NgoUpdate).isAvailable ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                  <span className="ml-3 text-sm text-gray-600 font-medium">
-                    {(formData as LawyerUpdate | NgoUpdate).isAvailable ? "Available" : "Not Available"}
-                  </span>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-gray-700 font-bold mb-2">Location</label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
                 </div>
-              )}
+
+                <div>
+                  <label className="block text-gray-700 font-bold mb-2">Contact Info</label>
+                  <input
+                    type="text"
+                    name="contactInfo"
+                    value={formData.contactInfo}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              </div>
+
               <button
                 type="submit"
-                className="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition"
+                className="mt-4 bg-yellow-500 text-white font-bold py-2 px-6 rounded-md hover:bg-yellow-600 transition"
               >
-                Save
+                Save Changes
               </button>
-              {successMessage && (
-                <p className="text-green-600 mb-4">{successMessage}</p>
-              )}
             </form>
           </div>
         </div>
       </div>
-    </div></>
+    </>
   );
 }
