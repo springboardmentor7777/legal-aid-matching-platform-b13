@@ -1,0 +1,41 @@
+1|Admin LegalMatch|admin@legalmatch.in|ADMIN
+2|Rahul Sharma|rahul.sharma@gmail.com|CITIZEN
+3|Priya Patel|priya.patel@gmail.com|CITIZEN
+4|Adv. Rajesh Mehta|rajesh.mehta@lawfirm.in|LAWYER
+5|Adv. Sneha Kulkarni|sneha.kulkarni@lawfirm.in|LAWYER
+6|Adv. Vikram Desai|vikram.desai@lawfirm.in|LAWYER
+7|Adv. Anita Joshi|anita.joshi@lawfirm.in|LAWYER
+8|Adv. Sunil Patil|sunil.patil@lawfirm.in|LAWYER
+9|Adv. Arjun Kapoor|arjun.kapoor@lawfirm.in|LAWYER
+10|Adv. Meera Choudhary|meera.choudhary@lawfirm.in|LAWYER
+11|Adv. Rohit Saxena|rohit.saxena@lawfirm.in|LAWYER
+12|Adv. Kavita Gupta|kavita.gupta@lawfirm.in|LAWYER
+13|Adv. Deepak Verma|deepak.verma@lawfirm.in|LAWYER
+14|Adv. Kiran Hegde|kiran.hegde@lawfirm.in|LAWYER
+15|Adv. Lakshmi Nair|lakshmi.nair@lawfirm.in|LAWYER
+16|Adv. Ravi Reddy|ravi.reddy@lawfirm.in|LAWYER
+17|Adv. Pooja Iyengar|pooja.iyengar@lawfirm.in|LAWYER
+18|Adv. Senthil Kumar|senthil.kumar@lawfirm.in|LAWYER
+19|Adv. Revathi Subramanian|revathi.sub@lawfirm.in|LAWYER
+20|Adv. Balaji Krishnan|balaji.krishnan@lawfirm.in|LAWYER
+21|Adv. Nithya Ramanathan|nithya.rama@lawfirm.in|LAWYER
+22|TATA Trusts Legal Aid|legal@tatatrusts.org|NGO
+23|Majlis Legal Centre|contact@majlislaw.com|NGO
+24|HRLN Mumbai|mumbai@hrln.org|NGO
+25|Pratham Legal Aid|legal@pratham.org|NGO
+26|Mumbai Legal Aid Society|info@mumbailegalaid.org|NGO
+27|DLSA Pro Bono Cell|probono@dlsa.gov.in|NGO
+28|Commonwealth Human Rights Initiative|delhi@chri.org|NGO
+29|Lawyers Collective|info@lawyerscollective.org|NGO
+30|Centre for Social Justice Delhi|delhi@csj.org.in|NGO
+31|Delhi Legal Aid Foundation|contact@dlaf.in|NGO
+32|Alternative Law Forum|contact@altlawforum.org|NGO
+33|Daksh India|info@daksh.in|NGO
+34|NLSIU Legal Aid Society|legalaid@nls.ac.in|NGO
+35|Bangalore Legal Services|help@blegalservices.org|NGO
+36|Madras Legal Aid Society|contact@mlas.org.in|NGO
+37|TN Legal Services Authority|tnlsa@nic.in|NGO
+38|EKTA Foundation Chennai|legal@ektafoundation.org|NGO
+39|People First Chennai|legal@peoplefirst.org.in|NGO
+40|ACC|acc@gmail.com|CITIZEN
+41|ACC|abc@gmail.com|CITIZEN

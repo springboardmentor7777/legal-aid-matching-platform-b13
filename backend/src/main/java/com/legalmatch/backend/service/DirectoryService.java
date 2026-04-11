@@ -1,21 +1,21 @@
 package com.legalmatch.backend.service;
 
 import com.legalmatch.backend.dto.DirectoryProfileResponse;
-import com.legalmatch.backend.entity.DirectoryProfile;
-import com.legalmatch.backend.entity.Role;
-import com.legalmatch.backend.repository.DirectoryProfileRepository;
+import com.legalmatch.backend.entity.LawyerProfile;
+import com.legalmatch.backend.entity.NGOProfile;
+import com.legalmatch.backend.repository.LawyerProfileRepository;
+import com.legalmatch.backend.repository.NGOProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class DirectoryService {
 
-    private final DirectoryProfileRepository repository;
+    private final LawyerProfileRepository lawyerRepo;
+    private final NGOProfileRepository ngoRepo;
 
     public Page<DirectoryProfileResponse> getLawyers(
             String expertise,
@@ -24,20 +24,19 @@ public class DirectoryService {
             int page,
             int size
     ) {
-        Page<DirectoryProfile> profiles =
-                repository.findByUser_RoleAndExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCaseAndVerified(
-                        Role.LAWYER,
-                        expertise,
-                        location,
-                        verified,
-                        PageRequest.of(page, size)
-                );
+        String expertiseSearch = expertise != null ? expertise : "";
+        String locationSearch = location != null ? location : "";
+        PageRequest pageable = PageRequest.of(page, size);
 
-
-       
-
-        return profiles.map(this::mapToResponse);
-
+        Page<LawyerProfile> profiles;
+        if (verified) {
+            profiles = lawyerRepo.findByExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCaseAndVerifiedTrue(
+                    expertiseSearch, locationSearch, pageable);
+        } else {
+            profiles = lawyerRepo.findByExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCase(
+                    expertiseSearch, locationSearch, pageable);
+        }
+        return profiles.map(this::mapLawyerToResponse);
     }
 
     public Page<DirectoryProfileResponse> getNgos(
@@ -47,34 +46,40 @@ public class DirectoryService {
             int page,
             int size
     ) {
-        Page<DirectoryProfile> profiles =
-                repository.findByUser_RoleAndExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCaseAndVerified(
-                        Role.NGO,
-                        expertise,
-                        location,
-                        verified,
-                        PageRequest.of(page, size)
-                );
+        String focusSearch = expertise != null ? expertise : "";
+        String locationSearch = location != null ? location : "";
+        PageRequest pageable = PageRequest.of(page, size);
 
-        return profiles.map(this::mapToResponse);
+        Page<NGOProfile> profiles;
+        if (verified) {
+            profiles = ngoRepo.findByFocusAreaContainingIgnoreCaseAndLocationContainingIgnoreCaseAndVerifiedTrue(
+                    focusSearch, locationSearch, pageable);
+        } else {
+            profiles = ngoRepo.findByFocusAreaContainingIgnoreCaseAndLocationContainingIgnoreCase(
+                    focusSearch, locationSearch, pageable);
+        }
+        return profiles.map(this::mapNgoToResponse);
     }
 
-    public List<DirectoryProfile> findByRole(Role role) {
-        return repository.findByUser_Role(role);
+    private DirectoryProfileResponse mapLawyerToResponse(LawyerProfile p) {
+        return DirectoryProfileResponse.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .organizationName(null)
+                .expertise(p.getExpertise())
+                .location(p.getLocation())
+                .verified(p.getVerified() != null && p.getVerified())
+                .build();
     }
 
-    public List<DirectoryProfile> findAll() {
-        return repository.findAll();
-    }
-
-    private DirectoryProfileResponse mapToResponse(DirectoryProfile p) {
+    private DirectoryProfileResponse mapNgoToResponse(NGOProfile p) {
         return DirectoryProfileResponse.builder()
                 .id(p.getId())
                 .name(p.getUser().getUsername())
                 .organizationName(p.getOrganizationName())
-                .expertise(p.getExpertise())
+                .expertise(p.getFocusArea())
                 .location(p.getLocation())
-                .verified(p.isVerified())
+                .verified(p.getVerified() != null && p.getVerified())
                 .build();
     }
 }

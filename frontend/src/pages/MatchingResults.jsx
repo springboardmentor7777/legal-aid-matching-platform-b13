@@ -104,7 +104,7 @@ export default function MatchingResults() {
         <p className="text-slate-500 mt-1">
           {isProvider
             ? "Cases matched to your expertise and location"
-            : "AI-powered matches between your cases and legal professionals"}
+            : "Matches between your cases and legal professionals"}
         </p>
       </div>
 
@@ -240,7 +240,7 @@ export default function MatchingResults() {
         ))}
       </div>
 
-      {/* ═══ VIEW FULL CASE MODAL ═══ */}
+      {/* View Full Case Modal */}
       {viewCase && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={() => setViewCase(null)}>

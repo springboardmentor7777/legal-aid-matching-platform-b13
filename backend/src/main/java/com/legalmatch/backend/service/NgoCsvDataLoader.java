@@ -12,7 +12,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 @Component
-public class NGODataLoader {
+public class NgoCsvDataLoader {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -58,7 +58,7 @@ public class NGODataLoader {
                 );
             }
 
-            System.out.println("✅ NGO data loaded successfully!");
+            System.out.println("NGO directory data loaded successfully.");
 
         } catch (Exception e) {
             e.printStackTrace();

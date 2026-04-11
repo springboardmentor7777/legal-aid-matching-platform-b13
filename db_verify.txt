@@ -1,0 +1,6 @@
+users: 47
+cases: 10
+matches: 12
+appointments: 5
+notifications: 24
+messages: 0

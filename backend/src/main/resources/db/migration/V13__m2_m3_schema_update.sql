@@ -1,17 +1,13 @@
--- Milestone 2 & 3: Update cases table and create M3 tables
-
--- 1. Update cases table: add new columns for frontend sync
+-- Update cases table with new columns
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS case_type VARCHAR(255);
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS urgency VARCHAR(50) DEFAULT 'MEDIUM';
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS location VARCHAR(255);
 
--- Copy old data if title exists
 UPDATE cases SET case_type = COALESCE(title, 'Other') WHERE case_type IS NULL;
 
--- Make case_type NOT NULL after population
 ALTER TABLE cases ALTER COLUMN case_type SET NOT NULL;
 
--- 2. Create matches table
+-- Create matches table
 CREATE TABLE IF NOT EXISTS matches (
     id SERIAL PRIMARY KEY,
     case_id INT NOT NULL,
@@ -25,7 +21,7 @@ CREATE TABLE IF NOT EXISTS matches (
     FOREIGN KEY (provider_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 3. Create messages table
+-- Create messages table
 CREATE TABLE IF NOT EXISTS messages (
     id SERIAL PRIMARY KEY,
     match_id INT NOT NULL,
@@ -38,7 +34,7 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 4. Create appointments table
+-- Create appointments table
 CREATE TABLE IF NOT EXISTS appointments (
     id SERIAL PRIMARY KEY,
     match_id INT NOT NULL,
@@ -54,7 +50,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     FOREIGN KEY (created_by_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 5. Create notifications table
+-- Create notifications table
 CREATE TABLE IF NOT EXISTS notifications (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,

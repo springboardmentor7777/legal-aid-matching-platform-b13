@@ -224,9 +224,7 @@ const NgoDashboardPage = () => {
         )}
       </div>
 
-      {/* ═══════════════════════════════════ */}
-      {/* MANAGE CASE MODAL                  */}
-      {/* ═══════════════════════════════════ */}
+      {/* Manage Case Modal */}
       {manageModal && selectedMatch && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}

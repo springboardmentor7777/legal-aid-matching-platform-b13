@@ -29,15 +29,13 @@ API.interceptors.response.use(
     const status = error.response?.status;
     const message = error.response?.data?.message || error.response?.data?.error || error.message;
 
-    if (status === 401 && window.location.pathname !== "/login") {
+    if ((status === 401 || status === 403) && window.location.pathname !== "/login") {
       toast.error("Session expired. Please log in again.", { id: "session-expired" });
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       setTimeout(() => {
         window.location.href = "/login";
       }, 1000);
-    } else if (status === 403) {
-      toast.error("Access denied. You don't have permission.", { id: "access-denied" });
     } else if (status === 500) {
       toast.error("Server error — please try again later.", { id: "server-error" });
     } else if (status === 404) {

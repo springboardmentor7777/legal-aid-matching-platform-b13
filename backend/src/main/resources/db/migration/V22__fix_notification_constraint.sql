@@ -1,8 +1,4 @@
--- ===============================
--- V22: Fix notification type constraint
--- The V15 constraint was too restrictive for the actual notification types used in code
--- ===============================
-
+-- Expand notification type constraint to support all event types
 ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notification_type_check;
 
 ALTER TABLE notifications ADD CONSTRAINT notification_type_check

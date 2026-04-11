@@ -1,0 +1,29 @@
+1|create users table|true
+2|create profiles table|true
+3|add indexes and timestamps|true
+4|create cases table|true
+5|add case indexes|true
+6|create categories table|true
+7|add category to cases|true
+8|add citizen role|true
+9|add verification flag|true
+10|create ngo directory|true
+11|add enabled column|true
+12|create advocate directory|true
+13|m2 m3 schema update|true
+14|update cases table|true
+15|schema improvements|true
+16|update case status constraint|true
+17|fix messages timestamp|true
+18|cleanup messages timestamp|true
+19|ensure messages clean|true
+20|drop title column|true
+21|drop category column|true
+22|fix notification constraint|true
+23|seed industry data|true
+24|upgrade cases table|true
+25|onboarding and case refinements|true
+26|industry ready clean slate|true
+27|admin and monitoring|true
+28|enterprise features|true
+29|admin and monitoring|true

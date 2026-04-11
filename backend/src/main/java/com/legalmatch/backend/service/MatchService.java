@@ -39,14 +39,12 @@ public class MatchService {
         List<MatchEntity> existingMatches = matchRepository.findByLegalCase(legalCase);
         List<MatchEntity> newMatches = new ArrayList<>();
 
-        // ═══ LAWYER MATCHING ═══
         List<LawyerProfile> lawyers = lawyerRepository.findAll();
 
         for (LawyerProfile lp : lawyers) {
 
             double score = calculateLawyerScore(legalCase, lp);
 
-            // ✅ THRESHOLD: Only save matches >= 50%
             if (score < MATCH_THRESHOLD) continue;
 
             boolean alreadyExists = existingMatches.stream()
@@ -74,14 +72,12 @@ public class MatchService {
             }
         }
 
-        // ═══ NGO MATCHING ═══
         List<NGOProfile> ngos = ngoRepository.findAll();
 
         for (NGOProfile np : ngos) {
 
             double score = calculateNGOScore(legalCase, np);
 
-            // ✅ THRESHOLD: Only save matches >= 50%
             if (score < MATCH_THRESHOLD) continue;
 
             boolean alreadyExists = existingMatches.stream()

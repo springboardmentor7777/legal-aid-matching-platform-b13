@@ -1,22 +1,17 @@
--- ===============================
--- V14: Update cases table
--- ===============================
-
--- 1. Add new columns (for matching system)
+-- Add structured columns to cases table
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS case_type VARCHAR(255);
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS urgency VARCHAR(50) DEFAULT 'MEDIUM';
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS location VARCHAR(255);
 
--- 2. Populate case_type if null (optional but good)
+-- Populate case_type from existing title data
 UPDATE cases
 SET case_type = COALESCE(title, 'Other')
 WHERE case_type IS NULL;
 
--- 3. Make case_type NOT NULL (after filling data)
 ALTER TABLE cases
 ALTER COLUMN case_type SET NOT NULL;
 
--- 4. Add constraints (safe checks)
+-- Add status constraint
 DO $$ 
 BEGIN
     IF NOT EXISTS (
@@ -28,6 +23,7 @@ BEGIN
     END IF;
 END $$;
 
+-- Add urgency constraint
 DO $$ 
 BEGIN
     IF NOT EXISTS (
@@ -39,11 +35,10 @@ BEGIN
     END IF;
 END $$;
 
--- 5. Add indexes (performance)
 CREATE INDEX IF NOT EXISTS idx_cases_user_id ON cases(user_id);
 CREATE INDEX IF NOT EXISTS idx_cases_status ON cases(status);
 
--- 6. Auto update updated_at (trigger)
+-- Auto-update timestamp trigger
 CREATE OR REPLACE FUNCTION update_cases_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN

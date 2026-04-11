@@ -31,11 +31,11 @@ public class DirectoryProfile {
     @Column(length = 1000)
     private String bio;
 
-    // ✅ NEW FIELD
+    @Builder.Default
     @Column(name = "availability")
     private Boolean availability = true;
 
-    // ✅ NEW FIELD
+    @Builder.Default
     @Column(name = "experience_years")
     private Integer experienceYears = 0;
 }

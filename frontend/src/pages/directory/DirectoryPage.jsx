@@ -338,14 +338,14 @@ const DirectoryPage = () => {
                     {profile.name?.charAt(0) || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 truncate">{profile.name}</h3>
-                    <p className="text-sm text-slate-500">{profile.role || profile.type}</p>
+                    <h3 className="font-semibold text-slate-900 truncate">{profile.organizationName || profile.name}</h3>
+                    <p className="text-sm text-slate-500">{roleFilter}</p>
                   </div>
                   {profile.verified && <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />}
                 </div>
-                {profile.practiceAreas && (
+                {profile.expertise && (
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {(Array.isArray(profile.practiceAreas) ? profile.practiceAreas : [profile.practiceAreas]).slice(0, 3).map((area) => (
+                    {profile.expertise.split(',').map((area) => area.trim()).slice(0, 3).map((area) => (
                       <span key={area} className="px-2 py-0.5 bg-primary-50 text-primary-700 rounded text-xs font-medium">
                         {area}
                       </span>
@@ -368,14 +368,14 @@ const DirectoryPage = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-slate-900">{profile.name}</h3>
+                    <h3 className="font-semibold text-slate-900">{profile.organizationName || profile.name}</h3>
                     {profile.verified && <CheckCircle className="w-4 h-4 text-emerald-500" />}
                   </div>
-                  <p className="text-sm text-slate-500">{profile.role || profile.type}</p>
+                  <p className="text-sm text-slate-500">{roleFilter}</p>
                 </div>
-                {profile.practiceAreas && (
+                {profile.expertise && (
                   <div className="flex-shrink-0 flex flex-wrap gap-1 max-w-xs">
-                    {(Array.isArray(profile.practiceAreas) ? profile.practiceAreas : [profile.practiceAreas]).slice(0, 2).map((area) => (
+                    {profile.expertise.split(',').map((area) => area.trim()).slice(0, 2).map((area) => (
                       <span key={area} className="px-2 py-0.5 bg-primary-50 text-primary-700 rounded text-xs font-medium">
                         {area}
                       </span>

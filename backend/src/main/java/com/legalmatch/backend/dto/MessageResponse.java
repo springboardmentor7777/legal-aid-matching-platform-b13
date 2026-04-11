@@ -17,6 +17,5 @@ public class MessageResponse {
     private String receiverName;
     private String content;
 
-    // ✅ FIXED
     private LocalDateTime createdAt;
 }

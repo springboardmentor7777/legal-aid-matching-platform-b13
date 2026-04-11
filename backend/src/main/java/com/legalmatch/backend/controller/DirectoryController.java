@@ -16,7 +16,7 @@ public class DirectoryController {
     public ResponseEntity<?> getLawyers(
             @RequestParam(defaultValue = "") String expertise,
             @RequestParam(defaultValue = "") String location,
-            @RequestParam(defaultValue = "true") boolean verified,
+            @RequestParam(defaultValue = "false") boolean verified,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {
@@ -29,7 +29,7 @@ public class DirectoryController {
     public ResponseEntity<?> getNgos(
             @RequestParam(defaultValue = "") String expertise,
             @RequestParam(defaultValue = "") String location,
-            @RequestParam(defaultValue = "true") boolean verified,
+            @RequestParam(defaultValue = "false") boolean verified,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         return ResponseEntity.ok(

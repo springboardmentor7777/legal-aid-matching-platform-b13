@@ -231,7 +231,7 @@ const CaseSubmissionPage = () => {
       {/* Form Card */}
       <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-2xl border border-slate-200 p-6 md:p-8">
 
-        {/* ═══ STEP 1: Case Details (ALL MANDATORY) ═══ */}
+        {/* Step 1: Case Details */}
         {step === 1 && (
           <div className={sectionCard}>
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-2">
@@ -319,7 +319,7 @@ const CaseSubmissionPage = () => {
           </div>
         )}
 
-        {/* ═══ STEP 2: Parties & Jurisdiction ═══ */}
+        {/* Step 2: Parties & Jurisdiction */}
         {step === 2 && (
           <div className={sectionCard}>
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-2">
@@ -417,7 +417,7 @@ const CaseSubmissionPage = () => {
           </div>
         )}
 
-        {/* ═══ STEP 3: Conditional / Additional Info ═══ */}
+        {/* Step 3: Additional Info */}
         {step === 3 && (
           <div className={sectionCard}>
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-2">
@@ -525,7 +525,7 @@ const CaseSubmissionPage = () => {
           </div>
         )}
 
-        {/* ═══ STEP 4: Evidence & Submit ═══ */}
+        {/* Step 4: Evidence & Submit */}
         {step === 4 && (
           <div className={sectionCard}>
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2 mb-2">

@@ -16,7 +16,6 @@ public class LawyerProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 Link to users table
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

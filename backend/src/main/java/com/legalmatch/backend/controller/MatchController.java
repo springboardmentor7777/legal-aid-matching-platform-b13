@@ -18,7 +18,6 @@ public class MatchController {
 
     private final MatchService matchService;
 
-    // ✅ Generate matches
     @PostMapping("/generate/{caseId}")
     public ResponseEntity<List<MatchResponse>> generateMatches(
             @PathVariable Long caseId,
@@ -29,7 +28,6 @@ public class MatchController {
         );
     }
 
-    // ✅ Get my matches
     @GetMapping("/my")
     public ResponseEntity<List<MatchResponse>> getMyMatches(
             Authentication authentication) {
@@ -39,7 +37,6 @@ public class MatchController {
         );
     }
 
-    // ✅ Get active (ACCEPTED) matches for providers
     @GetMapping("/my-active")
     @PreAuthorize("hasRole('LAWYER') or hasRole('NGO')")
     public ResponseEntity<List<MatchResponse>> getMyActiveMatches(
@@ -50,7 +47,6 @@ public class MatchController {
         );
     }
 
-    // ✅ Accept match
     @PutMapping("/{matchId}/accept")
     public ResponseEntity<MatchResponse> acceptMatch(
             @PathVariable Long matchId,
@@ -61,7 +57,6 @@ public class MatchController {
         );
     }
 
-    // ✅ Reject match
     @PutMapping("/{matchId}/reject")
     public ResponseEntity<MatchResponse> rejectMatch(
             @PathVariable Long matchId,
@@ -72,7 +67,6 @@ public class MatchController {
         );
     }
 
-    // ✅ Manage match (update status + notes) — providers only
     @PutMapping("/{matchId}/manage")
     @PreAuthorize("hasRole('LAWYER') or hasRole('NGO')")
     public ResponseEntity<MatchResponse> manageMatch(
@@ -89,4 +83,4 @@ public class MatchController {
                 )
         );
     }
-}
+}

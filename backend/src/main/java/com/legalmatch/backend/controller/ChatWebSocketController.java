@@ -9,6 +9,9 @@ import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+/**
+ * WebSocket controller for real-time chat messaging within match conversations.
+ */
 @Controller
 @RequiredArgsConstructor
 public class ChatWebSocketController {
@@ -16,18 +19,15 @@ public class ChatWebSocketController {
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    // ✅ WebSocket endpoint: /app/chat.sendMessage
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageRequest request) {
 
-        // 🔹 Save message in DB
         MessageEntity saved = chatService.sendMessage(
                 request.getMatchId(),
-                request.getSenderEmail(),   // from frontend (or JWT later)
+                request.getSenderEmail(),
                 request.getContent()
         );
 
-        // 🔹 Convert to response DTO
         MessageResponse response = MessageResponse.builder()
                 .id(saved.getId())
                 .matchId(saved.getMatch().getId())
@@ -39,7 +39,6 @@ public class ChatWebSocketController {
                 .createdAt(saved.getCreatedAt())
                 .build();
 
-        // 🔥 Broadcast to all subscribers of this match
         messagingTemplate.convertAndSend(
                 "/topic/chat/" + request.getMatchId(),
                 response

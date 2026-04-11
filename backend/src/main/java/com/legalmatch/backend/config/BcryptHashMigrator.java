@@ -21,7 +21,7 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class DevDataInitializer implements CommandLineRunner {
+public class BcryptHashMigrator implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -47,9 +47,9 @@ public class DevDataInitializer implements CommandLineRunner {
         }
 
         if (fixed > 0) {
-            log.info("✅ Fixed {} seed user password(s) — all accounts now use '{}'", fixed, DEFAULT_PASSWORD);
+            log.info("Fixed {} seed user password(s) — all accounts now use '{}'", fixed, DEFAULT_PASSWORD);
         } else {
-            log.info("✅ All {} seed user passwords verified OK.", users.size());
+            log.info("All {} seed user passwords verified OK.", users.size());
         }
     }
 }

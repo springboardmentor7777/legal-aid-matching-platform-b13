@@ -1,15 +1,26 @@
 import SockJS from "sockjs-client";
-import { Stomp } from "stompjs";
+import { over } from "stompjs";
 import API from "./axios";
 
 let stompClient = null;
+let isConnecting = false;
 
 export const connectWebSocket = (matchId, onMessageReceived) => {
+  // Prevent duplicate connections
+  if (stompClient && stompClient.connected) {
+    return;
+  }
+  if (isConnecting) {
+    return;
+  }
+
+  isConnecting = true;
   const socket = new SockJS("http://localhost:8080/ws-chat");
-  stompClient = Stomp.over(socket);
+  stompClient = over(socket);
   stompClient.debug = null; // disable debug logs
 
   stompClient.connect({}, () => {
+    isConnecting = false;
     console.log("WebSocket Connected");
 
     stompClient.subscribe(`/topic/chat/${matchId}`, (message) => {
@@ -17,6 +28,7 @@ export const connectWebSocket = (matchId, onMessageReceived) => {
       onMessageReceived(data);
     });
   }, (error) => {
+    isConnecting = false;
     console.error("WebSocket Error:", error);
   });
 };
@@ -49,9 +61,15 @@ export const getChatHistory = async (matchId) => {
 };
 
 export const disconnectWebSocket = () => {
-  if (stompClient) {
-    stompClient.disconnect(() => {
-      console.log("WebSocket Disconnected");
-    });
+  isConnecting = false;
+  if (stompClient && stompClient.connected) {
+    try {
+      stompClient.disconnect(() => {
+        console.log("WebSocket Disconnected");
+      });
+    } catch (e) {
+      // Ignore disconnect errors (connection may already be closed)
+    }
   }
+  stompClient = null;
 };

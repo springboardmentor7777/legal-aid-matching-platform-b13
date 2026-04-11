@@ -15,7 +15,7 @@ import Profile from "./pages/Profile";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 
-// Admin Pages (Milestone 4)
+// Admin Pages
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminCasesPage from "./pages/admin/AdminCasesPage";
 import AdminVerificationPage from "./pages/admin/AdminVerificationPage";
@@ -40,9 +40,7 @@ export default function App() {
         }
       />
 
-      {/* ═══════════════════════════════════ */}
-      {/* ADMIN ROUTES (Milestone 4)         */}
-      {/* ═══════════════════════════════════ */}
+      {/* Admin Routes */}
       <Route
         path="/admin"
         element={
@@ -84,9 +82,7 @@ export default function App() {
         }
       />
 
-      {/* ═══════════════════════════════════ */}
-      {/* STANDARD USER ROUTES               */}
-      {/* ═══════════════════════════════════ */}
+      {/* Standard User Routes */}
       <Route
         path="/dashboard"
         element={

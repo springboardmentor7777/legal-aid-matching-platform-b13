@@ -25,6 +25,13 @@ public interface DirectoryProfileRepository extends JpaRepository<DirectoryProfi
             Pageable pageable
     );
 
+    Page<DirectoryProfile> findByUser_RoleAndExpertiseContainingIgnoreCaseAndLocationContainingIgnoreCase(
+            Role role,
+            String expertise,
+            String location,
+            Pageable pageable
+    );
+
     List<DirectoryProfile> findByUser_Role(Role role);
 
     Optional<DirectoryProfile> findByUser(User user);

@@ -12,70 +12,62 @@ import java.security.Key;
 import java.util.Date;
 import java.util.function.Function;
 
+/**
+ * JWT token generation, validation, and claim extraction service.
+ */
 @Service
 public class JwtService {
 
     private static final String SECRET_KEY =
             "mysecretkeymysecretkeymysecretkeymysecretkey";
 
-    // ✅ GENERATE ACCESS TOKEN (UPDATED WITH ROLE)
     public String generateToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
-
-                // ⭐ ADD ROLE INTO TOKEN (VERY IMPORTANT)
                 .claim("role", userDetails.getAuthorities()
                         .iterator()
                         .next()
                         .getAuthority())
-
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // ✅ GENERATE REFRESH TOKEN
     public String generateRefreshToken(UserDetails userDetails) {
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("tokenType", "refresh")
                 .claim("random", java.util.UUID.randomUUID().toString())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7)) // 7 days
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // ✅ EXTRACT USERNAME
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // ✅ VALIDATE TOKEN
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername())
                 && !isTokenExpired(token);
     }
 
-    // ✅ CHECK EXPIRATION
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    // ✅ EXTRACT EXPIRATION
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    // ✅ GENERIC CLAIM EXTRACTOR
     private <T> T extractClaim(String token, Function<Claims, T> resolver) {
         final Claims claims = extractAllClaims(token);
         return resolver.apply(claims);
     }
 
-    // ✅ PARSE TOKEN
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
@@ -84,7 +76,6 @@ public class JwtService {
                 .getBody();
     }
 
-    // ✅ SIGNING KEY
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(
                 java.util.Base64.getEncoder()

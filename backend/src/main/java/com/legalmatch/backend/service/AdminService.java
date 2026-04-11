@@ -11,6 +11,10 @@ import java.io.StringWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Administrative operations including platform analytics, provider verification,
+ * user suspension, audit logging, and CSV data export.
+ */
 @Service
 @RequiredArgsConstructor
 public class AdminService {
@@ -23,10 +27,10 @@ public class AdminService {
     private final AuditLogRepository auditLogRepository;
     private final MessageRepository messageRepository;
 
-    // ═══════════════════════════════════════
-    // ADMIN STATS / KPIs
-    // ═══════════════════════════════════════
-
+    /**
+     * Aggregates platform-wide KPIs for the admin dashboard, including user counts,
+     * case statistics, match metrics, provider verification state, and chart data.
+     */
     public Map<String, Object> getAdminStats() {
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalUsers", userRepository.count());
@@ -36,27 +40,22 @@ public class AdminService {
         stats.put("ngos", userRepository.countByRole(Role.NGO));
         stats.put("citizens", userRepository.countByRole(Role.CITIZEN));
 
-        // Pending verifications = unverified lawyers + unverified NGOs
         long pendingLawyers = lawyerProfileRepository.findByVerifiedFalseOrVerifiedIsNull().size();
         long pendingNgos = ngoProfileRepository.findByVerifiedFalseOrVerifiedIsNull().size();
         stats.put("pendingVerifications", pendingLawyers + pendingNgos);
 
-        // NEW: Resolved cases count
         long resolvedCases = caseRepository.findAll().stream()
                 .filter(c -> c.getStatus() == CaseStatus.RESOLVED)
                 .count();
         stats.put("totalResolvedCases", resolvedCases);
 
-        // NEW: Chat activity — total messages sent
         stats.put("chatActivitySummary", messageRepository.count());
 
-        // NEW: Cases by category (for bar chart)
         Map<String, Long> casesByCategory = caseRepository.findAll().stream()
                 .filter(c -> c.getCaseType() != null)
                 .collect(Collectors.groupingBy(Case::getCaseType, Collectors.counting()));
         stats.put("casesByCategory", casesByCategory);
 
-        // NEW: User role distribution (for pie chart)
         List<Map<String, Object>> roleDistribution = new ArrayList<>();
         roleDistribution.add(Map.of("name", "Citizens", "value", userRepository.countByRole(Role.CITIZEN)));
         roleDistribution.add(Map.of("name", "Lawyers", "value", userRepository.countByRole(Role.LAWYER)));
@@ -66,16 +65,14 @@ public class AdminService {
         return stats;
     }
 
-    // ═══════════════════════════════════════
-    // CSV EXPORT - All Cases
-    // ═══════════════════════════════════════
-
+    /**
+     * Exports all cases to a CSV-formatted string for download.
+     */
     public String exportCasesToCsv() {
         List<Case> cases = caseRepository.findAll();
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
-        // CSV Header
         pw.println("ID,Case Type,Description,Urgency,Location,Status,Jurisdiction State,Jurisdiction City,Court,Created At");
 
         for (Case c : cases) {
@@ -97,14 +94,12 @@ public class AdminService {
         return sw.toString();
     }
 
-    // ═══════════════════════════════════════
-    // PENDING VERIFICATIONS
-    // ═══════════════════════════════════════
-
+    /**
+     * Returns all unverified Lawyer and NGO profiles awaiting admin review.
+     */
     public List<Map<String, Object>> getPendingVerifications() {
         List<Map<String, Object>> pending = new ArrayList<>();
 
-        // Unverified Lawyers
         for (LawyerProfile lp : lawyerProfileRepository.findByVerifiedFalseOrVerifiedIsNull()) {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("profileId", lp.getId());
@@ -119,7 +114,6 @@ public class AdminService {
             pending.add(item);
         }
 
-        // Unverified NGOs
         for (NGOProfile np : ngoProfileRepository.findByVerifiedFalseOrVerifiedIsNull()) {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("profileId", np.getId());
@@ -137,10 +131,13 @@ public class AdminService {
         return pending;
     }
 
-    // ═══════════════════════════════════════
-    // VERIFY / REJECT PROVIDER
-    // ═══════════════════════════════════════
-
+    /**
+     * Approves or rejects a provider's verification status and logs the action.
+     *
+     * @param userId  the user ID of the provider
+     * @param approve true to approve, false to reject
+     * @return result map with status, type, and email
+     */
     @Transactional
     public Map<String, Object> verifyProvider(Long userId, boolean approve) {
         User user = userRepository.findById(userId)
@@ -148,7 +145,6 @@ public class AdminService {
 
         String action = approve ? "APPROVED" : "REJECTED";
 
-        // Try to find and update Lawyer profile
         Optional<LawyerProfile> lawyerOpt = lawyerProfileRepository.findByUser(user);
         if (lawyerOpt.isPresent()) {
             lawyerOpt.get().setVerified(approve);
@@ -160,7 +156,6 @@ public class AdminService {
             return Map.of("status", action, "type", "LAWYER", "email", user.getEmail());
         }
 
-        // Try to find and update NGO profile
         Optional<NGOProfile> ngoOpt = ngoProfileRepository.findByUser(user);
         if (ngoOpt.isPresent()) {
             ngoOpt.get().setVerified(approve);
@@ -175,10 +170,9 @@ public class AdminService {
         throw new RuntimeException("No lawyer or NGO profile found for user: " + userId);
     }
 
-    // ═══════════════════════════════════════
-    // USER SUSPENSION
-    // ═══════════════════════════════════════
-
+    /**
+     * Toggles user suspension state and logs the administrative action.
+     */
     @Transactional
     public Map<String, Object> toggleSuspendUser(Long userId) {
         User user = userRepository.findById(userId)
@@ -200,10 +194,9 @@ public class AdminService {
         );
     }
 
-    // ═══════════════════════════════════════
-    // ALL USERS (for management table)
-    // ═══════════════════════════════════════
-
+    /**
+     * Returns all platform users for the admin user management table.
+     */
     public List<Map<String, Object>> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(user -> {
@@ -218,10 +211,6 @@ public class AdminService {
                 })
                 .collect(Collectors.toList());
     }
-
-    // ═══════════════════════════════════════
-    // AUDIT LOGS
-    // ═══════════════════════════════════════
 
     public List<AuditLog> getRecentLogs() {
         return auditLogRepository.findTop50ByOrderByCreatedAtDesc();
@@ -238,10 +227,9 @@ public class AdminService {
         auditLogRepository.save(log);
     }
 
-    // ═══════════════════════════════════════
-    // ALL CASES (for admin case monitoring)
-    // ═══════════════════════════════════════
-
+    /**
+     * Returns all cases with match status for the admin case monitoring view.
+     */
     public List<Map<String, Object>> getAllCasesForAdmin() {
         return caseRepository.findAll().stream()
                 .map(c -> {
@@ -256,7 +244,6 @@ public class AdminService {
                     map.put("location", c.getLocation());
                     map.put("createdAt", c.getCreatedAt() != null ? c.getCreatedAt().toString() : "");
 
-                    // Determine match status from matches table
                     List<MatchEntity> matches = matchRepository.findByLegalCase(c);
                     if (matches.isEmpty()) {
                         map.put("matchStatus", "UNMATCHED");
@@ -269,10 +256,6 @@ public class AdminService {
                 })
                 .collect(Collectors.toList());
     }
-
-    // ═══════════════════════════════════════
-    // HELPERS
-    // ═══════════════════════════════════════
 
     private String escapeCsv(String value) {
         if (value == null) return "";

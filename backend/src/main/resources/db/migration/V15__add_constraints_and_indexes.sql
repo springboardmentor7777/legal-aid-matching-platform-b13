@@ -1,25 +1,15 @@
--- ===============================
--- V15: Update profiles for matching
--- ===============================
-
--- Lawyer profiles updates
+-- Add availability and experience fields to provider profiles
 ALTER TABLE lawyer_profiles 
 ADD COLUMN IF NOT EXISTS availability BOOLEAN DEFAULT TRUE;
 
 ALTER TABLE lawyer_profiles 
 ADD COLUMN IF NOT EXISTS experience_years INT DEFAULT 0;
 
--- NGO profiles updates
 ALTER TABLE ngo_profiles 
 ADD COLUMN IF NOT EXISTS availability BOOLEAN DEFAULT TRUE;
 
 ALTER TABLE ngo_profiles 
 ADD COLUMN IF NOT EXISTS experience_years INT DEFAULT 0;
-
-
--- ===============================
--- V16: Schema improvements
--- ===============================
 
 -- Matches status constraint
 DO $$
@@ -33,7 +23,7 @@ BEGIN
     END IF;
 END $$;
 
--- Prevent duplicate matches
+-- Prevent duplicate case-provider matches
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -69,7 +59,7 @@ BEGIN
     END IF;
 END $$;
 
--- Add indexes (these are fine 👍)
+-- Performance indexes
 CREATE INDEX IF NOT EXISTS idx_matches_case_id ON matches(case_id);
 CREATE INDEX IF NOT EXISTS idx_matches_provider_id ON matches(provider_id);
 CREATE INDEX IF NOT EXISTS idx_messages_match_id ON messages(match_id);
@@ -79,7 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 ALTER TABLE messages 
 ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE;
 
--- Trigger for appointments updated_at
+-- Auto-update timestamp trigger for appointments
 CREATE OR REPLACE FUNCTION update_appointments_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN

@@ -33,11 +33,9 @@ public class MessageEntity {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
-    // ✅ FIXED
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // ✅ optional but recommended
     @Column(name = "is_read")
     private Boolean isRead;
 

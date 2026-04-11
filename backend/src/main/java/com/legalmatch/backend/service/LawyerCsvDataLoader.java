@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 
 @Component
 @RequiredArgsConstructor
-public class AdvocateDataLoader {
+public class LawyerCsvDataLoader {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -62,7 +62,7 @@ if (count != null && count == 0) {
 }
             }
 
-            System.out.println("✅ Advocate data loaded successfully!");
+            System.out.println("Advocate directory data loaded successfully.");
 
         } catch (Exception e) {
             e.printStackTrace();

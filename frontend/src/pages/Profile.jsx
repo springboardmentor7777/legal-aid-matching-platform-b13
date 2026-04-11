@@ -29,7 +29,7 @@ export default function Profile() {
     }
   };
 
-  // 🔹 Loading state
+
   if (loading) {
     return (
       <div className="bg-white p-6 rounded-xl shadow">
@@ -38,7 +38,7 @@ export default function Profile() {
     );
   }
 
-  // 🔹 Error state
+
   if (error) {
     return (
       <div className="bg-white p-6 rounded-xl shadow">
@@ -47,7 +47,7 @@ export default function Profile() {
     );
   }
 
-  // 🔹 Safety fallback
+
   if (!profile) {
     return (
       <div className="bg-white p-6 rounded-xl shadow">
